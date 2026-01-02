@@ -1,0 +1,247 @@
+body {
+    background: linear-gradient(180deg, #0b1a33 0%, #1a2a47 100%);
+    color: #f0f0f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: rgba(42, 58, 87, 0.5);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+header {
+    background-color: #1a2a47;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin: 0;
+}
+
+.search-bar {
+    display: flex;
+    flex-grow: 1;
+    margin: 0 2rem;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 20px 0 0 20px;
+    border: 1px solid #3a4a67;
+    background-color: #0b1a33;
+    color: #f0f0f0;
+}
+
+.search-bar .icon-button {
+    border-radius: 0 20px 20px 0;
+    background-color: #3a4a67;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-menu-container {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #1a2a47;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 0;
+    min-width: 150px;
+    z-index: 10;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #f0f0f0;
+    text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+    background-color: #3a4a67;
+}
+
+.category-nav {
+    background-color: #1a2a47;
+    padding: 1rem 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 9;
+}
+
+.category-nav a {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+main {
+    padding-top: 2rem;
+}
+
+.game-catalog {
+    position: relative;
+    overflow: hidden;
+}
+
+.game-catalog::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    z-index: -1;
+    animation: slide 60s linear infinite;
+    opacity: 0.1;
+}
+
+#racing-catalog::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Cpath fill='%23f0f0f0' d='M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /%3E%3Cpath fill='%23f0f0f0' d='M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0' /%3E%3Cpath fill='%23f0f0f0' d='M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5' /%3E%3C/svg%3E");
+}
+
+#shooter-catalog::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Cpath fill='%23f0f0f0' d='M15 4.07a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v2.93a1 1 0 0 0 .5.86l4.15 2.1a1 1 0 0 0 1.35-.95V5a1 1 0 0 0-.5-.86zM8 14v-2.12a1 1 0 0 0-1.35-.95L2.5 13.03a1 1 0 0 0-.5.86V15a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z' /%3E%3Cpath fill='%23f0f0f0' d='M21.5 10.97l-4.15-2.1a1 1 0 0 0-1.35.95V11h-5V9.03a1 1 0 0 0-.5-.86L6.5 6.07a1 1 0 0 0-1.35.95V8H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2v-1.03a1 1 0 0 0-.5-.86L3.5 10.07a1 1 0 0 0-1.35.95V12h2.88a1 1 0 0 0 .95-1.35L7 6.5l4 2.05V13h5v-2.03a1 1 0 0 0-.5-.86L11.5 8.07a1 1 0 0 0-1.35.95V10h2.88a1 1 0 0 0 .95-1.35L12 4.5l4 2.05V11h5V9.03a1 1 0 0 0-.5-.86z' /%3E%3C/svg%3E");
+}
+
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.game-card {
+    background-color: #3a4a67;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+}
+
+.game-card a {
+    text-decoration: none;
+    color: #f0f0f0;
+}
+
+.game-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.game-card-title {
+    padding: 1rem;
+    font-weight: bold;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #3a4a67;
+    background-color: #0b1a33;
+    color: #f0f0f0;
+    font-family: inherit;
+}
+
+.button {
+    background-color: #4da6ff;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #3b8ee5;
+}
+
+@keyframes slide {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+
+h2 {
+    color: #ffffff;
+    text-align: center;
+}

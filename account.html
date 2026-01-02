@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>My Account</h2>
+        <div class="account-grid">
+            <div class="account-section">
+                <h3>Profile Picture</h3>
+                <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic">
+                <input type="file" id="profile-pic-upload" class="hidden">
+                <label for="profile-pic-upload" class="button">Upload New Picture</label>
+            </div>
+            <div class="account-section">
+                <h3>Account Details</h3>
+                <form class="form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="user@example.com" disabled>
+                        <button type="button" class="button">Confirm Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="account-section">
+            <h3>Help Us Create a Better Catalog for You</h3>
+            <form class="form">
+                <div class="form-group">
+                    <label for="language">Preferred Language</label>
+                    <input type="text" id="language" name="language">
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob">
+                </div>
+                <div class="form-group">
+                    <label for="favorite-games">Favorite Games</label>
+                    <textarea id="favorite-games" name="favorite-games" rows="3" placeholder="Tell us about the games you love..."></textarea>
+                </div>
+                <button type="submit" class="button">Save Preferences</button>
+            </form>
+        </div>
+        <div class="account-section">
+            <h3>Achievements</h3>
+            <p>Your achievements will be displayed here. Go play some games!</p>
+            <button class="button">Make Achievements Public</button>
+        </div>
+        <p><a href="index.html">Back to Home</a></p>
+    </div>
+</body>
+</html>

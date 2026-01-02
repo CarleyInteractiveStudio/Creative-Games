@@ -74,6 +74,17 @@ header {
     position: relative;
 }
 
+.notification-bubble {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: #ff4d4d;
+    border-radius: 50%;
+    border: 2px solid #1a2a47;
+}
+
 .dropdown-menu {
     position: absolute;
     top: 100%;
@@ -255,4 +266,26 @@ main.container {
 h2 {
     color: #ffffff;
     text-align: center;
+}
+
+.account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.account-section {
+    background-color: #2a3a57;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: block;
+    object-fit: cover;
 }

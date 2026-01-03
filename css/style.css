@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 body {
-    background: linear-gradient(180deg, #0b1a33 0%, #1a2a47 100%);
-    color: #f0f0f0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background: linear-gradient(180deg, #181818 0%, #121212 100%);
+    color: #E0E0E0;
+    font-family: 'Poppins', sans-serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
@@ -12,9 +14,9 @@ body {
 }
 
 header {
-    background-color: #1a2a47;
+    background-color: #1F1F1F;
     padding: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid #282828;
     position: relative;
 }
 
@@ -49,14 +51,14 @@ header {
     width: 100%;
     padding: 0.5rem 1rem;
     border-radius: 20px 0 0 20px;
-    border: 1px solid #3a4a67;
-    background-color: #0b1a33;
-    color: #f0f0f0;
+    border: 1px solid #383838;
+    background-color: #282828;
+    color: #E0E0E0;
 }
 
 .search-bar .icon-button {
     border-radius: 0 20px 20px 0;
-    background-color: #3a4a67;
+    background-color: #383838;
 }
 
 .icon-button {
@@ -89,27 +91,28 @@ header {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: #1a2a47;
+    background-color: #1F1F1F;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     padding: 0.5rem 0;
     min-width: 150px;
     z-index: 10;
+    border: 1px solid #282828;
 }
 
 .dropdown-menu a {
     display: block;
     padding: 0.5rem 1rem;
-    color: #f0f0f0;
+    color: #E0E0E0;
     text-decoration: none;
 }
 
 .dropdown-menu a:hover {
-    background-color: #3a4a67;
+    background-color: #282828;
 }
 
 .category-nav {
-    background-color: #1a2a47;
+    background-color: #1F1F1F;
     padding: 1rem 0;
     position: absolute;
     top: 100%;
@@ -118,7 +121,7 @@ header {
     display: flex;
     justify-content: center;
     gap: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid #282828;
     z-index: 9;
 }
 
@@ -182,16 +185,16 @@ main.container {
 }
 
 .game-card {
-    background-color: #2a3a57;
-    border-radius: 8px;
+    background-color: #282828;
+    border-radius: 12px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .game-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .game-card a {
@@ -263,7 +266,7 @@ main.container {
 }
 
 .button {
-    background-color: #4da6ff;
+    background-color: #FFC107;
     color: #ffffff;
     padding: 0.5rem 1rem;
     border-radius: 4px;
@@ -274,7 +277,7 @@ main.container {
 }
 
 .button:hover {
-    background-color: #3b8ee5;
+    background-color: #D4A106;
 }
 
 @keyframes slide {
@@ -329,7 +332,7 @@ footer {
 }
 
 footer a {
-    color: #4da6ff;
+    color: #FFC107;
     text-decoration: none;
 }
 
@@ -381,7 +384,7 @@ footer a {
 }
 
 .game-card.selected {
-    border: 2px solid #4da6ff;
-    box-shadow: 0 0 15px rgba(77, 166, 255, 0.7);
+    border: 2px solid #FFC107;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.7);
     transform: translateY(-5px);
 }

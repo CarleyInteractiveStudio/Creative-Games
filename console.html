@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Game - Console Mode</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="console-mode">
+    <main class="container">
+        <section class="game-catalog">
+            <h2>Favorite Games</h2>
+            <div class="game-grid">
+                <!-- Favorite games will be dynamically loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="game-details-bubble" class="details-bubble hidden">
+        <div class="bubble-content">
+            <div class="bubble-image">
+                <img src="" alt="Game Thumbnail">
+            </div>
+            <div class="bubble-info">
+                <h3>Game Title</h3>
+                <p>Game description...</p>
+                <div class="interaction-buttons">
+                    <button class="icon-button like-btn"><img src="images/icons/like.svg" alt="Like"></button>
+                    <button class="icon-button dislike-btn"><img src="images/icons/dislike.svg" alt="Dislike"></button>
+                    <button class="icon-button favorite-btn"><img src="images/icons/favorite.svg" alt="Favorite"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/games.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/gamepad-navigation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const favoriteGames = JSON.parse(localStorage.getItem('favoriteGames')) || [];
+            const gameGrid = document.querySelector('.game-grid');
+
+            if (favoriteGames.length === 0) {
+                gameGrid.innerHTML = '<p>No favorite games yet. Add some from the main page!</p>';
+            } else {
+                favoriteGames.forEach(gameId => {
+                    const gameData = allGames[gameId];
+                    if (gameData) {
+                        const gameCard = document.createElement('div');
+                        gameCard.classList.add('game-card');
+                        gameCard.dataset.gameId = gameId; // Important for targeting
+                        gameCard.innerHTML = `
+                            <a href="play.html?game=${encodeURIComponent(gameId)}">
+                                <img src="${gameData.thumbnail}" alt="${gameId}">
+                                <div class="game-card-title">${gameId}</div>
+                            </a>
+                            <div class="game-card-info">
+                                <div class="platform-icons">
+                                    ${gameData.platforms.map(p => `<img src="images/icons/${p}.svg" alt="${p}">`).join('')}
+                                </div>
+                                <div class="interaction-buttons">
+                                    <button class="icon-button favorited"><img src="images/icons/favorite.svg" alt="Favorite"></button>
+                                </div>
+                            </div>
+                        `;
+                        gameGrid.appendChild(gameCard);
+                    }
+                });
+            }
+
+            // Now that the cards are loaded, initialize gamepad navigation
+            if (typeof initGamepadNavigation === 'function') {
+                initGamepadNavigation();
+            }
+        });
+    </script>
+</body>
+</html>

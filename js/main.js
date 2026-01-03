@@ -84,13 +84,78 @@ document.addEventListener('DOMContentLoaded', () => {
     updateGamepadStatus(isGamepadConnected);
 
 
+    function showConsoleModePrompt() {
+        const prompt = document.createElement('div');
+        prompt.id = 'console-mode-prompt';
+        prompt.style.position = 'fixed';
+        prompt.style.bottom = '20px';
+        prompt.style.left = '50%';
+        prompt.style.transform = 'translateX(-50%)';
+        prompt.style.backgroundColor = 'rgba(0,0,0,0.8)';
+        prompt.style.color = 'white';
+        prompt.style.padding = '15px 30px';
+        prompt.style.borderRadius = '10px';
+        prompt.style.zIndex = '1001';
+        prompt.innerHTML = 'Gamepad connected. Press <b>Start</b> to enter Console Mode.';
+        document.body.appendChild(prompt);
+
+        // Listen for the "Start" button (button 9) to be pressed
+        const interval = setInterval(() => {
+            const gamepads = navigator.getGamepads();
+            if (gamepads[0] && gamepads[0].buttons[9].pressed) {
+                clearInterval(interval);
+                window.location.href = 'console.html';
+            }
+        }, 100);
+
+        // Remove the prompt after a while if not used
+        setTimeout(() => {
+            clearInterval(interval);
+            if (document.getElementById('console-mode-prompt')) {
+                prompt.remove();
+            }
+        }, 10000);
+    }
+
     window.addEventListener('gamepadconnected', (event) => {
         console.log('Gamepad connected:', event.gamepad);
         updateGamepadStatus(true);
+        showConsoleModePrompt();
     });
 
     window.addEventListener('gamepaddisconnected', (event) => {
         console.log('Gamepad disconnected:', event.gamepad);
         updateGamepadStatus(false);
+    });
+
+    // --- Favorite Games Logic ---
+    function getFavorites() {
+        return JSON.parse(localStorage.getItem('favoriteGames')) || [];
+    }
+
+    function saveFavorites(favorites) {
+        localStorage.setItem('favoriteGames', JSON.stringify(favorites));
+    }
+
+    function toggleFavorite(gameId) {
+        let favorites = getFavorites();
+        if (favorites.includes(gameId)) {
+            favorites = favorites.filter(id => id !== gameId);
+        } else {
+            favorites.push(gameId);
+        }
+        saveFavorites(favorites);
+    }
+
+    // Add event listeners to favorite buttons
+    document.querySelectorAll('.interaction-buttons .icon-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const gameCard = button.closest('.game-card');
+            const gameId = gameCard.dataset.gameId;
+            if (gameId) {
+                toggleFavorite(gameId);
+                button.classList.toggle('favorited');
+            }
+        });
     });
 });

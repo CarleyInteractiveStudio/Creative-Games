@@ -8,27 +8,81 @@
 </head>
 <body>
     <div class="container">
-        <h2>Upload Game</h2>
+        <h2>Upload Your Game</h2>
         <form class="form">
             <div class="form-group">
-                <label for="title">Title</label>
-                <input type="text" id="title" name="title" required>
+                <label for="game-name">Game Name</label>
+                <input type="text" id="game-name" name="game-name" required>
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" rows="4" required></textarea>
             </div>
             <div class="form-group">
-                <label for="game-file">Game File</label>
-                <input type="file" id="game-file" name="game-file" required>
+                <label for="controls">Controls</label>
+                <textarea id="controls" name="controls" rows="3" placeholder="e.g., W, A, S, D to move. Mouse to aim and shoot."></textarea>
             </div>
             <div class="form-group">
-                <label for="thumbnail">Thumbnail Image</label>
-                <input type="file" id="thumbnail" name="thumbnail" accept="image/png, image/jpeg" required>
+                <label>Compatible Platforms</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pc" name="platform" value="pc">
+                    <label for="pc">PC</label>
+                    <input type="checkbox" id="mobile" name="platform" value="mobile">
+                    <label for="mobile">Mobile</label>
+                    <input type="checkbox" id="console" name="platform" value="console">
+                    <label for="console">Console</label>
+                    <input type="checkbox" id="tv" name="platform" value="tv">
+                    <label for="tv">TV</label>
+                </div>
             </div>
-            <button type="submit" class="button">Upload</button>
+
+            <h3>Game Assets</h3>
+            <div class="form-group">
+                <label for="drive-link">Google Drive Link (for the game file)</label>
+                <input type="url" id="drive-link" name="drive-link" required>
+            </div>
+            <div class="form-group">
+                <label for="youtube-link">YouTube Video Link (Trailer/Gameplay)</label>
+                <input type="url" id="youtube-link" name="youtube-link" required>
+            </div>
+
+            <h3>Optional Links</h3>
+            <div class="form-group">
+                <label for="forum-link">Forum or Discord Link</label>
+                <input type="url" id="forum-link" name="forum-link">
+            </div>
+            <div class="form-group">
+                <label for="facebook-link">Facebook Page</label>
+                <input type="url" id="facebook-link" name="facebook-link">
+            </div>
+            <div class="form-group">
+                <label for="whatsapp-channel">WhatsApp Channel</label>
+                <input type="url" id="whatsapp-channel" name="whatsapp-channel">
+            </div>
+            <div class="form-group">
+                <label for="youtube-channel">YouTube Channel</label>
+                <input type="url" id="youtube-channel" name="youtube-channel">
+            </div>
+
+            <div class="form-group">
+                <input type="checkbox" id="update-existing" name="update-existing">
+                <label for="update-existing">Update an existing game</label>
+            </div>
+
+            <div class="form-group">
+                <input type="checkbox" id="permission" name="permission" required>
+                <label for="permission">By uploading this game, you permit Creative Game to feature and advertise it on our website and social media channels. This does not affect your ownership rights.</label>
+            </div>
+
+            <button type="submit" class="button">Submit Game</button>
         </form>
         <p><a href="index.html">Back to Home</a></p>
     </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Creative Game. All rights reserved. | <a href="privacy.html">Privacy Policy</a></p>
+        </div>
+    </footer>
 </body>
 </html>

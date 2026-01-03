@@ -33,7 +33,9 @@
     </div>
     <script>
         document.querySelector('.form').addEventListener('submit', function(event) {
-            localStorage.setItem('show-notification', 'true');
+            event.preventDefault();
+            localStorage.setItem('accountJustCreated', 'true');
+            window.location.href = 'index.html';
         });
     </script>
 </body>

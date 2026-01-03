@@ -26,31 +26,54 @@
                     </div>
                 </form>
             </div>
+            <div class="account-section">
+                <h3>Personalization</h3>
+                <form class="form">
+                    <div class="form-group">
+                        <label for="language">Preferred Language</label>
+                        <input type="text" id="language" name="language">
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" name="dob">
+                    </div>
+                    <button type="submit" class="button">Save Preferences</button>
+                </form>
+            </div>
+            <div class="account-section">
+                <h3>Achievements</h3>
+                <p>Your achievements will be displayed here.</p>
+                <button class="button">View Achievements</button>
+            </div>
         </div>
         <div class="account-section">
-            <h3>Help Us Create a Better Catalog for You</h3>
-            <form class="form">
-                <div class="form-group">
-                    <label for="language">Preferred Language</label>
-                    <input type="text" id="language" name="language">
-                </div>
-                <div class="form-group">
-                    <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" name="dob">
-                </div>
-                <div class="form-group">
-                    <label for="favorite-games">Favorite Games</label>
-                    <textarea id="favorite-games" name="favorite-games" rows="3" placeholder="Tell us about the games you love..."></textarea>
-                </div>
-                <button type="submit" class="button">Save Preferences</button>
-            </form>
-        </div>
-        <div class="account-section">
-            <h3>Achievements</h3>
-            <p>Your achievements will be displayed here. Go play some games!</p>
-            <button class="button">Make Achievements Public</button>
+            <h3>Community & Contributions</h3>
+            <div class="community-buttons">
+                <a href="favorites.html" class="button">Favorite Games</a>
+                <a href="history.html" class="button">Played History</a>
+                <a href="#" id="developer-button" class="button">Become a Developer</a>
+            </div>
+            <div id="developer-confirmation" class="hidden">
+                <p>You are now a developer! You must upload a game to confirm your developer status.</p>
+                <a href="upload.html" class="button">Upload Your First Game</a>
+            </div>
         </div>
         <p><a href="index.html">Back to Home</a></p>
     </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Creative Game. All rights reserved. | <a href="privacy.html">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('developer-button').addEventListener('click', function(event) {
+            event.preventDefault();
+            localStorage.setItem('isDeveloper', 'true');
+            document.getElementById('developer-confirmation').classList.remove('hidden');
+            this.classList.add('hidden');
+        });
+    </script>
 </body>
 </html>

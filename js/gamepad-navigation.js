@@ -241,7 +241,6 @@ function initGamepadNavigation() {
         console.log('Gamepad connected:', e.gamepad.id);
         gamepadConnected = true;
         animationFrameId = requestAnimationFrame(handleGamepadInput);
-        updateFocus();
     });
 
     window.addEventListener('gamepaddisconnected', () => {
@@ -271,9 +270,7 @@ function initGamepadNavigation() {
     if (Array.from(gamepads).some(g => g)) {
         gamepadConnected = true;
         animationFrameId = requestAnimationFrame(handleGamepadInput);
-        updateFocus();
-    } else {
-        updateFocus(); // Still run this to get initial elements for non-gamepad interaction setups
+        updateFocus(); // Only focus if a gamepad is connected on load
     }
 }
 

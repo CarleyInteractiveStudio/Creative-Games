@@ -452,7 +452,3 @@ body.console-mode {
 .interaction-buttons .icon-button.active img {
     filter: invert(80%) sepia(100%) saturate(400%) hue-rotate(350deg) drop-shadow(0 0 5px #FFC107);
 }
-
-.interaction-buttons .dislike-btn img {
-    transform: scaleY(-1); /* Flips the icon vertically */
-}

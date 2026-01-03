@@ -44,4 +44,53 @@ document.addEventListener('DOMContentLoaded', () => {
             developerDashboardLink.classList.remove('hidden');
         }
     }
+
+    // --- Device and Gamepad Detection ---
+
+    function detectDeviceType() {
+        const ua = navigator.userAgent;
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+            return "Tablet";
+        }
+        if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+            return "Mobile";
+        }
+        if (/(nintendo|playstation|xbox|steam)/i.test(ua)) {
+            return "Console";
+        }
+        return "PC";
+    }
+
+    function updateDeviceStatus() {
+        const deviceStatusElement = document.getElementById('device-status');
+        if (deviceStatusElement) {
+            deviceStatusElement.textContent = `Device: ${detectDeviceType()}`;
+        }
+    }
+
+    function updateGamepadStatus(connected = false) {
+        const gamepadStatusElement = document.getElementById('gamepad-status');
+        if (gamepadStatusElement) {
+            const status = connected ? 'Connected' : 'Disconnected';
+            gamepadStatusElement.textContent = `Gamepad: ${status}`;
+        }
+    }
+
+    // Initial check
+    updateDeviceStatus();
+    // Check if any gamepads are already connected
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const isGamepadConnected = Array.from(gamepads).some(g => g);
+    updateGamepadStatus(isGamepadConnected);
+
+
+    window.addEventListener('gamepadconnected', (event) => {
+        console.log('Gamepad connected:', event.gamepad);
+        updateGamepadStatus(true);
+    });
+
+    window.addEventListener('gamepaddisconnected', (event) => {
+        console.log('Gamepad disconnected:', event.gamepad);
+        updateGamepadStatus(false);
+    });
 });

@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderActionButtons();
             renderSocialLinks();
             loadSimilarGames(gameData.category, currentGameId);
-            populateModal();
+            populateDetails();
             setupEventListeners();
 
         } else {
@@ -119,12 +119,21 @@ document.addEventListener('DOMContentLoaded', () => {
         similarGamesCatalogEl.innerHTML = catalogHTML;
     }
 
-    function populateModal() {
-        document.getElementById('modal-developer').textContent = gameData.developer || 'N/A';
-        document.getElementById('modal-engine').textContent = gameData.engine || 'N/A';
-        document.getElementById('modal-rating').textContent = gameData.rating || 'N/A';
-        document.getElementById('modal-release-date').textContent = gameData.releaseDate || 'N/A';
-        document.getElementById('modal-last-update').textContent = gameData.lastUpdate || 'N/A';
+    function populateDetails() {
+        const detailsBubble = document.getElementById('details-bubble');
+        const hasDetails = gameData.developer || gameData.engine || gameData.rating || gameData.releaseDate || gameData.lastUpdate;
+
+        if (hasDetails) {
+            detailsBubble.style.display = 'block';
+            document.getElementById('bubble-developer').textContent = gameData.developer || 'N/A';
+            document.getElementById('bubble-engine').textContent = gameData.engine || 'N/A';
+            document.getElementById('bubble-rating').textContent = gameData.rating || 'N/A';
+            document.getElementById('bubble-release-date').textContent = gameData.releaseDate || 'N/A';
+            document.getElementById('bubble-last-update').textContent = gameData.lastUpdate || 'N/A';
+        } else {
+            detailsBubble.style.display = 'none';
+        }
+
         document.getElementById('modal-controls').textContent = gameData.controls || 'No controls information available.';
     }
 

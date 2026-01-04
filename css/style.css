@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
 body {
-    background: linear-gradient(180deg, #181818 0%, #121212 100%);
+    background: radial-gradient(ellipse at center, rgba(255,193,7,0.1) 0%, #181818 80%);
     color: #E0E0E0;
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;

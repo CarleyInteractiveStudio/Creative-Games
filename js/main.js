@@ -163,22 +163,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="play.html?game=${encodeURIComponent(gameId)}" class="game-card-link">
                         <img src="${gameData.thumbnail}" alt="${gameId}" class="game-card-image">
                         <div class="game-card-overlay">
-                            <div class="game-card-play-button">▶ Play</div>
+                            <div class="game-card-title">${gameId}</div>
+                            <div class="game-card-details">
+                                <div class="platform-icons">
+                                    ${gameData.platforms.map(p => `<img src="images/icons/${p}.svg" alt="${p}">`).join('')}
+                                </div>
+                                <div class="interaction-buttons">
+                                    <button class="icon-button ${isFavorited ? 'favorited' : ''}" aria-label="Favorite">
+                                        <img src="images/icons/favorite.svg" alt="Favorite">
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </a>
-                    <div class="game-card-info">
-                        <div class="game-card-title">${gameId}</div>
-                        <div class="game-card-details">
-                             <div class="platform-icons">
-                                ${gameData.platforms.map(p => `<img src="images/icons/${p}.svg" alt="${p}">`).join('')}
-                            </div>
-                            <div class="interaction-buttons">
-                                <button class="icon-button ${isFavorited ? 'favorited' : ''}" aria-label="Favorite">
-                                    <img src="images/icons/favorite.svg" alt="Favorite">
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             `;
 

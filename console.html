@@ -1,41 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Game - Console Mode</title>
+    <title>Creative Game - Modo Consola</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/console.css">
 </head>
 <body class="console-mode">
-    <main class="container">
-        <section class="game-catalog">
-            <h2>Favorite Games</h2>
-            <div class="game-grid">
-                <!-- Favorite games will be dynamically loaded here -->
+    <header class="console-header">
+        <div class="header-container">
+            <h1 class="logo">Creative Game</h1>
+            <div class="header-bubble search-bubble">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar...">
+                    <button class="icon-button" aria-label="Buscar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
+                </div>
             </div>
-        </section>
-    </main>
-
-    <div id="game-details-bubble" class="details-bubble hidden">
-        <div class="bubble-content">
-            <div class="bubble-image">
-                <img src="" alt="Game Thumbnail">
-            </div>
-            <div class="bubble-info">
-                <h3>Game Title</h3>
-                <p>Game description...</p>
-                <div class="interaction-buttons">
-                    <button class="icon-button like-btn"><img src="images/icons/like.svg" alt="Like"></button>
-                    <button class="icon-button dislike-btn"><img src="images/icons/dislike.svg" alt="Dislike"></button>
-                    <button class="icon-button favorite-btn"><img src="images/icons/favorite.svg" alt="Favorite"></button>
+            <div class="header-bubble">
+                <button class="icon-button" aria-label="Notificaciones">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </button>
+                <div class="profile-menu-container">
+                    <button id="profile-menu-button" class="icon-button" aria-label="Perfil">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </button>
+                    <div id="profile-dropdown" class="dropdown-menu hidden">
+                        <a href="account.html">Mi Cuenta</a>
+                        <a href="favorites.html">Juegos Favoritos</a>
+                        <a href="history.html">Historial de Jugados</a>
+                        <a href="dashboard.html" id="developer-dashboard-link" class="hidden">Panel de Desarrollador</a>
+                        <a href="login.html">Iniciar Sesión</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
+
+    <main class="console-container">
+        <div class="category-filters-container">
+            <div id="category-filters" class="category-filters">
+                <!-- Las categorías se cargarán dinámicamente aquí -->
+            </div>
+        </div>
+
+        <div class="game-carousel-container">
+            <div id="game-carousel" class="game-carousel">
+                <!-- El carrusel de juegos se cargará dinámicamente aquí -->
+            </div>
+        </div>
+
+        <div id="game-details-bubble" class="details-bubble">
+            <div class="details-left">
+                <div id="details-description" class="description-scroll">
+                    <!-- La descripción y detalles del juego irán aquí -->
+                </div>
+            </div>
+            <div class="details-right">
+                <div class="interaction-buttons">
+                    <button id="like-btn" class="icon-button"><img src="images/icons/like.svg" alt="Me gusta"></button>
+                    <button id="dislike-btn" class="icon-button"><img src="images/icons/dislike.svg" alt="No me gusta"></button>
+                    <button id="favorite-btn" class="icon-button"><img src="images/icons/favorite.svg" alt="Favorito"></button>
+                    <button id="share-btn" class="icon-button"><img src="images/icons/share.svg" alt="Compartir"></button>
+                </div>
+                <div id="details-controls" class="controls-info">
+                    <!-- La información de los controles del juego irá aquí -->
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script src="js/games.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/gamepad-navigation.js"></script>
     <script src="js/console.js"></script>
+    <script src="js/gamepad-navigation.js"></script>
 </body>
 </html>

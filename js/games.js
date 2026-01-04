@@ -1,36 +1,10 @@
 const allGames = {
-    "Geometry Dash": {
-        thumbnail: "games/geometry-dash/images/thumbnail.png",
-        platforms: ["pc", "mobile"],
-        description: "Geometry Dash is a music-based platforming game that will challenge your skills to the limit. Jump, fly, and flip your way through dangerous passages and spiky obstacles.",
-        controls: "Click or press the spacebar to jump.",
-        category: "Platformer",
-        developer: "RobTop Games",
-        engine: "Cocos2d",
-        rating: "4.8/5",
-        releaseDate: "August 13, 2013",
-        lastUpdate: "December 21, 2023",
-        social: {
-            website: "https://www.robtopgames.com/",
-            facebook: "https://www.facebook.com/geometrydash",
-            tiktok: "https://www.tiktok.com/@geometrydash",
-            discord: "https://discord.gg/geometrydash"
-        }
-    },
     "Sample Game 1": {
         thumbnail: "games/sample-game/images/thumbnail.png",
         platforms: ["pc", "console"],
         description: "This is a sample game description for Sample Game 1. It's an exciting adventure where you explore ancient ruins.",
         controls: "W, A, S, D to move. Mouse to look around. E to interact.",
-        category: "Adventure",
-        developer: "Sample Devs",
-        engine: "Unity",
-        rating: "4.5/5",
-        releaseDate: "January 1, 2023",
-        lastUpdate: "October 28, 2023",
-        social: {
-            website: "https://example.com"
-        }
+        category: "Adventure"
     },
     "Sample Game 2": {
         thumbnail: "games/sample-game/images/thumbnail.png",

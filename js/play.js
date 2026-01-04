@@ -24,7 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Cargar contenido principal
             gameTitleEl.textContent = currentGameId;
             gameDescriptionEl.textContent = gameData.description || 'No description available.';
-            gamePlayAreaEl.innerHTML = `<iframe src="games/${encodeURIComponent(currentGameId)}/index.html" frameborder="0"></iframe>`;
+
+            // Mostrar imagen de portada y botón de "Jugar"
+            gamePlayAreaEl.innerHTML = `
+                <div class="game-thumbnail-container">
+                    <img src="${gameData.thumbnail}" alt="${currentGameId} Thumbnail" class="game-thumbnail">
+                    <button id="play-button">Jugar</button>
+                </div>
+            `;
 
             // Renderizar componentes dinámicos
             renderActionButtons();
@@ -89,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadSimilarGames(category, currentGameId) {
         const similarGames = Object.keys(allGames)
             .filter(id => allGames[id].category === category && id !== currentGameId)
-            .slice(0, 8); // Aumentado a 8 para el scroll horizontal
+            .slice(0, 8);
 
         if (similarGames.length === 0) {
             document.getElementById('similar-games-column').style.display = 'none';
@@ -123,7 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MANEJO DE EVENTOS ---
     function setupEventListeners() {
-        // Event listeners para botones de acción
+        // Listener para el botón "Jugar"
+        document.getElementById('play-button')?.addEventListener('click', () => {
+            gamePlayAreaEl.innerHTML = `<iframe src="games/${encodeURIComponent(currentGameId)}/index.html" frameborder="0"></iframe>`;
+        });
+
+        // Listeners para botones de acción
         document.getElementById('fullscreen-button')?.addEventListener('click', () => {
              const iframe = gamePlayAreaEl.querySelector('iframe');
             if (iframe && iframe.requestFullscreen) {
@@ -139,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Event listeners para el modal
+        // Listeners para el modal
         document.getElementById('controls-button')?.addEventListener('click', () => {
             modalEl.classList.remove('modal-hidden');
         });

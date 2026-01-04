@@ -273,9 +273,3 @@ function initGamepadNavigation() {
         updateFocus(); // Only focus if a gamepad is connected on load
     }
 }
-
-// Initialize on DOMContentLoaded for all pages except console mode,
-// where it's called manually after content is loaded.
-if (!document.body.classList.contains('console-mode')) {
-    document.addEventListener('DOMContentLoaded', initGamepadNavigation);
-}

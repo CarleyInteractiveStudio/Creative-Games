@@ -238,6 +238,10 @@ main.container {
     height: 24px;
 }
 
+.platform-icons img[src="images/icons/console.svg"] {
+    filter: invert(1);
+}
+
 .interaction-buttons img {
     width: 20px; /* Slightly smaller icon size */
     height: 20px;

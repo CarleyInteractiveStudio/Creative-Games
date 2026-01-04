@@ -488,3 +488,51 @@ body.console-mode {
     z-index: 10;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* --- Play Page Layout --- */
+#play-page-container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 2rem auto;
+    align-items: flex-start;
+}
+
+#game-column {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+}
+
+#details-column {
+    flex: 1;
+    background-color: rgba(30, 30, 30, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    position: sticky; /* Make it sticky */
+    top: 2rem; /* Stick to the top after scrolling 2rem */
+}
+
+
+#game-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(30, 30, 30, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+
+#game-action-buttons .icon-button svg,
+.interaction-buttons .icon-button svg {
+    stroke: #ffffff;
+}

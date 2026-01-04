@@ -7,54 +7,55 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="game-play-area">
-            <!-- This is where the game would be embedded -->
-            <div class="game-placeholder">
-                <p>Game Area</p>
+    <div id="play-page-container">
+        <div id="game-column">
+            <div class="game-play-area">
+                <div class="game-placeholder">
+                    <p>Game Area</p>
+                </div>
+            </div>
+            <div id="game-action-buttons">
+                <button id="fullscreen-button" class="icon-button" aria-label="Fullscreen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                </button>
+                <button id="share-button" class="icon-button" aria-label="Share">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                </button>
+                <button id="controls-button" class="icon-button" aria-label="Show Controls">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                </button>
             </div>
         </div>
-        <div class="game-details">
-            <h2>Sample Game 1</h2>
-            <div class="game-card-info">
-                <div class="platform-icons">
-                    <img src="images/icons/pc.svg" alt="PC">
-                    <img src="images/icons/console.svg" alt="Console">
-                </div>
+        <div id="details-column">
+            <div class="game-details">
+                <h2 id="game-title"></h2>
                 <div class="interaction-buttons">
-                    <button class="icon-button"><img src="images/icons/like.svg" alt="Like"></button>
-                    <button class="icon-button"><img src="images/icons/dislike.svg" alt="Dislike"></button>
-                    <button class="icon-button"><img src="images/icons/favorite.svg" alt="Favorite"></button>
+                    <button id="like-button" class="icon-button" aria-label="Like">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                    </button>
+                    <button id="dislike-button" class="icon-button" aria-label="Dislike">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v7a3 3 0 0 1-3 3l-4-9V2h11.28a2 2 0 0 1 2 1.7l1.38 9a2 2 0 0 1-2 2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                    </button>
+                    <button id="favorite-button" class="icon-button" aria-label="Favorite">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </button>
+                </div>
+                <p id="game-description"></p>
+                <div id="controls-section">
+                    <h3>Controls</h3>
+                    <p id="game-controls"></p>
                 </div>
             </div>
-            <p>This is a sample game description. It's a fun and exciting game that you're sure to enjoy!</p>
-            <h3>Controls</h3>
-            <p>W, A, S, D to move. Mouse to aim and shoot.</p>
+             <section class="game-catalog">
+                <h2>You might also like</h2>
+                <div id="related-games-grid" class="game-grid">
+                    <!-- Related games will be loaded here -->
+                </div>
+            </section>
         </div>
-        <section class="game-catalog">
-            <h2>You might also like</h2>
-            <div class="game-grid">
-                <div class="game-card">
-                    <a href="play.html">
-                        <img src="games/sample-game/images/thumbnail.png" alt="Sample Game">
-                        <div class="game-card-title">Sample Game 2</div>
-                    </a>
-                </div>
-                <div class="game-card">
-                    <a href="play.html">
-                        <img src="games/sample-game/images/thumbnail.png" alt="Sample Game">
-                        <div class="game-card-title">Sample Game 3</div>
-                    </a>
-                </div>
-                <div class="game-card">
-                    <a href="play.html">
-                        <img src="games/sample-game/images/thumbnail.png" alt="Sample Game">
-                        <div class="game-card-title">Sample Game 4</div>
-                    </a>
-                </div>
-            </div>
-        </section>
-        <p><a href="index.html">Back to Home</a></p>
     </div>
+
+    <script src="js/games.js"></script>
+    <script src="js/play.js"></script>
 </body>
 </html>

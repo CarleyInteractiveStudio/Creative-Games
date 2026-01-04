@@ -2,7 +2,8 @@ const allGames = {
     "Sample Game 1": {
         thumbnail: "games/sample-game/images/thumbnail.png",
         platforms: ["pc", "console"],
-        description: "This is a sample game description for Sample Game 1.",
+        description: "This is a sample game description for Sample Game 1. It's an exciting adventure where you explore ancient ruins.",
+        controls: "W, A, S, D to move. Mouse to look around. E to interact.",
         category: "Adventure"
     },
     "Sample Game 2": {

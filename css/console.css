@@ -30,6 +30,16 @@
     padding: 10px 0; /* Added padding */
 }
 
+/* Ensure the header content is in a single row */
+.console-header .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .console-container {
     /* padding-top: 80px; */ /* Adjust based on header height */
     flex-grow: 1;
@@ -51,7 +61,7 @@
     padding: 1rem 2rem;
     overflow-x: auto;
     white-space: nowrap;
-    text-align: center;
+    /* text-align: center; */ /* No longer needed as filters align left */
 }
 .category-filters {
     display: inline-block;

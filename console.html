@@ -78,5 +78,19 @@
     <script src="js/main.js"></script>
     <script src="js/console.js"></script>
     <script src="js/gamepad-navigation.js"></script>
+
+    <!-- Gamepad Setup Modal -->
+    <div id="gamepad-setup-modal" class="modal-overlay hidden">
+        <div class="modal-content crystalline">
+            <h2>Configuración de Mando Requerida</h2>
+            <p>¡Nuevo mando detectado! Para continuar, presiona el botón de tu mando que quieras usar para entrar al <strong>Modo Consola</strong>.</p>
+            <div class="button-detector">
+                <span>Botón presionado:</span>
+                <span id="detected-button-display" class="button-display">Ninguno</span>
+            </div>
+            <p class="small-text">Este será el botón que active la burbuja de notificación en la página principal.</p>
+            <button id="save-gamepad-button" class="cta-button" disabled>Guardar Configuración</button>
+        </div>
+    </div>
 </body>
 </html>

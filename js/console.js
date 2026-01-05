@@ -209,6 +209,48 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(handleGamepadInput);
     }
 
+    // --- GAMEPAD SETUP LOGIC ---
+    function initGamepadSetup() {
+        const setupModal = document.getElementById('gamepad-setup-modal');
+        const detectedButtonDisplay = document.getElementById('detected-button-display');
+        const saveGamepadButton = document.getElementById('save-gamepad-button');
+        let detectedButton = null;
+        let setupPollInterval = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('setup') === 'true') {
+            setupModal.classList.remove('hidden');
+
+            function pollForButtonPress() {
+                const gamepads = navigator.getGamepads();
+                if (!gamepads[0]) return;
+
+                gamepads[0].buttons.forEach((button, index) => {
+                    if (button.pressed) {
+                        detectedButton = index;
+                        detectedButtonDisplay.textContent = `Botón ${index}`;
+                        saveGamepadButton.disabled = false;
+                    }
+                });
+            }
+
+            setupPollInterval = setInterval(pollForButtonPress, 100);
+
+            saveGamepadButton.addEventListener('click', () => {
+                if (detectedButton !== null) {
+                    localStorage.setItem('gamepadModeButton', detectedButton);
+                    clearInterval(setupPollInterval);
+                    setupModal.classList.add('hidden');
+                    // Clean up URL to prevent re-triggering setup on refresh
+                    history.replaceState(null, '', window.location.pathname);
+                    console.log(`Configuración guardada. Botón de modo: ${detectedButton}`);
+                }
+            });
+        }
+    }
+
+
     // --- START THE APP ---
     init();
+    initGamepadSetup(); // Run the setup check
 });

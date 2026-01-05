@@ -59,19 +59,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const gamepads = navigator.getGamepads();
         if (!gamepads[0]) return;
 
-        // Button 16 is often the Mode/Home/PS button.
-        if (gamepads[0].buttons[16] && gamepads[0].buttons[16].pressed) {
+        const modeButtonIndex = localStorage.getItem('gamepadModeButton');
+        if (modeButtonIndex === null) return; // Should not happen if logic is correct
+
+        const modeButton = parseInt(modeButtonIndex, 10);
+        if (gamepads[0].buttons[modeButton] && gamepads[0].buttons[modeButton].pressed) {
+            // Stop polling before redirecting
+            clearInterval(gamepadPollInterval);
+            gamepadPollInterval = null;
             window.location.href = 'console.html';
         }
     }
 
     window.addEventListener('gamepadconnected', (e) => {
-        if (gamepadNotification) {
-            gamepadNotification.classList.add('visible');
-        }
-        // Start polling for button presses
-        if (!gamepadPollInterval) {
-            gamepadPollInterval = setInterval(handleGamepadInput, 100);
+        const modeButtonIndex = localStorage.getItem('gamepadModeButton');
+
+        if (modeButtonIndex === null) {
+            // No configuration found, redirect to console for setup
+            window.location.href = 'console.html?setup=true';
+        } else {
+            // Configuration exists, show notification bubble
+            if (gamepadNotification) {
+                gamepadNotification.classList.add('visible');
+            }
+            // Start polling for the configured button press
+            if (!gamepadPollInterval) {
+                gamepadPollInterval = setInterval(handleGamepadInput, 100);
+            }
         }
     });
 

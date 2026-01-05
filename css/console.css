@@ -2,11 +2,14 @@
 .console-mode {
     background: radial-gradient(circle at top, rgba(255,193,7,0.05), #121212 40%);
     color: #fff;
-    overflow: hidden; /* Prevent body scrollbars */
+    /* Flex properties moved to .console-wrapper */
+}
+
+.console-wrapper {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    position: relative; /* Add relative positioning for the bubble */
+    overflow: hidden; /* Prevent scrollbars within the main content area */
 }
 
 .console-header {
@@ -28,7 +31,7 @@
     width: 100%;
     position: relative; /* Changed from fixed */
     z-index: 1000;
-    padding: 10px 0; /* Added padding */
+    /* padding: 10px 0; */ /* Replaced by height in container */
 }
 
 /* Ensure the header content is in a single row */
@@ -39,6 +42,7 @@
     padding: 0 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    height: 70px; /* Set a fixed height */
 }
 
 .console-container {
@@ -46,7 +50,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding-bottom: 160px; /* Add padding to offset the fixed details bubble */
+    padding-bottom: 100px; /* Add padding to offset the fixed details bubble (70px height + 1.5rem bottom) */
     box-sizing: border-box; /* Ensure padding is included in the element's total height */
 }
 
@@ -160,17 +164,20 @@
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
-    padding: 1.5rem;
+    align-items: center; /* Center content vertically */
+    padding: 0 1.5rem; /* Adjusted padding for new height */
     gap: 1.5rem;
-    max-height: 120px; /* New compact height */
+    max-height: 70px; /* Match header height */
     flex-shrink: 0;
-    transition: max-height 0.5s ease-in-out;
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
     overflow: hidden;
     box-sizing: border-box;
 }
 
 .details-bubble.expanded {
     max-height: 350px;
+    padding: 1.5rem; /* Restore padding when expanded */
+    align-items: initial; /* Reset alignment */
 }
 
 .details-left, .details-right {

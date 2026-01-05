@@ -408,13 +408,15 @@ body.console-mode {
     transform: translateY(0);
 }
 
+.logo-link {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .logo {
-    font-size: 1.5rem;
-    color: transparent;
-    margin: 0;
-    background: linear-gradient(45deg, #ffffff, #b0b0b0);
-    -webkit-background-clip: text;
-    background-clip: text;
+    height: 50px;
+    width: auto;
+    display: block;
     opacity: 0;
     transform: translateY(-20px);
     transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s; /* Delayed transition */

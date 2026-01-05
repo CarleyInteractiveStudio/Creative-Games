@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameCarousel = document.getElementById('game-carousel');
     const detailsBubble = document.getElementById('game-details-bubble');
     const descriptionContainer = document.getElementById('details-description');
+    const shortDescriptionContainer = document.getElementById('details-short-description');
     const controlsContainer = document.getElementById('details-controls');
     const detailsTitle = document.getElementById('details-title');
     const detailsToggleButton = document.getElementById('details-toggle-btn');
@@ -81,12 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         detailsBubble.classList.remove('expanded');
+        detailsToggleButton.textContent = 'Detalles';
         detailsBubble.style.opacity = '1';
 
         detailsTitle.textContent = game.id || 'Título no disponible';
 
+        const fullDescription = game.description || 'Descripción no disponible.';
+        const shortDescription = fullDescription.length > 120 ? fullDescription.substring(0, 120) + '...' : fullDescription;
+
+        shortDescriptionContainer.textContent = shortDescription;
         descriptionContainer.innerHTML = `
-            <p>${game.description || 'Descripción no disponible.'}</p>
+            <p>${fullDescription}</p>
             <div class="metadata">
                 <span><strong>Desarrollador:</strong> ${game.developer || 'No disponible'}</span>
                 <span><strong>Motor:</strong> ${game.engine || 'No disponible'}</span>
@@ -123,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         detailsToggleButton.addEventListener('click', () => {
-            detailsBubble.classList.toggle('expanded');
+            const isExpanded = detailsBubble.classList.toggle('expanded');
+            detailsToggleButton.textContent = isExpanded ? 'Ocultar' : 'Detalles';
         });
     }
 

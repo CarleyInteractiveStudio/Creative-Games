@@ -6,6 +6,7 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative; /* Add relative positioning for the bubble */
 }
 
 .console-header {
@@ -144,10 +145,14 @@
 
 /* --- Details Bubble --- */
 .details-bubble {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
     width: 80%;
     max-width: 1200px;
-    margin: 1rem auto;
-    background: rgba(30, 30, 30, 0.7);
+    z-index: 100;
+    background: rgba(30, 30, 30, 0.8);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 20px;
@@ -155,41 +160,63 @@
     display: flex;
     padding: 1.5rem;
     gap: 1.5rem;
-    max-height: 160px; /* Collapsed height */
+    max-height: 120px; /* New compact height */
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
     transition: max-height 0.5s ease-in-out;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .details-bubble.expanded {
-    max-height: 350px; /* Expanded height */
+    max-height: 350px;
 }
 
 .details-left, .details-right {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Prevent flexbox overflow */
+    min-height: 0;
 }
 
 .game-title {
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0;
     color: #FFC107;
     flex-shrink: 0;
 }
 
+.short-description {
+    margin: 0;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out, max-height 0.5s 0.1s ease-in-out;
+    max-height: 40px; /* ~2 lines */
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.details-bubble.expanded .short-description {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+}
+
 #details-description {
     opacity: 0;
+    max-height: 0;
     flex-grow: 1;
     overflow-y: auto;
-    transition: opacity 0.3s 0.2s ease-in-out; /* Delay opacity transition */
-    padding-right: 1rem; /* Space for scrollbar if it appears */
+    transition: opacity 0.3s 0.2s ease-in-out, max-height 0.3s 0.2s ease-in-out;
+    padding-right: 1rem;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+#details-description::-webkit-scrollbar {
+    display: none;
 }
 
 .details-bubble.expanded #details-description {
     opacity: 1;
+    max-height: 200px;
 }
 
 .details-left .metadata {
@@ -222,7 +249,7 @@
 
 .details-bubble.expanded .interaction-buttons {
     opacity: 1;
-    max-height: 50px; /* Make space for buttons */
+    max-height: 50px;
 }
 
 .interaction-buttons .icon-button {

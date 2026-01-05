@@ -41,10 +41,11 @@
 }
 
 .console-container {
-    /* padding-top: 80px; */ /* Adjust based on header height */
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    padding-bottom: 180px; /* Space for the collapsed details bubble */
 }
 
 /* --- Scrollbar Hiding Utility --- */
@@ -61,7 +62,6 @@
     padding: 1rem 2rem;
     overflow-x: auto;
     white-space: nowrap;
-    /* text-align: center; */ /* No longer needed as filters align left */
 }
 .category-filters {
     display: inline-block;
@@ -91,9 +91,6 @@
     justify-content: center;
     position: relative;
     perspective: 1500px;
-}
-.game-carousel-container.with-top-margin {
-    margin-top: 2rem;
 }
 .game-carousel {
     display: flex;
@@ -144,23 +141,26 @@
 
 /* --- Details Bubble --- */
 .details-bubble {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 80%;
     max-width: 1200px;
-    margin: 2rem auto 0 auto; /* Add top margin, center horizontally */
     background: rgba(30, 30, 30, 0.7);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
     display: flex;
     padding: 1.5rem;
     gap: 1.5rem;
     max-height: 160px; /* Collapsed height */
-    flex-shrink: 0;
-    position: relative; /* Keep for stacking context if needed, but not fixed */
-    z-index: 1;
+    z-index: 1100; /* Higher than header */
     transition: max-height 0.5s ease-in-out;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .details-bubble.expanded {
@@ -175,7 +175,7 @@
 }
 
 .game-title {
-    margin: 0 0 0.5rem 0; /* Reduced bottom margin */
+    margin: 0 0 0.5rem 0;
     color: #FFC107;
     flex-shrink: 0;
 }
@@ -185,8 +185,8 @@
     transition: opacity 0.2s ease-in-out;
     padding-bottom: 1rem;
     flex-shrink: 0;
-    height: auto; /* Allow it to take up natural height */
-    max-height: 50px; /* Limit height */
+    height: auto;
+    max-height: 50px;
 }
 
 .details-bubble.expanded .short-description {
@@ -198,16 +198,16 @@
 
 #details-description {
     opacity: 0;
-    max-height: 0; /* Start with no height */
+    max-height: 0;
     flex-grow: 1;
     overflow-y: auto;
-    transition: opacity 0.3s 0.2s ease-in-out, max-height 0.5s 0.1s ease-in-out; /* Delay and sync transitions */
-    padding-right: 1rem; /* Space for scrollbar if it appears */
+    transition: opacity 0.3s 0.2s ease-in-out, max-height 0.5s 0.1s ease-in-out;
+    padding-right: 1rem;
 }
 
 .details-bubble.expanded #details-description {
     opacity: 1;
-    max-height: 150px; /* Allow it to grow */
+    max-height: 150px;
 }
 
 .details-left .metadata {
@@ -240,7 +240,7 @@
 
 .details-bubble.expanded .interaction-buttons {
     opacity: 1;
-    max-height: 50px; /* Make space for buttons */
+    max-height: 50px;
 }
 
 .interaction-buttons .icon-button {
@@ -259,12 +259,12 @@
     border: none;
     color: #121212;
     padding: 0.5rem 1.5rem;
-    margin-top: auto; /* Push to the bottom */
+    margin-top: auto;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     font-weight: bold;
-    align-self: flex-end; /* Align to the right side of the flex column */
+    align-self: flex-end;
 }
 
 .details-button:hover {
@@ -272,7 +272,6 @@
     box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
 }
 
-/* Apply no-scrollbar class from JS if needed, or directly here */
 .category-filters-container, #details-description {
     scrollbar-width: none; /* Firefox */
 }

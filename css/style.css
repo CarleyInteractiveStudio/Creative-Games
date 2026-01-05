@@ -545,3 +545,35 @@ body.console-mode {
 .interaction-buttons .icon-button svg {
     stroke: #ffffff;
 }
+
+/* Gamepad Connection Notification Bubble */
+#gamepad-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    background-color: rgba(40, 40, 40, 0.7);
+    color: #fff;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95em;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none; /* Hidden by default */
+}
+
+#gamepad-notification.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+#gamepad-notification strong {
+    color: #FFC107;
+    font-weight: 600;
+}

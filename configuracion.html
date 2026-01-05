@@ -60,6 +60,13 @@
                 <button type="submit" class="button">Guardar Preferencias</button>
             </form>
         </section>
+        <section id="dispositivos-section" class="settings-section">
+            <h2>Dispositivos Conectados</h2>
+            <div class="device-status">
+                <span>Mando:</span>
+                <span id="gamepad-config-status">Desconectado</span>
+            </div>
+        </section>
 
         <section id="premium-section" class="settings-section">
             <h2>Cuenta Premium</h2>
@@ -106,12 +113,15 @@
                 <p>&copy; 2024 Creatives Games. All rights reserved. | <a href="privacy.html">Privacy Policy</a></p>
                 <div class="system-status">
                     <span id="device-status">Device: Detecting...</span>
-                    <span id="gamepad-status">Gamepad: Disconnected</span>
                 </div>
             </div>
         </div>
     </footer>
 
+    <div id="gamepad-notification">
+        Mando detectado. Presiona <strong>MODE</strong> para entrar al Modo Consola.
+    </div>
     <script src="js/main.js"></script>
+    <script src="js/configuracion.js"></script>
 </body>
 </html>

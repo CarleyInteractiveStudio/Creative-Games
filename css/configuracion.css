@@ -72,6 +72,26 @@
     background-color: #c82333;
 }
 
+#dispositivos-section .device-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+#dispositivos-section .device-status span:first-child {
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+#gamepad-config-status {
+    font-style: italic;
+    color: #a0a0a0;
+}
+
 /* Estilos para la sección Premium */
 #premium-section {
     background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));

@@ -50,48 +50,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateGamepadStatus(connected = false) {
-        const gamepadStatusElement = document.getElementById('gamepad-status');
-        if (gamepadStatusElement) {
-            const status = connected ? 'Connected' : 'Disconnected';
-            gamepadStatusElement.textContent = `Gamepad: ${status}`;
+    updateDeviceStatus();
+
+    const gamepadNotification = document.getElementById('gamepad-notification');
+    let gamepadPollInterval;
+
+    function handleGamepadInput() {
+        const gamepads = navigator.getGamepads();
+        if (!gamepads[0]) return;
+
+        // Button 16 is often the Mode/Home/PS button.
+        if (gamepads[0].buttons[16] && gamepads[0].buttons[16].pressed) {
+            window.location.href = 'console.html';
         }
     }
 
-    updateDeviceStatus();
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    const isGamepadConnected = Array.from(gamepads).some(g => g);
-    updateGamepadStatus(isGamepadConnected);
-
-    function showConsoleModePrompt() {
-        if (document.getElementById('console-mode-prompt')) return; // Prevent multiple prompts
-        const prompt = document.createElement('div');
-        prompt.id = 'console-mode-prompt';
-        prompt.className = 'console-prompt';
-        prompt.innerHTML = 'Gamepad connected. Press <b>Start</b> to enter Console Mode.';
-        document.body.appendChild(prompt);
-
-        const interval = setInterval(() => {
-            const gps = navigator.getGamepads();
-            if (gps[0] && gps[0].buttons[9].pressed) {
-                clearInterval(interval);
-                window.location.href = 'console.html';
-            }
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            if (prompt) prompt.remove();
-        }, 10000);
-    }
-
     window.addEventListener('gamepadconnected', (e) => {
-        updateGamepadStatus(true);
-        showConsoleModePrompt();
+        if (gamepadNotification) {
+            gamepadNotification.classList.add('visible');
+        }
+        // Start polling for button presses
+        if (!gamepadPollInterval) {
+            gamepadPollInterval = setInterval(handleGamepadInput, 100);
+        }
     });
 
     window.addEventListener('gamepaddisconnected', (e) => {
-        updateGamepadStatus(false);
+        if (gamepadNotification) {
+            gamepadNotification.classList.remove('visible');
+        }
+        // Stop polling when the gamepad disconnects
+        clearInterval(gamepadPollInterval);
+        gamepadPollInterval = null;
     });
 
     // --- Favorite Games Logic ---

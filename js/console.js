@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailsBubble = document.getElementById('game-details-bubble');
     const descriptionContainer = document.getElementById('details-description');
     const controlsContainer = document.getElementById('details-controls');
+    const detailsTitle = document.getElementById('details-title');
+    const detailsToggleButton = document.getElementById('details-toggle-btn');
 
     // --- INITIALIZATION ---
     function init() {
@@ -78,10 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        detailsBubble.classList.remove('expanded');
         detailsBubble.style.opacity = '1';
 
+        detailsTitle.textContent = game.id || 'Título no disponible';
+
         descriptionContainer.innerHTML = `
-            <h2>${game.id || 'Título no disponible'}</h2>
             <p>${game.description || 'Descripción no disponible.'}</p>
             <div class="metadata">
                 <span><strong>Desarrollador:</strong> ${game.developer || 'No disponible'}</span>
@@ -116,6 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentCategory = event.target.dataset.category;
                 applyCategoryFilter();
             }
+        });
+
+        detailsToggleButton.addEventListener('click', () => {
+            detailsBubble.classList.toggle('expanded');
         });
     }
 

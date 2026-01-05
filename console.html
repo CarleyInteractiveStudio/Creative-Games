@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        <div class="game-carousel-container">
+        <div class="game-carousel-container with-top-margin">
             <div id="game-carousel" class="game-carousel">
                 <!-- El carrusel de juegos se cargará dinámicamente aquí -->
             </div>
@@ -54,20 +54,22 @@
 
         <div id="game-details-bubble" class="details-bubble">
             <div class="details-left">
+                <h2 id="details-title" class="game-title"></h2>
                 <div id="details-description" class="description-scroll">
                     <!-- La descripción y detalles del juego irán aquí -->
                 </div>
             </div>
             <div class="details-right">
+                <div id="details-controls" class="controls-info">
+                    <!-- La información de los controles del juego irá aquí -->
+                </div>
                 <div class="interaction-buttons">
                     <button id="like-btn" class="icon-button"><img src="images/icons/like.svg" alt="Me gusta"></button>
                     <button id="dislike-btn" class="icon-button"><img src="images/icons/dislike.svg" alt="No me gusta"></button>
                     <button id="favorite-btn" class="icon-button"><img src="images/icons/favorite.svg" alt="Favorito"></button>
                     <button id="share-btn" class="icon-button"><img src="images/icons/share.svg" alt="Compartir"></button>
                 </div>
-                <div id="details-controls" class="controls-info">
-                    <!-- La información de los controles del juego irá aquí -->
-                </div>
+                <button id="details-toggle-btn" class="details-button">Detalles</button>
             </div>
         </div>
     </main>

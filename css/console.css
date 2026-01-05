@@ -92,6 +92,9 @@
     position: relative;
     perspective: 1500px;
 }
+.game-carousel-container.with-top-margin {
+    margin-top: 2rem;
+}
 .game-carousel {
     display: flex;
     align-items: center;
@@ -152,34 +155,76 @@
     display: flex;
     padding: 1.5rem;
     gap: 1.5rem;
-    height: 250px; /* Fixed height */
-    flex-shrink: 0; /* Prevent the bubble from shrinking */
-    position: relative; /* Added for z-index */
-    z-index: 1; /* Lower than carousel */
+    max-height: 160px; /* Collapsed height */
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    transition: max-height 0.5s ease-in-out;
+    overflow: hidden;
 }
+
+.details-bubble.expanded {
+    max-height: 350px; /* Expanded height */
+}
+
 .details-left, .details-right {
     flex: 1;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Prevent flexbox overflow */
 }
-.details-left h2 { margin-top: 0; color: #FFC107; }
+
+.game-title {
+    margin: 0 0 1rem 0;
+    color: #FFC107;
+    flex-shrink: 0;
+}
+
+#details-description {
+    opacity: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+    transition: opacity 0.3s 0.2s ease-in-out; /* Delay opacity transition */
+    padding-right: 1rem; /* Space for scrollbar if it appears */
+}
+
+.details-bubble.expanded #details-description {
+    opacity: 1;
+}
+
 .details-left .metadata {
     font-size: 0.9rem;
     opacity: 0.8;
-    margin-top: 1rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
 }
+
 .details-right {
     flex-basis: 35%;
-    display: flex;
-    flex-direction: column;
 }
+
+.controls-info {
+    flex-shrink: 0;
+}
+.controls-info h4 { margin: 0 0 0.5rem 0; color: #FFC107;}
+.controls-info p { margin: 0; opacity: 0.9; }
+
 .interaction-buttons {
     display: flex;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
 }
+
+.details-bubble.expanded .interaction-buttons {
+    opacity: 1;
+    max-height: 50px; /* Make space for buttons */
+}
+
 .interaction-buttons .icon-button {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
@@ -190,16 +235,30 @@
     width: 24px;
     height: 24px;
 }
-.controls-info { flex-grow: 1; }
-.controls-info h4 { margin: 0 0 0.5rem 0; color: #FFC107;}
-.controls-info p { margin: 0; opacity: 0.9; }
+
+.details-button {
+    background: #FFC107;
+    border: none;
+    color: #121212;
+    padding: 0.5rem 1.5rem;
+    margin-top: auto; /* Push to the bottom */
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-weight: bold;
+    align-self: flex-end; /* Align to the right side of the flex column */
+}
+
+.details-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+}
 
 /* Apply no-scrollbar class from JS if needed, or directly here */
-.category-filters-container, .details-left, .details-right {
+.category-filters-container, #details-description {
     scrollbar-width: none; /* Firefox */
 }
 .category-filters-container::-webkit-scrollbar,
-.details-left::-webkit-scrollbar,
-.details-right::-webkit-scrollbar {
+#details-description::-webkit-scrollbar {
     display: none; /* Safari and Chrome */
 }

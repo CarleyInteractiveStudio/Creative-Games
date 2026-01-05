@@ -3,6 +3,9 @@
     background: radial-gradient(circle at top, rgba(255,193,7,0.05), #121212 40%);
     color: #fff;
     overflow: hidden; /* Prevent body scrollbars */
+}
+
+.console-layout-wrapper {
     height: 100vh;
     display: flex;
     flex-direction: column;

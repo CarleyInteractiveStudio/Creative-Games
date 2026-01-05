@@ -79,17 +79,32 @@
     <script src="js/console.js"></script>
     <script src="js/gamepad-navigation.js"></script>
 
-    <!-- Gamepad Setup Modal -->
-    <div id="gamepad-setup-modal" class="modal-overlay hidden">
+    <!-- Gamepad Identification Wizard Modal -->
+    <div id="gamepad-wizard-modal" class="modal-overlay hidden">
         <div class="modal-content crystalline">
-            <h2>Configuración de Mando Requerida</h2>
-            <p>¡Nuevo mando detectado! Para continuar, presiona el botón de tu mando que quieras usar para entrar al <strong>Modo Consola</strong>.</p>
-            <div class="button-detector">
-                <span>Botón presionado:</span>
-                <span id="detected-button-display" class="button-display">Ninguno</span>
+            <div id="wizard-step-1" class="wizard-step active">
+                <h2>Identificación de Mando</h2>
+                <p>Para configurar tu mando, ayúdanos a identificarlo. Por favor, selecciona el tipo de mando que más se parece al tuyo:</p>
+                <div class="controller-type-selection">
+                    <button data-type="simple">
+                        <img src="images/icons/gamepad-simple.svg" alt="Mando Simple">
+                        <span>Mando Simple (SNES, etc.)</span>
+                    </button>
+                    <button data-type="complex">
+                        <img src="images/icons/gamepad-complex.svg" alt="Mando Complejo">
+                        <span>Mando Moderno (Con Joysticks)</span>
+                    </button>
+                </div>
             </div>
-            <p class="small-text">Este será el botón que active la burbuja de notificación en la página principal.</p>
-            <button id="save-gamepad-button" class="cta-button" disabled>Guardar Configuración</button>
+            <div id="wizard-step-2" class="wizard-step">
+                <!-- Content for step 2 (symbols/letters) will be loaded here -->
+            </div>
+            <div id="wizard-step-3" class="wizard-step">
+                <!-- Content for step 3 (joystick layout) will be loaded here -->
+            </div>
+            <div id="wizard-result" class="wizard-step">
+                <!-- Identification result will be shown here -->
+            </div>
         </div>
     </div>
 </body>

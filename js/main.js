@@ -55,37 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const gamepadNotification = document.getElementById('gamepad-notification');
     let gamepadPollInterval;
 
-    function handleGamepadInput() {
-        const gamepads = navigator.getGamepads();
-        if (!gamepads[0]) return;
-
-        const modeButtonIndex = localStorage.getItem('gamepadModeButton');
-        if (modeButtonIndex === null) return; // Should not happen if logic is correct
-
-        const modeButton = parseInt(modeButtonIndex, 10);
-        if (gamepads[0].buttons[modeButton] && gamepads[0].buttons[modeButton].pressed) {
-            // Stop polling before redirecting
-            clearInterval(gamepadPollInterval);
-            gamepadPollInterval = null;
-            window.location.href = 'console.html';
-        }
-    }
-
     window.addEventListener('gamepadconnected', (e) => {
-        const modeButtonIndex = localStorage.getItem('gamepadModeButton');
-
-        if (modeButtonIndex === null) {
-            // No configuration found, redirect to console for setup
-            window.location.href = 'console.html?setup=true';
-        } else {
-            // Configuration exists, show notification bubble
-            if (gamepadNotification) {
-                gamepadNotification.classList.add('visible');
-            }
-            // Start polling for the configured button press
-            if (!gamepadPollInterval) {
-                gamepadPollInterval = setInterval(handleGamepadInput, 100);
-            }
+        if (gamepadNotification) {
+            gamepadNotification.classList.add('visible');
+            // We will add the new setup logic here later
         }
     });
 

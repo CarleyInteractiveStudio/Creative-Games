@@ -283,7 +283,7 @@
     display: none; /* Safari and Chrome */
 }
 
-/* --- Gamepad Setup Modal --- */
+/* --- Gamepad Wizard & Modals --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -367,4 +367,87 @@
     background-color: #555;
     color: #888;
     cursor: not-allowed;
+}
+
+/* --- Wizard Specific Styles --- */
+.wizard-step {
+    display: none;
+}
+
+.wizard-step.active {
+    display: block;
+}
+
+.controller-type-selection {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.controller-type-selection button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-size: 0.9rem;
+    width: 150px;
+}
+
+.controller-type-selection button:hover {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: #FFC107;
+}
+
+.controller-type-selection img {
+    width: 80px;
+    height: 80px;
+    filter: invert(1);
+}
+
+.wizard-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.wizard-options button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s ease-in-out;
+}
+
+.wizard-options button:hover {
+    background-color: rgba(255, 193, 7, 0.2);
+    border-color: #FFC107;
+}
+
+#wizard-result p {
+    font-size: 1.1rem;
+}
+
+#wizard-result .result-details {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+#wizard-result .result-details strong {
+    color: #FFC107;
 }

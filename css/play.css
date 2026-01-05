@@ -1,0 +1,234 @@
+/* === ESTRUCTURA PRINCIPAL === */
+body {
+    background-color: #181818;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+}
+
+#play-container {
+    display: flex;
+    gap: 40px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+#game-content-column {
+    flex: 3; /* Ocupa 3/4 del espacio */
+    display: flex;
+    flex-direction: column;
+    max-width: 1280px; /* Ancho máximo para el contenedor del juego */
+}
+
+#similar-games-column {
+    flex: 1; /* Ocupa 1/4 del espacio */
+    background-color: #1F1F1F;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+/* === COLUMNA IZQUIERDA: CONTENIDO DEL JUEGO === */
+#game-play-area {
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* Proporción 16:9 */
+    position: relative;
+    background-color: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#game-play-area .game-thumbnail-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-play-area .game-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+#play-button {
+    position: absolute;
+    font-size: 2em;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 10px;
+    background-color: #FFC107;
+    color: #181818;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#play-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+}
+
+
+#game-play-area iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#game-title {
+    margin: 20px 0 10px 0;
+    font-size: 2.5em;
+    font-weight: 600;
+}
+
+#game-actions-bar, #social-links {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.icon-button {
+    background-color: #333;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.icon-button:hover {
+    background-color: #FFC107;
+    transform: scale(1.1);
+}
+
+.icon-button img, .icon-button svg {
+    width: 24px;
+    height: 24px;
+    stroke: #ffffff;
+}
+
+#game-description {
+    line-height: 1.6;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+/* === BURBUJA DE DETALLES === */
+#details-bubble {
+    background-color: rgba(31, 31, 31, 0.8);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px);
+}
+
+#details-bubble p {
+    margin: 0 0 10px 0;
+}
+#details-bubble strong {
+    color: #FFC107;
+    margin-right: 8px;
+}
+
+
+/* === COLUMNA DERECHA: JUEGOS SIMILARES === */
+#similar-games-column h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #FFC107;
+    padding-bottom: 10px;
+}
+
+#similar-games-catalog {
+    display: flex;
+    flex-direction: column; /* Layout vertical */
+    gap: 15px;
+    overflow-y: auto; /* Scroll vertical */
+    max-height: 80vh; /* Altura máxima para evitar que sea demasiado largo */
+    padding-right: 10px; /* Espacio para la barra de scroll */
+}
+
+#similar-games-catalog .game-card {
+    width: 100%; /* Ancho completo de la columna */
+    flex-shrink: 0;
+}
+
+
+/* === MODAL DE DETALLES DEL JUEGO === */
+#details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#details-modal.modal-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-content {
+    background-color: rgba(31, 31, 31, 0.8);
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 90%;
+    max-width: 500px; /* Reducido el ancho máximo */
+    position: relative;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+#close-modal-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.5em;
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#modal-details-content h3, #modal-details-content h4 {
+    color: #FFC107;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+#modal-details-content p {
+    margin: 0 0 10px 0;
+    line-height: 1.7;
+}
+
+#modal-details-content strong {
+    color: #fff;
+    margin-right: 8px;
+}
+
+#modal-details-content span, #modal-controls {
+    color: #ccc;
+}

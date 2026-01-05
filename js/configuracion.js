@@ -34,4 +34,29 @@ document.addEventListener('DOMContentLoaded', () => {
             updateGamepadStatus();
         }
     });
+
+    // --- Developer Status Logic ---
+    const developerButton = document.getElementById('developer-button');
+    const developerConfirmation = document.getElementById('developer-confirmation');
+
+    function updateDeveloperButtonVisibility() {
+        if (localStorage.getItem('isDeveloper') === 'true') {
+            developerButton.classList.add('hidden');
+            developerConfirmation.classList.remove('hidden');
+        } else {
+            developerButton.classList.remove('hidden');
+            developerConfirmation.classList.add('hidden');
+        }
+    }
+
+    if (developerButton && developerConfirmation) {
+        developerButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            localStorage.setItem('isDeveloper', 'true');
+            updateDeveloperButtonVisibility();
+        });
+
+        // Initial check
+        updateDeveloperButtonVisibility();
+    }
 });

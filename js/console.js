@@ -1,5 +1,30 @@
 // --- GAMEPAD IDENTIFICATION WIZARD (GLOBAL SCOPE FOR TESTING) ---
 let wizardState = {};
+let isWizardActive = false;
+let wizardSelectionIndex = 0;
+
+function handleWizardGamepadInput(button) {
+    const activeStep = document.querySelector('.wizard-step.active');
+    if (!activeStep) return;
+
+    const options = activeStep.querySelectorAll('.wizard-options button, .controller-type-selection button, #save-wizard-config');
+    if (options.length === 0) return;
+
+    // Remove selection from the old button
+    options[wizardSelectionIndex]?.classList.remove('selected');
+
+    if (button === 'right') {
+        wizardSelectionIndex = (wizardSelectionIndex + 1) % options.length;
+    } else if (button === 'left') {
+        wizardSelectionIndex = (wizardSelectionIndex - 1 + options.length) % options.length;
+    } else if (button === 'accept') {
+        options[wizardSelectionIndex]?.click();
+        return; // Don't re-apply selection after click
+    }
+
+    // Add selection to the new button
+    options[wizardSelectionIndex]?.classList.add('selected');
+}
 
 function initGamepadWizard() {
     const modal = document.getElementById('gamepad-wizard-modal');
@@ -7,6 +32,7 @@ function initGamepadWizard() {
 
     // Reset state
     wizardState = {};
+    isWizardActive = true;
 
     // Show the modal
     modal.classList.remove('hidden');
@@ -32,7 +58,16 @@ function showWizardStep(stepId) {
     modal.querySelectorAll('.wizard-step').forEach(step => {
         step.classList.remove('active');
     });
-    document.getElementById(stepId).classList.add('active');
+    const nextStep = document.getElementById(stepId);
+    nextStep.classList.add('active');
+
+    // Reset selection for the new step and apply visual feedback for gamepad nav
+    wizardSelectionIndex = 0;
+    const options = nextStep.querySelectorAll('.wizard-options button, .controller-type-selection button, #save-wizard-config');
+    if (options.length > 0) {
+        options.forEach(opt => opt.classList.remove('selected'));
+        options[0].classList.add('selected');
+    }
 }
 
 function generateStepContent(stepId, title, question, options) {
@@ -139,8 +174,11 @@ function saveGamepadConfig(family) {
              config.mapping = { accept: 0, back: 1, mode: 16, up: 12, down: 13, left: 14, right: 15, leftStick_X: 0, leftStick_Y: 1 };
     }
 
+    // Save to localStorage and update the live config
     localStorage.setItem('gamepadConfig', JSON.stringify(config));
-    console.log('Gamepad configuration saved:', config);
+    gamepadConfig = config;
+    isWizardActive = false;
+    console.log('Gamepad configuration saved and applied:', config);
 }
 
 
@@ -332,16 +370,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleGamepadInput() {
-        if (!gamepadConnected || !gamepadConfig) return;
+        if (!gamepadConnected) {
+            requestAnimationFrame(handleGamepadInput);
+            return;
+        }
 
         const gamepads = navigator.getGamepads();
-        if (!gamepads[0]) return;
+        if (!gamepads[0]) {
+            requestAnimationFrame(handleGamepadInput);
+            return;
+        }
         const gamepad = gamepads[0];
-        const mapping = gamepadConfig.mapping;
 
+        // Defer input handling if config is not yet loaded (wizard might be active)
+        if (!gamepadConfig && !isWizardActive) {
+            requestAnimationFrame(handleGamepadInput);
+            return;
+        }
+
+        // --- Shared button press logic ---
         const isButtonPressed = (buttonIndex) => {
-            if (buttonIndex === undefined) return false;
-            if (gamepad.buttons[buttonIndex] && gamepad.buttons[buttonIndex].pressed) {
+            if (buttonIndex === undefined || !gamepad.buttons[buttonIndex]) return false;
+            if (gamepad.buttons[buttonIndex].pressed) {
                 if (!buttonPressStates[buttonIndex]) {
                     buttonPressStates[buttonIndex] = true;
                     return true;
@@ -352,17 +402,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         };
 
-        // Navigation using mapped buttons
-        if (isButtonPressed(mapping.right) || (mapping.leftStick_X !== undefined && gamepad.axes[mapping.leftStick_X] > 0.8)) {
-            navigateCarousel('next');
-        } else if (isButtonPressed(mapping.left) || (mapping.leftStick_X !== undefined && gamepad.axes[mapping.leftStick_X] < -0.8)) {
-            navigateCarousel('prev');
-        }
+        // --- ROUTE INPUT ---
+        if (isWizardActive) {
+            // During the wizard, we use standard button indices as we don't have a config yet.
+            // D-Pad Right: 15, D-Pad Left: 14, Accept (A/X): 0
+            if (isButtonPressed(15)) handleWizardGamepadInput('right');
+            else if (isButtonPressed(14)) handleWizardGamepadInput('left');
+            else if (isButtonPressed(0)) handleWizardGamepadInput('accept');
 
-        if (isButtonPressed(mapping.accept)) {
-            const activeItem = document.querySelector('.carousel-item.active a');
-            if (activeItem) {
-                activeItem.click();
+        } else if (gamepadConfig) {
+            const mapping = gamepadConfig.mapping;
+            // Navigation using mapped buttons
+            if (isButtonPressed(mapping.right) || (mapping.leftStick_X !== undefined && gamepad.axes[mapping.leftStick_X] > 0.8)) {
+                navigateCarousel('next');
+            } else if (isButtonPressed(mapping.left) || (mapping.leftStick_X !== undefined && gamepad.axes[mapping.leftStick_X] < -0.8)) {
+                navigateCarousel('prev');
+            }
+
+            if (isButtonPressed(mapping.accept)) {
+                const activeItem = document.querySelector('.carousel-item.active a');
+                if (activeItem) {
+                    activeItem.click();
+                }
             }
         }
 

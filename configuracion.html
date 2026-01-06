@@ -36,99 +36,126 @@
         </div>
     </header>
 
-    <main class="container">
-        <h1>Configuración de la Cuenta</h1>
-
-        <section id="preferencias-section" class="settings-section">
-            <h2>Preferencias</h2>
-            <form>
-                <div class="form-group">
-                    <label for="language">Idioma</label>
-                    <select id="language" name="language">
-                        <option value="es">Español</option>
-                        <option value="en">English</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="age">Edad</label>
-                    <input type="number" id="age" name="age" min="1" max="120">
-                </div>
-                <div class="form-group">
-                    <label for="game-preferences">Describe tus tipos de juegos favoritos</label>
-                    <textarea id="game-preferences" name="game-preferences" rows="4" placeholder="Ej: Me gustan los juegos de pelea, disparos y carreras..."></textarea>
-                </div>
-                <button type="submit" class="button">Guardar Preferencias</button>
-            </form>
-        </section>
-        <section id="dispositivos-section" class="settings-section">
-            <h2>Dispositivos Conectados</h2>
-            <div class="device-status">
-                <span>Mando:</span>
-                <span id="gamepad-config-status">No configurado</span>
+    <main class="settings-container">
+        <aside class="settings-nav">
+            <div class="profile-card">
+                <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic">
+                <h2 id="profile-username">NombreUsuario</h2>
+                <p id="profile-email">usuario@email.com</p>
             </div>
-            <button id="reconfigure-gamepad-btn" class="button" style="margin-top: 1rem;">Reconfigurar Mando</button>
-        </section>
+            <nav>
+                <a href="#gestion-section" class="nav-item active">Gestión de Cuenta</a>
+                <a href="#preferencias-section" class="nav-item">Preferencias</a>
+                <a href="#dispositivos-section" class="nav-item">Dispositivos</a>
+                <a href="#comunidad-section" class="nav-item">Comunidad</a>
+                <a href="#premium-section" class="nav-item">Premium</a>
+                <a href="#developer-section" class="nav-item">Desarrollador</a>
+                <a href="#danger-zone-section" class="nav-item">Zona de Peligro</a>
+            </nav>
+        </aside>
 
-        <section id="premium-section" class="settings-section">
-            <h2>Cuenta Premium</h2>
-            <p>Disfruta de beneficios exclusivos y lleva tu experiencia de juego al siguiente nivel.</p>
-            <ul class="premium-benefits">
-                <li>Juega en modo consola sin necesidad de un mando físico.</li>
-                <li>Acceso anticipado y exclusivo a juegos Premium.</li>
-                <li>Distintivo de usuario Premium en tu perfil y chats.</li>
-                <li>Juega a juegos de PC o móvil en la nube (sin guardado de progreso).</li>
-                <li>Experiencia de juego sin anuncios.</li>
-            </ul>
-            <p><strong>Todo por $6 USD/mes</strong></p>
-            <button class="button">¡Pasar a Premium!</button>
-        </section>
+        <div class="settings-content">
+            <section id="gestion-section" class="settings-section active">
+                <h2>Gestión de Cuenta</h2>
+                <form class="form-grid">
+                    <div class="form-group profile-picture-group">
+                        <label>Foto de Perfil</label>
+                        <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic-preview">
+                        <input type="file" id="profile-pic-upload" class="hidden">
+                        <label for="profile-pic-upload" class="button">Subir Nueva Foto</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Nombre de Usuario</label>
+                        <input type="text" id="username" name="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" value="user@example.com" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Nueva Contraseña</label>
+                        <input type="password" id="password" name="password" placeholder="Deja en blanco para no cambiar">
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Fecha de Nacimiento</label>
+                        <input type="date" id="dob" name="dob">
+                    </div>
+                    <button type="submit" class="button">Actualizar Datos</button>
+                </form>
+            </section>
 
-        <section id="comunidad-section" class="settings-section">
-            <h2>Comunidad y Contribuciones</h2>
-            <div class="community-buttons">
-                <a href="favorites.html" class="button">Juegos Favoritos</a>
-                <a href="history.html" class="button">Historial de Jugados</a>
-                <a href="#" id="developer-button" class="button">Conviértete en Desarrollador</a>
-            </div>
-            <div id="developer-confirmation" class="hidden" style="margin-top: 1rem;">
-                <p>¡Ahora eres un desarrollador! Debes subir un juego para confirmar tu estado.</p>
-                <a href="upload.html" class="button">Sube tu Primer Juego</a>
-            </div>
-        </section>
+            <section id="preferencias-section" class="settings-section">
+                <h2>Preferencias</h2>
+                <form>
+                    <div class="form-group">
+                        <label for="language">Idioma</label>
+                        <select id="language" name="language">
+                            <option value="es">Español</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Edad</label>
+                        <input type="number" id="age" name="age" min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="game-preferences">Describe tus tipos de juegos favoritos</label>
+                        <textarea id="game-preferences" name="game-preferences" rows="4" placeholder="Ej: Me gustan los juegos de pelea, disparos y carreras..."></textarea>
+                    </div>
+                    <button type="submit" class="button">Guardar Preferencias</button>
+                </form>
+            </section>
 
-        <section id="gestion-section" class="settings-section">
-            <h2>Gestión de Cuenta</h2>
-            <form class="form-grid">
-                 <div class="form-group profile-picture-group">
-                    <label>Foto de Perfil</label>
-                    <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-pic">
-                    <input type="file" id="profile-pic-upload" class="hidden">
-                    <label for="profile-pic-upload" class="button">Subir Nueva Foto</label>
+            <section id="dispositivos-section" class="settings-section">
+                <h2>Dispositivos Conectados</h2>
+                <div class="device-status">
+                    <span>Mando:</span>
+                    <span id="gamepad-config-status">No configurado</span>
                 </div>
-                <div class="form-group">
-                    <label for="username">Nombre de Usuario</label>
-                    <input type="text" id="username" name="username">
+                <button id="reconfigure-gamepad-btn" class="button">Reconfigurar Mando</button>
+            </section>
+
+            <section id="comunidad-section" class="settings-section">
+                <h2>Comunidad y Contribuciones</h2>
+                <div class="community-buttons">
+                    <a href="favorites.html" class="button">Juegos Favoritos</a>
+                    <a href="history.html" class="button">Historial de Jugados</a>
                 </div>
-                <div class="form-group">
-                    <label for="email">Correo Electrónico</label>
-                    <input type="email" id="email" name="email" value="user@example.com" disabled>
+            </section>
+
+            <section id="premium-section" class="settings-section">
+                <h2>Cuenta Premium</h2>
+                <p>Disfruta de beneficios exclusivos y lleva tu experiencia de juego al siguiente nivel.</p>
+                <ul class="premium-benefits">
+                    <li>Juega en modo consola sin necesidad de un mando físico.</li>
+                    <li>Acceso anticipado y exclusivo a juegos Premium.</li>
+                    <li>Distintivo de usuario Premium en tu perfil y chats.</li>
+                    <li>Juega a juegos de PC o móvil en la nube (sin guardado de progreso).</li>
+                    <li>Experiencia de juego sin anuncios.</li>
+                </ul>
+                <p><strong>Todo por $6 USD/mes</strong></p>
+                <button class="button">¡Pasar a Premium!</button>
+            </section>
+
+            <section id="developer-section" class="settings-section">
+                <h2>Cuenta de Desarrollador</h2>
+                <p>Convierte tu cuenta para empezar a subir tus propios juegos a la plataforma.</p>
+                <div id="developer-cta">
+                    <button id="become-developer-btn" class="button">Conviértete en Desarrollador</button>
                 </div>
-                <div class="form-group">
-                    <label for="password">Nueva Contraseña</label>
-                    <input type="password" id="password" name="password">
+                <div id="developer-info" class="hidden">
+                    <p>¡Felicidades! Ya eres un desarrollador. Ahora puedes subir tus juegos.</p>
+                    <a href="upload.html" class="button">Subir un Juego</a>
+                    <a href="dashboard.html" class="button">Ir al Dashboard</a>
                 </div>
-                <div class="form-group">
-                    <label for="dob">Fecha de Nacimiento</label>
-                    <input type="date" id="dob" name="dob">
-                </div>
-                <button type="submit" class="button">Actualizar Datos</button>
-            </form>
-            <div style="margin-top: 2rem; border-top: 1px solid #282828; padding-top: 2rem;">
-                <p><strong>Zona de Peligro</strong></p>
+            </section>
+
+            <section id="danger-zone-section" class="settings-section">
+                <h2>Zona de Peligro</h2>
                 <p>Estas acciones son irreversibles. Por favor, esté seguro.</p>
-                <button class="button danger">Borrar Cuenta</button>
-            </div>
-        </section>
+                <button id="delete-account-btn" class="button danger">Borrar Cuenta</button>
+            </section>
+        </div>
     </main>
 
     <footer>

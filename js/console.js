@@ -1,196 +1,4 @@
-// --- GAMEPAD IDENTIFICATION WIZARD (GLOBAL SCOPE FOR TESTING) ---
-let wizardState = {};
-let isWizardActive = false;
-let wizardSelectionIndex = 0;
-
-function handleWizardGamepadInput(button) {
-    const activeStep = document.querySelector('.wizard-step.active');
-    if (!activeStep) return;
-
-    const options = activeStep.querySelectorAll('.wizard-options button, .controller-type-selection button, #save-wizard-config');
-    if (options.length === 0) return;
-
-    // Remove selection from the old button
-    options[wizardSelectionIndex]?.classList.remove('selected');
-
-    if (button === 'right') {
-        wizardSelectionIndex = (wizardSelectionIndex + 1) % options.length;
-    } else if (button === 'left') {
-        wizardSelectionIndex = (wizardSelectionIndex - 1 + options.length) % options.length;
-    } else if (button === 'accept') {
-        options[wizardSelectionIndex]?.click();
-        return; // Don't re-apply selection after click
-    }
-
-    // Add selection to the new button
-    options[wizardSelectionIndex]?.classList.add('selected');
-}
-
-function initGamepadWizard() {
-    const modal = document.getElementById('gamepad-wizard-modal');
-    if (!modal) return;
-
-    // Reset state
-    wizardState = {};
-    isWizardActive = true;
-
-    // Show the modal
-    modal.classList.remove('hidden');
-    showWizardStep('wizard-step-1');
-
-    // Attach listeners for the first step
-    const typeButtons = modal.querySelectorAll('#wizard-step-1 .controller-type-selection button');
-    typeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            wizardState.type = button.dataset.type;
-            if (wizardState.type === 'simple') {
-                // Simple controllers have a straightforward mapping
-                concludeWizard({ family: 'Retro/Simple', reason: 'Selección de mando simple.', layout: 'Simple' });
-            } else {
-                askSymbolOrLetter();
-            }
-        });
-    });
-}
-
-function showWizardStep(stepId) {
-    const modal = document.getElementById('gamepad-wizard-modal');
-    modal.querySelectorAll('.wizard-step').forEach(step => {
-        step.classList.remove('active');
-    });
-    const nextStep = document.getElementById(stepId);
-    nextStep.classList.add('active');
-
-    // Reset selection for the new step and apply visual feedback for gamepad nav
-    wizardSelectionIndex = 0;
-    const options = nextStep.querySelectorAll('.wizard-options button, .controller-type-selection button, #save-wizard-config');
-    if (options.length > 0) {
-        options.forEach(opt => opt.classList.remove('selected'));
-        options[0].classList.add('selected');
-    }
-}
-
-function generateStepContent(stepId, title, question, options) {
-    const stepContainer = document.getElementById(stepId);
-    let optionsHTML = options.map(opt =>
-        `<button data-value="${opt.value}">${opt.text}</button>`
-    ).join('');
-
-    stepContainer.innerHTML = `
-        <h2>${title}</h2>
-        <p>${question}</p>
-        <div class="wizard-options">
-            ${optionsHTML}
-        </div>
-    `;
-
-    // Attach listeners to the newly created buttons
-    stepContainer.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-            options.find(o => o.value === button.dataset.value).action();
-        });
-    });
-
-    showWizardStep(stepId);
-}
-
-function askSymbolOrLetter() {
-    wizardState.step = 'symbolOrLetter';
-    generateStepContent('wizard-step-2', 'Identificación de Mando', 'En los botones de acción de la derecha, ¿ves símbolos geométricos o letras?', [
-        { value: 'symbols', text: 'Veo Símbolos (△, ○, ✕, □)', action: () => {
-            concludeWizard({ family: 'PlayStation', reason: 'Botones con símbolos geométricos.', layout: 'PlayStation Standard' });
-        }},
-        { value: 'letters', text: 'Veo Letras (A, B, X, Y)', action: () => {
-            wizardState.buttonType = 'letters';
-            askAButtonPosition();
-        }}
-    ]);
-}
-
-function askAButtonPosition() {
-    wizardState.step = 'aButtonPosition';
-    generateStepContent('wizard-step-2', 'Identificación de Mando', '¿En qué posición se encuentra el botón "A"?', [
-        { value: 'bottom', text: 'La "A" está en la posición de abajo.', action: () => {
-            wizardState.aPosition = 'bottom';
-            askJoystickLayout();
-        }},
-        { value: 'right', text: 'La "A" está en la posición de la derecha.', action: () => {
-             concludeWizard({ family: 'Nintendo', reason: 'Letra "A" en la posición derecha.', layout: 'Nintendo Standard' });
-        }}
-    ]);
-}
-
-function askJoystickLayout() {
-     wizardState.step = 'joystickLayout';
-     generateStepContent('wizard-step-3', 'Identificación de Mando', '¿Cómo están posicionadas las palancas o "joysticks"?', [
-        { value: 'asymmetric', text: 'Asimétricos (izquierdo arriba, derecho abajo)', action: () => {
-            concludeWizard({ family: 'Xbox', reason: 'Letra "A" abajo y joysticks asimétricos.', layout: 'Xbox Standard' });
-        }},
-        { value: 'symmetric', text: 'Simétricos (ambos a la misma altura, abajo)', action: () => {
-             concludeWizard({ family: 'PlayStation', reason: 'Letra "A" abajo (estándar occidental) y joysticks simétricos.', layout: 'PlayStation Standard' });
-        }}
-    ]);
-}
-
-function concludeWizard(result) {
-    const resultContainer = document.getElementById('wizard-result');
-    resultContainer.innerHTML = `
-        <h2>¡Mando Identificado!</h2>
-        <p>Hemos determinado que tu mando es de la siguiente familia:</p>
-        <div class="result-details">
-            <p><strong>Familia:</strong> ${result.family}</p>
-            <p><strong>Razón:</strong> ${result.reason}</p>
-            <p><strong>Configuración:</strong> ${result.layout}</p>
-        </div>
-        <button id="save-wizard-config" class="cta-button">Guardar y Continuar</button>
-    `;
-    showWizardStep('wizard-result');
-
-    document.getElementById('save-wizard-config').addEventListener('click', () => {
-        saveGamepadConfig(result.family);
-        document.getElementById('gamepad-wizard-modal').classList.add('hidden');
-    });
-}
-
-function saveGamepadConfig(family) {
-    let config = {
-        family: family,
-        mapping: {}
-    };
-
-    // Standard button mappings based on identified family
-    switch (family) {
-        case 'Xbox':
-        case 'PlayStation': // Assuming 'A'/'X' for accept is the same index
-            config.mapping = { accept: 0, back: 1, mode: 16, up: 12, down: 13, left: 14, right: 15, leftStick_X: 0, leftStick_Y: 1 };
-            break;
-        case 'Nintendo':
-            config.mapping = { accept: 0, back: 1, mode: 16, up: 12, down: 13, left: 14, right: 15, leftStick_X: 0, leftStick_Y: 1 };
-            break;
-         case 'Retro/Simple':
-            config.mapping = { accept: 0, back: 1, up: 12, down: 13, left: 14, right: 15, leftStick_X: 0, leftStick_Y: 1 }; // No mode button assumed
-            break;
-        default:
-             config.mapping = { accept: 0, back: 1, mode: 16, up: 12, down: 13, left: 14, right: 15, leftStick_X: 0, leftStick_Y: 1 };
-    }
-
-    // Save to localStorage and update the live config
-    localStorage.setItem('gamepadConfig', JSON.stringify(config));
-    gamepadConfig = config;
-    isWizardActive = false;
-    console.log('Gamepad configuration saved and applied:', config);
-}
-
-
 document.addEventListener('DOMContentLoaded', () => {
-    // --- STATE ---
-    let allConsoleGames = [];
-    let filteredConsoleGames = [];
-    let currentGameIndex = 0;
-    let currentCategory = 'Todo';
-    let gamepadConnected = false;
-    let buttonPressStates = {};
-
     // --- DOM ELEMENTS ---
     const categoryFiltersContainer = document.getElementById('category-filters');
     const gameCarousel = document.getElementById('game-carousel');
@@ -201,8 +9,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailsTitle = document.getElementById('details-title');
     const detailsToggleButton = document.getElementById('details-toggle-btn');
 
-    // --- INITIALIZATION ---
+    // --- MAIN APP LOGIC ---
+    let allConsoleGames = [];
+    let filteredConsoleGames = [];
+    let currentGameIndex = 0;
+    let currentCategory = 'Todo';
+    let buttonPressStates = {};
+    let gamepadConfig = null; // We still need this to store the config once read.
+
     function init() {
+        // Attempt to load gamepad config from localStorage
+        const savedConfig = localStorage.getItem('gamepadConfig');
+        if (savedConfig) {
+            gamepadConfig = JSON.parse(savedConfig);
+        } else {
+            // Fallback to a default configuration if none is saved
+            console.warn("No gamepad configuration found. Falling back to default.");
+            gamepadConfig = {
+                family: "Default Fallback",
+                mapping: { accept: 0, back: 1, mode: 16, up: 12, down: 13, left: 14, right: 15, leftStick_X: 0, leftStick_Y: 1, rightStick_X: 2, rightStick_Y: 3 }
+            };
+        }
+
+        // Start the main application logic
+        initMainApp();
+
+        // Listen for gamepad connections to start polling for input.
+        window.addEventListener('gamepadconnected', (e) => {
+            console.log('Gamepad connected:', e.gamepad.id);
+            // Start polling for input
+            requestAnimationFrame(pollGamepad);
+        });
+
+        window.addEventListener('gamepaddisconnected', () => {
+            console.log('Gamepad disconnected');
+            // We can stop polling if we want, but it's harmless to keep it running
+        });
+    }
+
+    function initMainApp() {
         allConsoleGames = Object.entries(allGames)
             .filter(([id, game]) => game.platforms.includes('console'))
             .map(([id, game]) => ({ ...game, id }));
@@ -210,10 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
         populateCategoryFilters();
         applyCategoryFilter();
         setupEventListeners();
-        setupGamepadListeners();
+
+        // If a gamepad is already connected on page load, start polling.
+        if (navigator.getGamepads().some(g => g)) {
+            requestAnimationFrame(pollGamepad);
+        }
     }
 
-    // --- DATA FILTERING & RENDERING ---
     function populateCategoryFilters() {
         const categories = ['Todo', 'Favoritos', ...new Set(allConsoleGames.map(game => game.category).filter(Boolean))];
         categoryFiltersContainer.innerHTML = categories.map(cat => `<button class="category-filter ${cat === currentCategory ? 'active' : ''}" data-category="${cat}">${cat}</button>`).join('');
@@ -221,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyCategoryFilter() {
         const favoriteGames = JSON.parse(localStorage.getItem('favoriteGames')) || [];
-
         if (currentCategory === 'Todo') {
             filteredConsoleGames = [...allConsoleGames];
         } else if (currentCategory === 'Favoritos') {
@@ -229,33 +76,26 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             filteredConsoleGames = allConsoleGames.filter(game => game.category === currentCategory);
         }
-
         currentGameIndex = 0;
         renderCarousel();
         updateDetails(filteredConsoleGames[currentGameIndex]);
-
-        // Update active class on buttons
         const buttons = categoryFiltersContainer.querySelectorAll('.category-filter');
-        buttons.forEach(button => {
-            button.classList.toggle('active', button.dataset.category === currentCategory);
-        });
+        buttons.forEach(button => button.classList.toggle('active', button.dataset.category === currentCategory));
     }
 
     function renderCarousel() {
         if (filteredConsoleGames.length === 0) {
-            gameCarousel.innerHTML = `<p class="empty-message">No se encontraron juegos en la categoría "${currentCategory}".</p>`;
+            gameCarousel.innerHTML = `<p class="empty-message">No se encontraron juegos.</p>`;
             updateDetails(null);
             return;
         }
-
-        gameCarousel.innerHTML = filteredConsoleGames.map((game, index) => `
+        gameCarousel.innerHTML = filteredConsoleGames.map((game) => `
             <div class="carousel-item" data-id="${game.id}">
                 <a href="consoleplay.html?game=${encodeURIComponent(game.id)}">
-                    <img src="${game.thumbnail}" alt="${game.title || game.id}">
+                    <img src="${game.thumbnail}" alt="${game.id}">
                 </a>
             </div>
         `).join('');
-
         updateCarouselVisuals();
     }
 
@@ -264,27 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
             detailsBubble.style.opacity = '0';
             return;
         }
-
         detailsBubble.classList.remove('expanded');
         detailsToggleButton.textContent = 'Detalles';
         detailsBubble.style.opacity = '1';
-
-        detailsTitle.textContent = game.id || 'Título no disponible';
-
-        const fullDescription = game.description || 'Descripción no disponible.';
-        const shortDescription = fullDescription.length > 120 ? fullDescription.substring(0, 120) + '...' : fullDescription;
-
-        shortDescriptionContainer.textContent = shortDescription;
-        descriptionContainer.innerHTML = `
-            <p>${fullDescription}</p>
-            <div class="metadata">
-                <span><strong>Desarrollador:</strong> ${game.developer || 'No disponible'}</span>
-                <span><strong>Motor:</strong> ${game.engine || 'No disponible'}</span>
-                <span><strong>Categoría:</strong> ${game.category || 'No disponible'}</span>
-                <span><strong>Lanzamiento:</strong> ${game.releaseDate || 'No disponible'}</span>
-            </div>
-        `;
-
+        detailsTitle.textContent = game.id;
+        const fullDesc = game.description || 'No disponible.';
+        shortDescriptionContainer.textContent = fullDesc.substring(0, 120) + (fullDesc.length > 120 ? '...' : '');
+        descriptionContainer.innerHTML = `<p>${fullDesc}</p>`;
         controlsContainer.innerHTML = `<h4>Controles</h4><p>${game.controls || 'No especificados.'}</p>`;
     }
 
@@ -293,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         items.forEach((item, index) => {
             const offset = index - currentGameIndex;
             item.style.setProperty('--offset', offset);
-
             item.classList.remove('active', 'left', 'right', 'hide-left', 'hide-right');
             if (offset === 0) item.classList.add('active');
             else if (offset === -1) item.classList.add('left');
@@ -303,15 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- EVENT LISTENERS & NAVIGATION ---
     function setupEventListeners() {
-        categoryFiltersContainer.addEventListener('click', (event) => {
-            if (event.target.matches('.category-filter')) {
-                currentCategory = event.target.dataset.category;
+        categoryFiltersContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.category-filter')) {
+                currentCategory = e.target.dataset.category;
                 applyCategoryFilter();
             }
         });
-
         detailsToggleButton.addEventListener('click', () => {
             const isExpanded = detailsBubble.classList.toggle('expanded');
             detailsToggleButton.textContent = isExpanded ? 'Ocultar' : 'Detalles';
@@ -320,114 +143,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function navigateCarousel(direction) {
         if (filteredConsoleGames.length === 0) return;
-
-        let newIndex;
-
-        if (direction === 'next') {
-            const lastIndex = filteredConsoleGames.length - 1;
-            const isAtEnd = currentGameIndex === lastIndex;
-            newIndex = isAtEnd ? 0 : currentGameIndex + 1;
-        } else if (direction === 'prev') {
-            const isAtStart = currentGameIndex === 0;
-            newIndex = isAtStart ? filteredConsoleGames.length - 1 : currentGameIndex - 1;
-        } else {
-            return;
-        }
-
+        const newIndex = (currentGameIndex + (direction === 'next' ? 1 : -1) + filteredConsoleGames.length) % filteredConsoleGames.length;
         currentGameIndex = newIndex;
         updateCarouselVisuals();
         updateDetails(filteredConsoleGames[currentGameIndex]);
     }
 
-    // --- GAMEPAD SUPPORT ---
-    let gamepadConfig = null;
+    // --- GAMEPAD HANDLING ---
+    function isButtonPressed(button) {
+        if (!button) return false;
+        const buttonIndex = button.index; // This needs to be derived correctly. Let's assume the button object has an index.
 
-    function setupGamepadListeners() {
-        window.addEventListener('gamepadconnected', (e) => {
-            gamepadConnected = true;
-            console.log('Gamepad connected:', e.gamepad.id);
+        // This is tricky without knowing the button object structure. Let's find index by reference.
+        const gamepad = navigator.getGamepads()[0];
+        if (!gamepad) return false;
 
-            // Check for existing config, otherwise start wizard
-            const savedConfig = localStorage.getItem('gamepadConfig');
-            if (!savedConfig) {
-                initGamepadWizard();
-            } else {
-                gamepadConfig = JSON.parse(savedConfig);
-                console.log('Loaded gamepad config:', gamepadConfig);
-                requestAnimationFrame(handleGamepadInput);
+        const realIndex = Array.from(gamepad.buttons).indexOf(button);
+        if (realIndex === -1) return false; // Button not found
+
+        if (button.pressed) {
+            if (!buttonPressStates[realIndex]) {
+                buttonPressStates[realIndex] = true;
+                return true;
             }
-        });
-
-        window.addEventListener('gamepaddisconnected', () => {
-            gamepadConnected = false;
-            console.log('Gamepad disconnected');
-        });
-
-        // Check if a gamepad is already connected on page load
-        if (navigator.getGamepads().some(g => g)) {
-             window.dispatchEvent(new Event('gamepadconnected', {bubbles:true, detail: {gamepad: navigator.getGamepads().find(g=>g)} }));
+        } else {
+            buttonPressStates[realIndex] = false;
         }
+        return false;
     }
 
-    function handleGamepadInput() {
-        if (!gamepadConnected) {
-            requestAnimationFrame(handleGamepadInput);
+    function pollGamepad() {
+        const gamepad = navigator.getGamepads()[0];
+        if (!gamepad) {
+            requestAnimationFrame(pollGamepad);
             return;
-        }
-
-        const gamepads = navigator.getGamepads();
-        if (!gamepads[0]) {
-            requestAnimationFrame(handleGamepadInput);
-            return;
-        }
-        const gamepad = gamepads[0];
-
-        // Defer input handling if config is not yet loaded (wizard might be active)
-        if (!gamepadConfig && !isWizardActive) {
-            requestAnimationFrame(handleGamepadInput);
-            return;
-        }
-
-        // --- Shared button press logic ---
-        const isButtonPressed = (buttonIndex) => {
-            if (buttonIndex === undefined || !gamepad.buttons[buttonIndex]) return false;
-            if (gamepad.buttons[buttonIndex].pressed) {
-                if (!buttonPressStates[buttonIndex]) {
-                    buttonPressStates[buttonIndex] = true;
-                    return true;
-                }
-            } else {
-                buttonPressStates[buttonIndex] = false;
-            }
-            return false;
         };
 
-        // --- ROUTE INPUT ---
-        if (isWizardActive) {
-            // During the wizard, we use standard button indices as we don't have a config yet.
-            // D-Pad Right: 15, D-Pad Left: 14, Accept (A/X): 0
-            if (isButtonPressed(15)) handleWizardGamepadInput('right');
-            else if (isButtonPressed(14)) handleWizardGamepadInput('left');
-            else if (isButtonPressed(0)) handleWizardGamepadInput('accept');
+        handleMainAppGamepadInput(gamepad);
 
-        } else if (gamepadConfig) {
-            const mapping = gamepadConfig.mapping;
-            // Navigation using mapped buttons
-            if (isButtonPressed(mapping.right) || (mapping.leftStick_X !== undefined && gamepad.axes[mapping.leftStick_X] > 0.8)) {
+        requestAnimationFrame(pollGamepad);
+    }
+
+    function handleMainAppGamepadInput(gamepad) {
+        if (!gamepadConfig || !gamepad) return;
+
+        const mapping = gamepadConfig.mapping;
+
+        // Carousel Navigation
+        if (isButtonPressed(gamepad.buttons[mapping.right]) || (gamepad.axes[mapping.leftStick_X] > 0.8)) {
+            if (!buttonPressStates['axis_right']) {
                 navigateCarousel('next');
-            } else if (isButtonPressed(mapping.left) || (mapping.leftStick_X !== undefined && gamepad.axes[mapping.leftStick_X] < -0.8)) {
-                navigateCarousel('prev');
+                buttonPressStates['axis_right'] = true;
             }
-
-            if (isButtonPressed(mapping.accept)) {
-                const activeItem = document.querySelector('.carousel-item.active a');
-                if (activeItem) {
-                    activeItem.click();
-                }
-            }
+        } else {
+             buttonPressStates['axis_right'] = false;
         }
 
-        requestAnimationFrame(handleGamepadInput);
+        if (isButtonPressed(gamepad.buttons[mapping.left]) || (gamepad.axes[mapping.leftStick_X] < -0.8)) {
+             if (!buttonPressStates['axis_left']) {
+                navigateCarousel('prev');
+                buttonPressStates['axis_left'] = true;
+            }
+        } else {
+             buttonPressStates['axis_left'] = false;
+        }
+
+        // Action button
+        if (isButtonPressed(gamepad.buttons[mapping.accept])) {
+            document.querySelector('.carousel-item.active a')?.click();
+        }
     }
 
     // --- START THE APP ---

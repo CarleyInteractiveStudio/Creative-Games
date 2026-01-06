@@ -11,13 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isLoggedIn) {
             profileDropdown.innerHTML = `
-                <a href="configuracion.html" class="dropdown-item">
+                <a href="configuracion.html#gestion-section" class="dropdown-item" aria-label="Mi Perfil">
                     <img src="images/icons/user.svg" alt="Profile Icon"> Mi Perfil
                 </a>
-                <a href="configuracion.html" class="dropdown-item">
+                <a href="configuracion.html#preferencias-section" class="dropdown-item" aria-label="Configuración">
                     <img src="images/icons/settings.svg" alt="Settings Icon"> Configuración
                 </a>
-                <a href="#" id="logout-button" class="dropdown-item">
+                <a href="#" id="logout-button" class="dropdown-item" aria-label="Cerrar Sesión">
                     <img src="images/icons/logout.svg" alt="Logout Icon"> Cerrar Sesión
                 </a>
             `;
@@ -98,19 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let buttonPressState = false; // To prevent multiple triggers
 
     function pollForModeButton() {
+        let modeButtonIndex = 16; // Start with a safe default
         const configStr = localStorage.getItem('gamepadConfig');
-        if (!configStr) { // Stop if config is removed
-            if (gamepadPollInterval) {
-                cancelAnimationFrame(gamepadPollInterval);
-                gamepadPollInterval = null;
+
+        if (configStr) {
+            try {
+                const config = JSON.parse(configStr);
+                // Correctly access the nested mapping property
+                if (config && config.mapping && typeof config.mapping.mode !== 'undefined') {
+                    modeButtonIndex = config.mapping.mode;
+                }
+            } catch (e) {
+                console.error("Error parsing gamepadConfig, using default mode button.", e);
             }
-            return;
-        };
-
-        const config = JSON.parse(configStr);
-        const modeButtonIndex = config.buttons?.mode;
-
-        if (typeof modeButtonIndex === 'undefined') return;
+        }
 
         const gamepads = navigator.getGamepads();
         if (gamepads && gamepads[0]) {
@@ -137,15 +138,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('gamepadconnected', (e) => {
-        // Only show notification and start polling if a config exists
-        if (localStorage.getItem('gamepadConfig')) {
-            if (gamepadNotification) {
-                gamepadNotification.classList.add('visible');
-            }
-            // Start polling if not already doing so
-            if (!gamepadPollInterval) {
-                gamepadPollInterval = requestAnimationFrame(pollForModeButton);
-            }
+        if (gamepadNotification) {
+            gamepadNotification.innerHTML = `Mando detectado. Presiona <strong>MODE</strong> para entrar al Modo Consola.`;
+            gamepadNotification.classList.add('visible');
+        }
+
+        // We need a default 'mode' button to listen for before config exists.
+        // The HTML5 Gamepad API standard suggests button 16 for 'Home/Mode'.
+        // We will listen to this button by default to get to the wizard.
+        if (!gamepadPollInterval) {
+            gamepadPollInterval = requestAnimationFrame(pollForModeButton);
         }
     });
 
@@ -252,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initial population of game catalogs
-    populateGameCatalogs();
+    // Initial population of game catalogs, ONLY if the main catalog element exists
+    if (document.getElementById('all-games-catalog')) {
+        populateGameCatalogs();
+    }
 });

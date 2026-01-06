@@ -197,4 +197,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial population of game catalogs
     populateGameCatalogs();
+
+    // --- Search Functionality ---
+    const searchInput = document.querySelector('.search-bar input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.game-card').forEach(card => {
+                const title = card.querySelector('.game-card-title').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+    }
 });

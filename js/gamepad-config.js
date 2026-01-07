@@ -20,6 +20,8 @@
     let modalFocusableElements = [];
     let modalFocusedIndex = 0;
     let modalAnimationFrameId;
+    let lastStickMoveTime = 0; // For debouncing analog stick
+    const STICK_COOLDOWN = 200; // ms
 
 
     // --- DOM ELEMENTS ---
@@ -219,11 +221,26 @@
         if (isButtonPressed(12)) { // D-Pad Up
             modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
             indexChanged = true;
-        }
-        if (isButtonPressed(13)) { // D-Pad Down
+        } else if (isButtonPressed(13)) { // D-Pad Down
             modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
             indexChanged = true;
         }
+
+        // Analog stick navigation
+        const now = Date.now();
+        if (now - lastStickMoveTime > STICK_COOLDOWN) {
+            const verticalAxis = gamepad.axes[1]; // Typically the left stick vertical axis
+            if (verticalAxis < -0.5) { // Stick pushed up
+                modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
+                indexChanged = true;
+                lastStickMoveTime = now;
+            } else if (verticalAxis > 0.5) { // Stick pushed down
+                modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
+                indexChanged = true;
+                lastStickMoveTime = now;
+            }
+        }
+
         if (indexChanged) updateModalFocus();
 
         if (isButtonPressed(0)) { // A Button (Confirm)

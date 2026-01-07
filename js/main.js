@@ -145,12 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const favorites = getFavorites();
         const allGamesGrid = document.querySelector('#all-games-catalog .game-grid');
         const catalogs = {
-            'Racing': document.querySelector('#racing-catalog .game-grid'),
-            'Shooter': document.querySelector('#shooter-catalog .game-grid'),
-            'Adventure': document.querySelector('#adventure-catalog .game-grid'),
-            'Puzzle': document.querySelector('#puzzle-catalog .game-grid'),
-            'Sports': document.querySelector('#sports-catalog .game-grid'),
+            'Racing': { element: document.querySelector('#racing-catalog .game-grid'), html: [] },
+            'Shooter': { element: document.querySelector('#shooter-catalog .game-grid'), html: [] },
+            'Adventure': { element: document.querySelector('#adventure-catalog .game-grid'), html: [] },
+            'Puzzle': { element: document.querySelector('#puzzle-catalog .game-grid'), html: [] },
+            'Sports': { element: document.querySelector('#sports-catalog .game-grid'), html: [] },
         };
+        const allGamesHTML = [];
 
         if (!allGamesGrid) return; // Exit if we are not on the main page
 
@@ -177,14 +178,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // Add to "All Games" catalog
-            allGamesGrid.innerHTML += gameCardHTML;
+            // Add to "All Games" catalog buffer
+            allGamesHTML.push(gameCardHTML);
 
-            // Add to specific category catalog
+            // Add to specific category catalog buffer
             if (gameData.category && catalogs[gameData.category]) {
-                catalogs[gameData.category].innerHTML += gameCardHTML;
+                catalogs[gameData.category].html.push(gameCardHTML);
             }
         }
+
+        // Populate "All Games" catalog
+        allGamesGrid.innerHTML = allGamesHTML.join('');
+
+        // Populate specific category catalogs
+        for (const category in catalogs) {
+            if (catalogs[category].element) {
+                catalogs[category].element.innerHTML = catalogs[category].html.join('');
+            }
+        }
+
 
         // After populating, set up the event listeners
         setupFavoriteButtonListeners();

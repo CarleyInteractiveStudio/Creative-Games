@@ -126,8 +126,19 @@ function initGamepadNavigation() {
         const gamepads = navigator.getGamepads();
         if (!gamepads[0]) return;
         const gamepad = gamepads[0];
+        const gamepadMap = window.getCurrentGamepadConfig();
+
+        // If we don't have a map yet, we can't do anything.
+        if (!gamepadMap) {
+            animationFrameId = requestAnimationFrame(handleGamepadInput);
+            return;
+        }
 
         const isButtonPressed = (buttonIndex) => {
+            // Check if the button index is valid for this controller
+            if (buttonIndex === undefined || !gamepad.buttons[buttonIndex]) {
+                return false;
+            }
             if (gamepad.buttons[buttonIndex].pressed) {
                 if (!buttonPressStates[buttonIndex]) {
                     buttonPressStates[buttonIndex] = true;
@@ -150,26 +161,26 @@ function initGamepadNavigation() {
 
         // --- Navigation ---
         if (!bubbleVisible) {
-            if (isButtonPressed(12)) { // D-pad Up
+            if (isButtonPressed(gamepadMap.UP)) {
                 focusedIndex = (focusedIndex - (menuOpen ? 1 : 4) + focusableElements.length) % focusableElements.length;
                 updateFocus();
             }
-            if (isButtonPressed(13)) { // D-pad Down
+            if (isButtonPressed(gamepadMap.DOWN)) {
                 focusedIndex = (focusedIndex + (menuOpen ? 1 : 4)) % focusableElements.length;
                 updateFocus();
             }
-            if (isButtonPressed(14)) { // D-pad Left
+            if (isButtonPressed(gamepadMap.LEFT)) {
                 focusedIndex = (focusedIndex - 1 + focusableElements.length) % focusableElements.length;
                 updateFocus();
             }
-            if (isButtonPressed(15)) { // D-pad Right
+            if (isButtonPressed(gamepadMap.RIGHT)) {
                 focusedIndex = (focusedIndex + 1) % focusableElements.length;
                 updateFocus();
             }
         }
 
         // --- Actions ---
-        if (isButtonPressed(0)) { // 'A' button
+        if (isButtonPressed(gamepadMap.CONFIRM)) {
             if (isConsoleMode && bubbleVisible) {
                 const gameId = focusableElements[focusedIndex].dataset.gameId;
                 updateGameState(gameId, 'toggleFavorite');
@@ -180,7 +191,7 @@ function initGamepadNavigation() {
             }
         }
 
-        if (isButtonPressed(1)) { // 'B' button
+        if (isButtonPressed(gamepadMap.CANCEL)) {
             if (isConsoleMode && bubbleVisible) {
                 hideDetailsBubble();
             } else {
@@ -188,7 +199,7 @@ function initGamepadNavigation() {
             }
         }
 
-        if (isButtonPressed(8)) { // 'Select' button
+        if (isButtonPressed(gamepadMap.MENU)) {
             if (hamburgerMenuButton && profileMenuButton) {
                 hamburgerMenuButton.click();
                 profileMenuButton.click();
@@ -200,27 +211,27 @@ function initGamepadNavigation() {
 
         if (isConsoleMode && bubbleVisible) {
             const gameId = focusableElements[focusedIndex].dataset.gameId;
-            if (isButtonPressed(2)) { // 'X' button for like
+            if (isButtonPressed(gamepadMap.LIKE)) {
                 updateGameState(gameId, 'toggleLike');
             }
-            if (isButtonPressed(3)) { // 'Y' button for dislike
+            if (isButtonPressed(gamepadMap.DISLIKE)) {
                 updateGameState(gameId, 'toggleDislike');
             }
-        } else if (isButtonPressed(3)) { // 'Y' button to favorite on main page
+        } else if (isButtonPressed(gamepadMap.DISLIKE)) { // Re-using DISLIKE (e.g., 'Y' button) to favorite on main page
             const favoriteButton = focusableElements[focusedIndex].querySelector('.interaction-buttons button');
             if (favoriteButton) {
                 favoriteButton.click();
             }
         }
 
-        if (!bubbleVisible && (isButtonPressed(6) || isButtonPressed(7))) {
+        if (!bubbleVisible && (isButtonPressed(gamepadMap.PREV_CATALOG) || isButtonPressed(gamepadMap.NEXT_CATALOG))) {
             const catalogs = Array.from(document.querySelectorAll('.game-catalog'));
             const currentCatalog = focusableElements[focusedIndex].closest('.game-catalog');
             let currentCatalogIndex = catalogs.indexOf(currentCatalog);
 
-            if (isButtonPressed(7)) { // R1
+            if (isButtonPressed(gamepadMap.NEXT_CATALOG)) {
                 currentCatalogIndex = (currentCatalogIndex + 1) % catalogs.length;
-            } else { // L1
+            } else { // PREV_CATALOG
                 currentCatalogIndex = (currentCatalogIndex - 1 + catalogs.length) % catalogs.length;
             }
 
@@ -237,10 +248,16 @@ function initGamepadNavigation() {
     }
 
     // --- EVENT LISTENERS ---
-    window.addEventListener('gamepadconnected', (e) => {
-        console.log('Gamepad connected:', e.gamepad.id);
+    function startNavigation(gamepad) {
+        console.log('Gamepad navigation starting for:', gamepad.id);
         gamepadConnected = true;
-        animationFrameId = requestAnimationFrame(handleGamepadInput);
+        if (!animationFrameId) {
+            animationFrameId = requestAnimationFrame(handleGamepadInput);
+        }
+    }
+
+    window.addEventListener('gamepadConfigured', (e) => {
+        startNavigation(e.detail.gamepad);
     });
 
     window.addEventListener('gamepaddisconnected', () => {
@@ -265,11 +282,16 @@ function initGamepadNavigation() {
         if (favoriteBtn) favoriteBtn.addEventListener('click', () => updateGameState(getGameId(), 'toggleFavorite'));
     }
 
-    // Initial check for connected gamepads
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    if (Array.from(gamepads).some(g => g)) {
-        gamepadConnected = true;
-        animationFrameId = requestAnimationFrame(handleGamepadInput);
-        updateFocus(); // Only focus if a gamepad is connected on load
+    // --- INITIALIZATION ---
+    // Proactively check if a gamepad is already configured and ready to go.
+    // This solves a race condition where the 'gamepadConfigured' event might
+    // fire before this script's listener is attached.
+    if (typeof window.getCurrentGamepadConfig === 'function') {
+        const config = window.getCurrentGamepadConfig();
+        const gamepad = navigator.getGamepads ? Array.from(navigator.getGamepads()).find(g => g) : null;
+        if (config && gamepad) {
+            startNavigation(gamepad);
+            updateFocus();
+        }
     }
 }

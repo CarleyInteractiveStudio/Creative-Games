@@ -20,8 +20,10 @@
     let modalFocusableElements = [];
     let modalFocusedIndex = 0;
     let modalAnimationFrameId;
-    let lastStickMoveTime = 0; // For debouncing analog stick
-    const STICK_COOLDOWN = 200; // ms
+    let lastStickMoveTime = 0;
+    const STICK_COOLDOWN = 200;
+    let learnedAxis = null; // To dynamically learn which axis the user moves
+    let learnedButton = null; // To dynamically learn which button the user presses
 
 
     // --- DOM ELEMENTS ---
@@ -30,20 +32,16 @@
     // --- CORE LOGIC ---
     function initialize() {
         document.addEventListener('DOMContentLoaded', () => {
-            // Cache DOM elements
             modal = document.getElementById('gamepad-config-modal');
             modalTitle = document.getElementById('modal-title');
             modalInstructions = document.getElementById('modal-instructions');
             initialOptions = document.getElementById('modal-initial-options');
             mappingInstructions = document.getElementById('modal-mapping-instructions');
             mappingPrompt = document.getElementById('mapping-prompt');
-
             if (initialOptions) initialOptions.addEventListener('click', handleModalOptionClick);
         });
 
         window.addEventListener('gamepadconnected', handleGamepadConnected);
-
-        // Check for already-connected gamepads
         setTimeout(() => {
             const gp = Array.from(navigator.getGamepads()).find(g => g);
             if (gp) handleGamepadConnected({ gamepad: gp });
@@ -91,7 +89,7 @@
     }
 
     function startManualMapping() {
-        cancelAnimationFrame(modalAnimationFrameId); // Stop modal navigation
+        cancelAnimationFrame(modalAnimationFrameId);
         isMapping = true;
         initialOptions.classList.add('hidden');
         mappingInstructions.classList.remove('hidden');
@@ -135,13 +133,6 @@
         }
 
         if (buttonPressedIndex !== -1) {
-             // Allow cancellation during mapping (using a standard button, typically 'B')
-            if (buttonPressedIndex === 1) {
-                console.log("Mapping cancelled by user.");
-                cancelMapping();
-                return;
-            }
-
             const action = MAPPING_ACTIONS[currentMappingActionIndex];
             tempMapping[action] = buttonPressedIndex;
             currentMappingActionIndex++;
@@ -181,12 +172,12 @@
             modal.classList.add('hidden');
             isModalVisible = false;
             isMapping = false;
+            learnedAxis = null; // Reset learned controls
+            learnedButton = null;
             cancelAnimationFrame(modalAnimationFrameId);
-            // Reset modal state for next time
-             initialOptions.classList.remove('hidden');
+            initialOptions.classList.remove('hidden');
             mappingInstructions.classList.add('hidden');
             modalTitle.textContent = 'Mando Desconocido Detectado';
-            modalInstructions.textContent = 'No hemos podido identificar tu mando automáticamente. ¿Es una réplica o copia de alguno de estos mandos?';
         }
     }
 
@@ -205,36 +196,50 @@
             return;
         }
 
-        const isButtonPressed = (index) => {
-            if (gamepad.buttons[index] && gamepad.buttons[index].pressed) {
-                if (!buttonPressStates[index]) {
-                    buttonPressStates[index] = true;
-                    return true;
-                }
-            } else {
-                buttonPressStates[index] = false;
-            }
-            return false;
-        };
-
         let indexChanged = false;
-        if (isButtonPressed(12)) { // D-Pad Up
-            modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
-            indexChanged = true;
-        } else if (isButtonPressed(13)) { // D-Pad Down
-            modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
-            indexChanged = true;
+
+        // --- DYNAMIC CONTROL LEARNING ---
+        if (learnedAxis === null) {
+            // Find the first stick that is moved vertically
+            for (let i = 0; i < gamepad.axes.length; i++) {
+                if (Math.abs(gamepad.axes[i]) > 0.7) {
+                    // Simple check for vertical-like axis
+                     if(i % 2 !== 0) {
+                        learnedAxis = i;
+                        console.log(`Learned navigation axis: ${i}`);
+                        break;
+                     }
+                }
+            }
         }
 
-        // Analog stick navigation
+        if (learnedButton === null) {
+             for (let i = 0; i < gamepad.buttons.length; i++) {
+                 if(gamepad.buttons[i].pressed && !buttonPressStates[i]) {
+                     learnedButton = i;
+                     console.log(`Learned confirm button: ${i}`);
+                     break;
+                 }
+             }
+        }
+
+        // --- NAVIGATION LOGIC ---
         const now = Date.now();
         if (now - lastStickMoveTime > STICK_COOLDOWN) {
-            const verticalAxis = gamepad.axes[1]; // Typically the left stick vertical axis
-            if (verticalAxis < -0.5) { // Stick pushed up
+            let verticalMove = 0;
+            // Use learned axis if available
+            if (learnedAxis !== null && Math.abs(gamepad.axes[learnedAxis]) > 0.7) {
+                verticalMove = gamepad.axes[learnedAxis];
+            }
+            // Fallback to D-pad
+            if (gamepad.buttons[12]?.pressed) verticalMove = -1;
+            if (gamepad.buttons[13]?.pressed) verticalMove = 1;
+
+            if (verticalMove < -0.5) { // Up
                 modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
                 indexChanged = true;
                 lastStickMoveTime = now;
-            } else if (verticalAxis > 0.5) { // Stick pushed down
+            } else if (verticalMove > 0.5) { // Down
                 modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
                 indexChanged = true;
                 lastStickMoveTime = now;
@@ -243,10 +248,17 @@
 
         if (indexChanged) updateModalFocus();
 
-        if (isButtonPressed(0)) { // A Button (Confirm)
-            if (modalFocusableElements[modalFocusedIndex]) {
+        // --- CONFIRMATION LOGIC ---
+        const confirmButtonPressed = learnedButton !== null ? gamepad.buttons[learnedButton]?.pressed : gamepad.buttons[0]?.pressed;
+        if (confirmButtonPressed && !buttonPressStates[learnedButton ?? 0]) {
+             if (modalFocusableElements[modalFocusedIndex]) {
                 modalFocusableElements[modalFocusedIndex].click();
             }
+        }
+
+        // Update all button states for the next frame
+        for(let i=0; i < gamepad.buttons.length; i++) {
+            buttonPressStates[i] = gamepad.buttons[i]?.pressed;
         }
 
         modalAnimationFrameId = requestAnimationFrame(handleModalInput);

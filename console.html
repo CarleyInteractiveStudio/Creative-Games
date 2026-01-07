@@ -1,41 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Game - Console Mode</title>
+    <title>Creative Game - Modo Consola</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/console.css">
 </head>
 <body class="console-mode">
-    <main class="container">
-        <section class="game-catalog">
-            <h2>Favorite Games</h2>
-            <div class="game-grid">
-                <!-- Favorite games will be dynamically loaded here -->
+    <div class="main-content-flex">
+        <header class="console-header">
+            <h1>Modo Consola</h1>
+            <div class="user-profile">
+                <!-- Profile icon will be added later if needed -->
             </div>
-        </section>
-    </main>
+        </header>
 
-    <div id="game-details-bubble" class="details-bubble hidden">
+        <main id="console-container" class="container">
+            <!-- Los carruseles de juegos se cargarán aquí dinámicamente -->
+        </main>
+    </div>
+
+    <div id="game-details-bubble" class="details-bubble">
         <div class="bubble-content">
             <div class="bubble-image">
-                <img src="" alt="Game Thumbnail">
+                <img id="details-image" src="" alt="Portada del Juego">
             </div>
             <div class="bubble-info">
-                <h3>Game Title</h3>
-                <p>Game description...</p>
-                <div class="interaction-buttons">
-                    <button class="icon-button like-btn"><img src="images/icons/like.svg" alt="Like"></button>
-                    <button class="icon-button dislike-btn"><img src="images/icons/dislike.svg" alt="Dislike"></button>
-                    <button class="icon-button favorite-btn"><img src="images/icons/favorite.svg" alt="Favorite"></button>
+                <h3 id="bubble-title">Título del Juego</h3>
+                <p id="bubble-description">Descripción del juego...</p>
+                <div id="bubble-meta" class="meta-info">
+                    <!-- Meta info como desarrollador, fecha, etc. -->
                 </div>
             </div>
         </div>
     </div>
 
     <script src="js/games.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/gamepad-navigation.js"></script>
     <script src="js/console.js"></script>
+    <!-- Removed main.js and gamepad-navigation.js to prevent conflicts -->
 </body>
 </html>

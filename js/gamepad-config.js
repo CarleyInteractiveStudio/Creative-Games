@@ -187,6 +187,19 @@
         });
     }
 
+    // --- ADVANCED DEBOUNCING & MODAL INPUT HANDLING ---
+    const modalButtonStates = {}; // Tracks button states specifically for debouncing in the modal.
+
+    function isButtonPressed(gamepad, buttonIndex) {
+        if (buttonIndex === null || !gamepad || !gamepad.buttons[buttonIndex]) {
+            return false;
+        }
+        const isPressed = gamepad.buttons[buttonIndex].pressed;
+        const wasPressed = modalButtonStates[buttonIndex] || false;
+        modalButtonStates[buttonIndex] = isPressed; // Update state for the next frame
+        return isPressed && !wasPressed; // Return true only on the rising edge (press down)
+    }
+
     function handleModalInput() {
         if (!isModalVisible || isMapping) return;
 
@@ -200,40 +213,33 @@
 
         // --- DYNAMIC CONTROL LEARNING ---
         if (learnedAxis === null) {
-            // Find the first stick that is moved vertically
             for (let i = 0; i < gamepad.axes.length; i++) {
-                if (Math.abs(gamepad.axes[i]) > 0.7) {
-                    // Simple check for vertical-like axis
-                     if(i % 2 !== 0) {
-                        learnedAxis = i;
-                        console.log(`Learned navigation axis: ${i}`);
-                        break;
-                     }
+                if (Math.abs(gamepad.axes[i]) > 0.7 && i % 2 !== 0) {
+                    learnedAxis = i;
+                    break;
                 }
             }
         }
 
         if (learnedButton === null) {
-             for (let i = 0; i < gamepad.buttons.length; i++) {
-                 if(gamepad.buttons[i].pressed && !buttonPressStates[i]) {
-                     learnedButton = i;
-                     console.log(`Learned confirm button: ${i}`);
-                     break;
-                 }
-             }
+            for (let i = 0; i < gamepad.buttons.length; i++) {
+                if (isButtonPressed(gamepad, i)) { // Use debounced check
+                    learnedButton = i;
+                    break;
+                }
+            }
         }
 
         // --- NAVIGATION LOGIC ---
         const now = Date.now();
         if (now - lastStickMoveTime > STICK_COOLDOWN) {
             let verticalMove = 0;
-            // Use learned axis if available
             if (learnedAxis !== null && Math.abs(gamepad.axes[learnedAxis]) > 0.7) {
                 verticalMove = gamepad.axes[learnedAxis];
+            } else if (learnedAxis === null) { // Fallback to D-pad only if no axis is learned
+                if (gamepad.buttons[12]?.pressed) verticalMove = -1;
+                if (gamepad.buttons[13]?.pressed) verticalMove = 1;
             }
-            // Fallback to D-pad
-            if (gamepad.buttons[12]?.pressed) verticalMove = -1;
-            if (gamepad.buttons[13]?.pressed) verticalMove = 1;
 
             if (verticalMove < -0.5) { // Up
                 modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
@@ -249,18 +255,15 @@
         if (indexChanged) updateModalFocus();
 
         // --- CONFIRMATION LOGIC ---
-        const confirmButtonPressed = learnedButton !== null ? gamepad.buttons[learnedButton]?.pressed : gamepad.buttons[0]?.pressed;
-        if (confirmButtonPressed && !buttonPressStates[learnedButton ?? 0]) {
-             if (modalFocusableElements[modalFocusedIndex]) {
+        // Use the debounced function with the learned button. Fallback to 0 if not learned yet.
+        const confirmButtonIndex = learnedButton !== null ? learnedButton : 0;
+        if (isButtonPressed(gamepad, confirmButtonIndex)) {
+            if (modalFocusableElements[modalFocusedIndex]) {
                 modalFocusableElements[modalFocusedIndex].click();
             }
         }
 
-        // Update all button states for the next frame
-        for(let i=0; i < gamepad.buttons.length; i++) {
-            buttonPressStates[i] = gamepad.buttons[i]?.pressed;
-        }
-
+        // The separate state update loop is no longer needed as isButtonPressed handles its own state.
         modalAnimationFrameId = requestAnimationFrame(handleModalInput);
     }
 

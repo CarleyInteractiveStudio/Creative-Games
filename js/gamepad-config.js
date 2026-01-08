@@ -68,15 +68,29 @@
         'start': {
             questionText: 'Observa los botones de acción principales (normalmente a la derecha). ¿Cómo están posicionados?',
             answers: [
-                { text: 'En forma de cruz (+)', next: 'result-nintendo' },
-                { text: 'En forma de diamante (◆)', next: 'sticks' }
+                { text: 'En forma de cruz (A, B, X, Y)', next: 'result-nintendo' },
+                { text: 'En forma de diamante', next: 'buttons-style' }
             ]
         },
-        'sticks': {
-            questionText: 'Ahora, mira las palancas analógicas. ¿Están paralelas (ambas abajo) o está la izquierda más arriba?',
+        'buttons-style': {
+             questionText: '¿Esos botones tienen letras (A, B, X, Y) o formas (Círculo, Cruz, Cuadrado, Triángulo)?',
             answers: [
-                { text: 'Paralelas (simétricas)', next: 'result-playstation' },
-                { text: 'La izquierda más arriba (asimétrica)', next: 'result-xbox' }
+                { text: 'Letras (A, B, X, Y)', next: 'sticks-xbox' },
+                { text: 'Formas (Círculo, Cruz, etc.)', next: 'sticks-playstation' }
+            ]
+        },
+        'sticks-xbox': {
+            questionText: 'Por último, ¿las palancas analógicas están alineadas (asimétricas) o paralelas (simétricas)?',
+            answers: [
+                { text: 'Asimétricas (como un mando de Xbox)', next: 'result-xbox' },
+                { text: 'Simétricas (como un mando de PlayStation)', next: 'result-playstation' }
+            ]
+        },
+        'sticks-playstation': {
+            questionText: 'Por último, ¿las palancas analógicas están paralelas (simétricas) o alineadas (asimétricas)?',
+             answers: [
+                { text: 'Simétricas (como un mando de PlayStation)', next: 'result-playstation' },
+                { text: 'Asimétricas (como un mando de Xbox)', next: 'result-xbox' }
             ]
         }
     };
@@ -203,26 +217,36 @@
             }
         }
 
-        // --- NAVIGATION LOGIC ---
+        // --- NAVIGATION LOGIC (with deadzone and state) ---
         const now = Date.now();
+        const DEADZONE = 0.7;
+        const STICK_THRESHOLD = 0.5; // Previous state threshold
+
         if (now - lastStickMoveTime > STICK_COOLDOWN) {
             let verticalMove = 0;
-            if (learnedAxis !== null && Math.abs(gamepad.axes[learnedAxis]) > 0.7) {
+            if (learnedAxis !== null) {
                 verticalMove = gamepad.axes[learnedAxis];
-            } else if (learnedAxis === null) { // Fallback to D-pad only if no axis is learned
-                if (gamepad.buttons[12]?.pressed) verticalMove = -1;
-                if (gamepad.buttons[13]?.pressed) verticalMove = 1;
             }
 
-            if (verticalMove < -0.5) { // Up
-                modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
-                indexChanged = true;
-                lastStickMoveTime = now;
-            } else if (verticalMove > 0.5) { // Down
-                modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
-                indexChanged = true;
-                lastStickMoveTime = now;
+            const wasLastFrameOutsideDeadzone = Math.abs(axisLastState[learnedAxis] || 0) > STICK_THRESHOLD;
+            const isThisFrameOutsideDeadzone = Math.abs(verticalMove) > DEADZONE;
+
+            if (isThisFrameOutsideDeadzone && !wasLastFrameOutsideDeadzone) {
+                 if (verticalMove < -DEADZONE) { // Up
+                    modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
+                    indexChanged = true;
+                    lastStickMoveTime = now;
+                } else if (verticalMove > DEADZONE) { // Down
+                    modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
+                    indexChanged = true;
+                    lastStickMoveTime = now;
+                }
             }
+        }
+
+        // Always update the last state for the next frame
+        if (learnedAxis !== null) {
+            axisLastState[learnedAxis] = gamepad.axes[learnedAxis];
         }
 
         if (indexChanged) updateModalFocus();

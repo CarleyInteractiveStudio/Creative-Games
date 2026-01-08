@@ -74,31 +74,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const isGamepadConnected = Array.from(gamepads).some(g => g);
     updateGamepadStatus(isGamepadConnected);
 
-    function showConsoleModePrompt() {
-        if (document.getElementById('console-mode-prompt')) return; // Prevent multiple prompts
-        const prompt = document.createElement('div');
-        prompt.id = 'console-mode-prompt';
-        prompt.className = 'console-prompt';
-        prompt.innerHTML = 'Gamepad connected. Press <b>Start</b> to enter Console Mode.';
-        document.body.appendChild(prompt);
+    // --- Gamepad Activation Bubble Logic ---
+    const activationBubble = document.getElementById('gamepad-activation-bubble');
+    let activationCheckInterval;
 
-        const interval = setInterval(() => {
-            const gps = navigator.getGamepads();
-            if (gps[0] && gps[0].buttons[9].pressed) {
-                clearInterval(interval);
-                window.location.href = 'console.html';
+    window.addEventListener('gamepadConfigured', () => {
+        // First, update the generic status footer
+        updateGamepadStatus(true);
+
+        // Then, show the activation prompt
+        if (activationBubble) {
+            activationBubble.classList.remove('hidden');
+        }
+
+        // Stop any previous interval if a new controller is configured
+        if (activationCheckInterval) clearInterval(activationCheckInterval);
+
+        // Start checking for the activation button press
+        activationCheckInterval = setInterval(() => {
+            const gamepad = navigator.getGamepads().find(g => g);
+            const config = window.getCurrentGamepadConfig();
+
+            // The START button is typically index 9, which we use as a default.
+            const startButtonIndex = config ? config.START : 9;
+
+            if (gamepad && gamepad.buttons[startButtonIndex] && gamepad.buttons[startButtonIndex].pressed) {
+                if (activationBubble) {
+                    activationBubble.classList.add('hidden');
+                }
+                // Dispatch event to enable full navigation
+                window.dispatchEvent(new CustomEvent('gamepadNavigationActivated', { detail: { gamepad } }));
+                clearInterval(activationCheckInterval);
             }
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            if (prompt) prompt.remove();
-        }, 10000);
-    }
+        }, 100); // Check every 100ms
+    });
 
     window.addEventListener('gamepadconnected', (e) => {
+        // This listener now ONLY updates the status, the config script handles the rest.
         updateGamepadStatus(true);
-        showConsoleModePrompt();
     });
 
     window.addEventListener('gamepaddisconnected', (e) => {
@@ -144,6 +157,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateGameCatalogs() {
         const favorites = getFavorites();
         const allGamesGrid = document.querySelector('#all-games-catalog .game-grid');
+
+        // --- Prioritized Game Recommendations ---
+        // Get the current controller profile ('xbox', 'playstation', etc.)
+        const controllerProfile = typeof window.getCurrentGamepadProfile === 'function' ? window.getCurrentGamepadProfile() : null;
+        let sortedGameIds = Object.keys(allGames);
+
+        if (controllerProfile) {
+            // This is a simple sorting algorithm. A real-world implementation might be more complex.
+            // It prioritizes games that are exclusive to the detected platform.
+            sortedGameIds.sort((a, b) => {
+                const gameA = allGames[a];
+                const gameB = allGames[b];
+                const platformA = gameA.platforms.includes(controllerProfile);
+                const platformB = gameB.platforms.includes(controllerProfile);
+
+                if (platformA && !platformB) return -1; // A comes first
+                if (!platformA && platformB) return 1;  // B comes first
+                return 0; // Keep original order
+            });
+        }
+        // --- End of Recommendations ---
+
         const catalogs = {
             'Racing': document.querySelector('#racing-catalog .game-grid'),
             'Shooter': document.querySelector('#shooter-catalog .game-grid'),
@@ -154,7 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!allGamesGrid) return; // Exit if we are not on the main page
 
-        for (const gameId in allGames) {
+        // Use the new sorted list of game IDs to populate the catalogs
+        for (const gameId of sortedGameIds) {
             const gameData = allGames[gameId];
             const isFavorited = favorites.includes(gameId);
 

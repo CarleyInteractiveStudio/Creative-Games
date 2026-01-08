@@ -220,6 +220,30 @@ main.container {
     color: #ccc;
 }
 
+/* --- Gamepad Activation Bubble --- */
+.activation-bubble {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 193, 7, 0.9);
+    color: #121212;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 1.1em;
+    z-index: 1001;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+}
+
+.activation-bubble.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+    pointer-events: none;
+}
+
 .game-card-info {
     display: flex;
     justify-content: space-between;

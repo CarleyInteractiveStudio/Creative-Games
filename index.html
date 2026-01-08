@@ -113,19 +113,21 @@
     <!-- Gamepad Configuration Modal -->
     <div id="gamepad-config-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2 id="modal-title">Mando Desconocido Detectado</h2>
-            <p id="modal-instructions">Mueve el stick de tu mando arriba o abajo para navegar. Presiona el botón principal para seleccionar.</p>
-            <div id="modal-initial-options" class="modal-options">
-                <button class="modal-button" data-type="replica-xbox">Es una réplica de Xbox</button>
-                <button class="modal-button" data-type="replica-playstation">Réplica de PlayStation</button>
-                <button class="modal-button" data-type="replica-nintendo">Réplica de Nintendo</button>
-                <button class="modal-button" data-type="other">Otro Mando</button>
-            </div>
-            <div id="modal-mapping-instructions" class="hidden">
-                <p>Sigue las instrucciones para mapear los botones de tu mando.</p>
-                <p id="mapping-prompt" class="mapping-prompt"></p>
+            <h2 id="modal-title">Configurando Mando Desconocido</h2>
+            <p id="modal-instructions">Responde a las siguientes preguntas para configurar tu mando.</p>
+            <div id="assistant-content">
+                <p id="assistant-question" class="assistant-question"></p>
+                <div id="assistant-image-container"></div>
+                <div id="assistant-options" class="modal-options">
+                    <!-- Answer options will be dynamically inserted here by the assistant -->
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Gamepad Activation Bubble -->
+    <div id="gamepad-activation-bubble" class="activation-bubble hidden">
+        <p>Mando conectado. Presiona el botón START/HOME para activar la navegación.</p>
     </div>
 </body>
 </html>

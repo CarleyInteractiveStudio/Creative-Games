@@ -9,11 +9,7 @@
         'nintendo': { CONFIRM: 1, CANCEL: 0, LIKE: 3, DISLIKE: 2, PREV_CATALOG: 4, NEXT_CATALOG: 5, MENU: 8, START: 9, UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15 }
     };
 
-    const MAPPING_ACTIONS = ['CONFIRM', 'CANCEL', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'MENU', 'START', 'LIKE', 'DISLIKE', 'PREV_CATALOG', 'NEXT_CATALOG'];
-    let currentMappingActionIndex = 0;
-    let tempMapping = {};
     let isMapping = false;
-    let buttonPressStates = {};
 
     // --- MODAL STATE ---
     let isModalVisible = false;
@@ -27,18 +23,14 @@
 
 
     // --- DOM ELEMENTS ---
-    let modal, modalTitle, modalInstructions, initialOptions, mappingInstructions, mappingPrompt;
+    let modal, assistantOptions;
 
     // --- CORE LOGIC ---
     function initialize() {
         document.addEventListener('DOMContentLoaded', () => {
             modal = document.getElementById('gamepad-config-modal');
-            modalTitle = document.getElementById('modal-title');
-            modalInstructions = document.getElementById('modal-instructions');
-            initialOptions = document.getElementById('modal-initial-options');
-            mappingInstructions = document.getElementById('modal-mapping-instructions');
-            mappingPrompt = document.getElementById('mapping-prompt');
-            if (initialOptions) initialOptions.addEventListener('click', handleModalOptionClick);
+            assistantOptions = document.getElementById('assistant-options');
+            if (assistantOptions) assistantOptions.addEventListener('click', handleAssistantOptionClick);
         });
 
         window.addEventListener('gamepadconnected', handleGamepadConnected);
@@ -56,7 +48,7 @@
         }
         const profile = detectGamepadProfile(gamepad);
         if (profile) {
-            saveGamepadConfig(gamepad.id, PRESET_MAPPINGS[profile]);
+            saveGamepadConfig(gamepad.id, profile, PRESET_MAPPINGS[profile]);
             window.dispatchEvent(new CustomEvent('gamepadConfigured', { detail: { gamepad } }));
         } else {
             showModal();
@@ -71,89 +63,73 @@
         return null;
     }
 
-    // --- MODAL & MAPPING FLOW ---
-    function handleModalOptionClick(e) {
+    // --- MODAL & ADOPTION ASSISTANT FLOW ---
+    const ASSISTANT_QUESTIONS = {
+        'start': {
+            questionText: 'Observa los botones de acción principales (normalmente a la derecha). ¿Cómo están posicionados?',
+            answers: [
+                { text: 'En forma de cruz (+)', next: 'result-nintendo' },
+                { text: 'En forma de diamante (◆)', next: 'sticks' }
+            ]
+        },
+        'sticks': {
+            questionText: 'Ahora, mira las palancas analógicas. ¿Están paralelas (ambas abajo) o está la izquierda más arriba?',
+            answers: [
+                { text: 'Paralelas (simétricas)', next: 'result-playstation' },
+                { text: 'La izquierda más arriba (asimétrica)', next: 'result-xbox' }
+            ]
+        }
+    };
+    let currentQuestionKey = 'start';
+
+    function startAdoptionAssistant() {
+        currentQuestionKey = 'start';
+        displayQuestion(ASSISTANT_QUESTIONS[currentQuestionKey]);
+        modalAnimationFrameId = requestAnimationFrame(handleModalInput);
+    }
+
+    function displayQuestion(q) {
+        const questionEl = document.getElementById('assistant-question');
+        const optionsEl = document.getElementById('assistant-options');
+
+        if (questionEl) questionEl.textContent = q.questionText;
+        if (optionsEl) {
+            optionsEl.innerHTML = ''; // Clear old options
+            q.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.className = 'modal-button';
+                button.textContent = answer.text;
+                button.dataset.next = answer.next;
+                optionsEl.appendChild(button);
+            });
+            // Update focusable elements for gamepad navigation
+            modalFocusableElements = Array.from(optionsEl.querySelectorAll('.modal-button'));
+            modalFocusedIndex = 0;
+            updateModalFocus();
+        }
+    }
+
+    function handleAssistantOptionClick(e) {
         if (!e.target.classList.contains('modal-button')) return;
-        const type = e.target.dataset.type;
-        const gamepad = navigator.getGamepads().find(g => g);
-        if (!gamepad) return;
 
-        if (type.startsWith('replica-')) {
-            const profile = type.replace('replica-', '');
-            saveGamepadConfig(gamepad.id, PRESET_MAPPINGS[profile]);
-            hideModal();
-            window.dispatchEvent(new CustomEvent('gamepadConfigured', { detail: { gamepad } }));
-        } else if (type === 'other') {
-            startManualMapping();
-        }
-    }
-
-    function startManualMapping() {
-        cancelAnimationFrame(modalAnimationFrameId);
-        isMapping = true;
-        initialOptions.classList.add('hidden');
-        mappingInstructions.classList.remove('hidden');
-        modalTitle.textContent = 'Configuración Manual';
-        modalInstructions.textContent = 'Presiona el botón solicitado en tu mando.';
-        currentMappingActionIndex = 0;
-        tempMapping = {};
-        buttonPressStates = {};
-        promptNextButton();
-    }
-
-    function promptNextButton() {
-        if (currentMappingActionIndex >= MAPPING_ACTIONS.length) {
-            finishManualMapping();
-            return;
-        }
-        const action = MAPPING_ACTIONS[currentMappingActionIndex];
-        mappingPrompt.textContent = `Presiona: ${action}`;
-        requestAnimationFrame(listenForMappingInput);
-    }
-
-    function listenForMappingInput() {
-        if (!isMapping) return;
+        const next = e.target.dataset.next;
         const gamepad = navigator.getGamepads().find(g => g);
         if (!gamepad) {
-            cancelMapping();
-            return;
-        }
+             hideModal();
+             return;
+        };
 
-        let buttonPressedIndex = -1;
-        for (let i = 0; i < gamepad.buttons.length; i++) {
-            if (gamepad.buttons[i].pressed) {
-                if (!buttonPressStates[i]) {
-                    buttonPressStates[i] = true;
-                    buttonPressedIndex = i;
-                    break;
-                }
-            } else {
-                buttonPressStates[i] = false;
-            }
-        }
-
-        if (buttonPressedIndex !== -1) {
-            const action = MAPPING_ACTIONS[currentMappingActionIndex];
-            tempMapping[action] = buttonPressedIndex;
-            currentMappingActionIndex++;
-            promptNextButton();
-        } else {
-            requestAnimationFrame(listenForMappingInput);
-        }
-    }
-
-    function finishManualMapping() {
-        const gamepad = navigator.getGamepads().find(g => g);
-        if (gamepad) {
-            saveGamepadConfig(gamepad.id, tempMapping);
+        if (next.startsWith('result-')) {
+            const profile = next.replace('result-', '');
+            saveGamepadConfig(gamepad.id, profile, PRESET_MAPPINGS[profile]);
+            hideModal();
             window.dispatchEvent(new CustomEvent('gamepadConfigured', { detail: { gamepad } }));
+        } else {
+            currentQuestionKey = next;
+            displayQuestion(ASSISTANT_QUESTIONS[currentQuestionKey]);
         }
-        hideModal();
     }
 
-    function cancelMapping() {
-        hideModal();
-    }
 
     // --- UI HELPERS ---
     function showModal() {
@@ -161,9 +137,9 @@
             modal.classList.remove('hidden');
             isModalVisible = true;
             modalFocusedIndex = 0;
-            modalFocusableElements = Array.from(initialOptions.querySelectorAll('.modal-button'));
-            updateModalFocus();
-            modalAnimationFrameId = requestAnimationFrame(handleModalInput);
+            learnedAxis = null;
+            learnedButton = null;
+            startAdoptionAssistant(); // Kick off the new assistant
         }
     }
 
@@ -175,9 +151,6 @@
             learnedAxis = null; // Reset learned controls
             learnedButton = null;
             cancelAnimationFrame(modalAnimationFrameId);
-            initialOptions.classList.remove('hidden');
-            mappingInstructions.classList.add('hidden');
-            modalTitle.textContent = 'Mando Desconocido Detectado';
         }
     }
 
@@ -269,11 +242,12 @@
 
 
     // --- LOCALSTORAGE HELPERS ---
-    function saveGamepadConfig(id, config) {
+    function saveGamepadConfig(id, profileName, config) {
         try {
             const configs = JSON.parse(localStorage.getItem('gamepadConfigs')) || {};
             configs[id] = config;
             localStorage.setItem('gamepadConfigs', JSON.stringify(configs));
+            localStorage.setItem('gamepadProfile', profileName); // Also save the profile name
         } catch (e) { console.error("Could not save gamepad config", e); }
     }
 
@@ -288,6 +262,9 @@
     window.getCurrentGamepadConfig = function() {
         const gamepad = navigator.getGamepads().find(g => g);
         return gamepad ? getGamepadConfig(gamepad.id) : null;
+    };
+    window.getCurrentGamepadProfile = function() {
+        return localStorage.getItem('gamepadProfile');
     };
 
     // --- KICK IT OFF ---

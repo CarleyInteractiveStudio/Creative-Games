@@ -249,14 +249,16 @@ function initGamepadNavigation() {
 
     // --- EVENT LISTENERS ---
     function startNavigation(gamepad) {
-        console.log('Gamepad navigation starting for:', gamepad.id);
+        console.log('Gamepad navigation ACTIVATED for:', gamepad.id);
         gamepadConnected = true;
+        // The first focused element should be visually selected as soon as navigation starts
+        updateFocus();
         if (!animationFrameId) {
             animationFrameId = requestAnimationFrame(handleGamepadInput);
         }
     }
 
-    window.addEventListener('gamepadConfigured', (e) => {
+    window.addEventListener('gamepadNavigationActivated', (e) => {
         startNavigation(e.detail.gamepad);
     });
 
@@ -283,15 +285,7 @@ function initGamepadNavigation() {
     }
 
     // --- INITIALIZATION ---
-    // Proactively check if a gamepad is already configured and ready to go.
-    // This solves a race condition where the 'gamepadConfigured' event might
-    // fire before this script's listener is attached.
-    if (typeof window.getCurrentGamepadConfig === 'function') {
-        const config = window.getCurrentGamepadConfig();
-        const gamepad = navigator.getGamepads ? Array.from(navigator.getGamepads()).find(g => g) : null;
-        if (config && gamepad) {
-            startNavigation(gamepad);
-            updateFocus();
-        }
-    }
+    // The proactive check is no longer needed here. The new flow ensures
+    // that the user must press a button to start, which gives all scripts
+    // ample time to load and attach their listeners.
 }

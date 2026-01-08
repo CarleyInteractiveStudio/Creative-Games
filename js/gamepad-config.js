@@ -20,6 +20,7 @@
     const STICK_COOLDOWN = 200;
     let learnedAxis = null; // To dynamically learn which axis the user moves
     let learnedButton = null; // To dynamically learn which button the user presses
+    let axisLastState = {}; // Tracks the last known state of each axis for deadzone logic
 
 
     // --- DOM ELEMENTS ---
@@ -164,6 +165,7 @@
             isMapping = false;
             learnedAxis = null; // Reset learned controls
             learnedButton = null;
+            axisLastState = {}; // Also reset axis state
             cancelAnimationFrame(modalAnimationFrameId);
         }
     }
@@ -188,79 +190,75 @@
     }
 
     function handleModalInput() {
-        if (!isModalVisible || isMapping) return;
-
-        const gamepad = navigator.getGamepads().find(g => g);
-        if (!gamepad) {
-            requestAnimationFrame(handleModalInput);
+        if (!isModalVisible) {
+            cancelAnimationFrame(modalAnimationFrameId);
             return;
         }
 
-        let indexChanged = false;
+        const gamepad = navigator.getGamepads().find(g => g);
+        if (!gamepad) {
+            modalAnimationFrameId = requestAnimationFrame(handleModalInput);
+            return;
+        }
+
+        const DEADZONE = 0.7;
+        const now = Date.now();
 
         // --- DYNAMIC CONTROL LEARNING ---
+        // Learn the first vertical axis moved by the user.
         if (learnedAxis === null) {
             for (let i = 0; i < gamepad.axes.length; i++) {
-                if (Math.abs(gamepad.axes[i]) > 0.7 && i % 2 !== 0) {
+                // Heuristic: Odd-numbered axes are usually vertical.
+                if (i % 2 !== 0 && Math.abs(gamepad.axes[i]) > DEADZONE) {
                     learnedAxis = i;
                     break;
                 }
             }
         }
 
+        // Learn the first button pressed by the user.
         if (learnedButton === null) {
             for (let i = 0; i < gamepad.buttons.length; i++) {
-                if (isButtonPressed(gamepad, i)) { // Use debounced check
+                if (isButtonPressed(gamepad, i)) { // isButtonPressed is already debounced
                     learnedButton = i;
                     break;
                 }
             }
         }
 
-        // --- NAVIGATION LOGIC (with deadzone and state) ---
-        const now = Date.now();
-        const DEADZONE = 0.7;
-        const STICK_THRESHOLD = 0.5; // Previous state threshold
+        // --- NAVIGATION LOGIC ---
+        // Only proceed if an axis has been learned and enough time has passed.
+        if (learnedAxis !== null && now - lastStickMoveTime > STICK_COOLDOWN) {
+            const verticalMove = gamepad.axes[learnedAxis];
 
-        if (now - lastStickMoveTime > STICK_COOLDOWN) {
-            let verticalMove = 0;
-            if (learnedAxis !== null) {
-                verticalMove = gamepad.axes[learnedAxis];
-            }
+            // State-aware deadzone logic to treat a continuous hold as a single press.
+            const wasOutside = Math.abs(axisLastState[learnedAxis] || 0) > DEADZONE;
+            const isOutside = Math.abs(verticalMove) > DEADZONE;
 
-            const wasLastFrameOutsideDeadzone = Math.abs(axisLastState[learnedAxis] || 0) > STICK_THRESHOLD;
-            const isThisFrameOutsideDeadzone = Math.abs(verticalMove) > DEADZONE;
-
-            if (isThisFrameOutsideDeadzone && !wasLastFrameOutsideDeadzone) {
-                 if (verticalMove < -DEADZONE) { // Up
+            if (isOutside && !wasOutside) { // Rising edge of the stick movement
+                if (verticalMove < 0) { // Moved Up
                     modalFocusedIndex = (modalFocusedIndex - 1 + modalFocusableElements.length) % modalFocusableElements.length;
-                    indexChanged = true;
-                    lastStickMoveTime = now;
-                } else if (verticalMove > DEADZONE) { // Down
+                } else { // Moved Down
                     modalFocusedIndex = (modalFocusedIndex + 1) % modalFocusableElements.length;
-                    indexChanged = true;
-                    lastStickMoveTime = now;
                 }
+                updateModalFocus();
+                lastStickMoveTime = now;
             }
         }
-
-        // Always update the last state for the next frame
+        // Update the state for the next frame's comparison.
         if (learnedAxis !== null) {
             axisLastState[learnedAxis] = gamepad.axes[learnedAxis];
         }
 
-        if (indexChanged) updateModalFocus();
-
         // --- CONFIRMATION LOGIC ---
-        // Use the debounced function with the learned button. Fallback to 0 if not learned yet.
-        const confirmButtonIndex = learnedButton !== null ? learnedButton : 0;
-        if (isButtonPressed(gamepad, confirmButtonIndex)) {
-            if (modalFocusableElements[modalFocusedIndex]) {
-                modalFocusableElements[modalFocusedIndex].click();
+        // Only proceed if a button has been learned.
+        if (learnedButton !== null && isButtonPressed(gamepad, learnedButton)) {
+            const focusedElement = modalFocusableElements[modalFocusedIndex];
+            if (focusedElement) {
+                focusedElement.click(); // This will trigger handleAssistantOptionClick
             }
         }
 
-        // The separate state update loop is no longer needed as isButtonPressed handles its own state.
         modalAnimationFrameId = requestAnimationFrame(handleModalInput);
     }
 

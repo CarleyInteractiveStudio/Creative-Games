@@ -1,0 +1,104 @@
+/* Estilos para la página de login */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+}
+
+.login-box {
+    background-color: #1F1F1F;
+    border: 1px solid #282828;
+    border-radius: 12px;
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.login-box .logo {
+    width: 60px;
+    margin-bottom: 1.5rem;
+}
+
+.login-box h2 {
+    color: #FFFFFF;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+}
+
+.login-box p {
+    color: #A0A0A0;
+    margin-bottom: 2rem;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #E0E0E0;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #282828;
+    border: 1px solid #3a4a67;
+    border-radius: 8px;
+    color: #E0E0E0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+.button {
+    background-color: #FFC107;
+    color: #181818;
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    display: inline-block;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.button:hover {
+    background-color: #D4A106;
+}
+
+.login-footer {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.login-footer p {
+     color: #A0A0A0;
+     margin: 0.5rem 0;
+}
+
+.login-footer a {
+    color: #FFC107;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}

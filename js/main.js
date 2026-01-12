@@ -2,11 +2,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileMenuButton = document.getElementById('profile-menu-button');
     const profileDropdown = document.getElementById('profile-dropdown');
 
+    // Function to update the profile menu based on login status
+    function updateProfileMenu() {
+        if (!profileDropdown) return;
+
+        // Use 'isDeveloper' as a proxy for being logged in
+        const isLoggedIn = localStorage.getItem('isDeveloper') === 'true';
+
+        if (isLoggedIn) {
+            profileDropdown.innerHTML = `
+                <a href="configuracion.html#gestion-section" class="dropdown-item" aria-label="Mi Perfil">
+                    <img src="images/icons/user.svg" alt="Profile Icon"> Mi Perfil
+                </a>
+                <a href="configuracion.html#preferencias-section" class="dropdown-item" aria-label="Configuración">
+                    <img src="images/icons/settings.svg" alt="Settings Icon"> Configuración
+                </a>
+                <a href="#" id="logout-button" class="dropdown-item" aria-label="Cerrar Sesión">
+                    <img src="images/icons/logout.svg" alt="Logout Icon"> Cerrar Sesión
+                </a>
+            `;
+
+            const logoutButton = document.getElementById('logout-button');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    // Clear user-related data from localStorage
+                    localStorage.removeItem('isDeveloper');
+                    // Add any other keys you use for session management
+                    // For example: localStorage.removeItem('authToken');
+                    window.location.reload(); // Reload the page to reflect the change
+                });
+            }
+        } else {
+            profileDropdown.innerHTML = `
+                <a href="login.html">Iniciar Sesión</a>
+            `;
+        }
+    }
+
     if (profileMenuButton) {
         profileMenuButton.addEventListener('click', () => {
             profileDropdown.classList.toggle('hidden');
         });
     }
+
+    // Initial call to set the menu correctly on page load
+    updateProfileMenu();
 
     // Close dropdowns if clicking outside of them
     document.addEventListener('click', (event) => {
@@ -50,48 +91,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateGamepadStatus(connected = false) {
-        const gamepadStatusElement = document.getElementById('gamepad-status');
-        if (gamepadStatusElement) {
-            const status = connected ? 'Connected' : 'Disconnected';
-            gamepadStatusElement.textContent = `Gamepad: ${status}`;
+    updateDeviceStatus();
+
+    const gamepadNotification = document.getElementById('gamepad-notification');
+    let gamepadPollInterval;
+    let buttonPressState = false; // To prevent multiple triggers
+
+    function pollForModeButton() {
+        let modeButtonIndex = 16; // Start with a safe default
+        const configStr = localStorage.getItem('gamepadConfig');
+
+        if (configStr) {
+            try {
+                const config = JSON.parse(configStr);
+                // Correctly access the nested mapping property
+                if (config && config.mapping && typeof config.mapping.mode !== 'undefined') {
+                    modeButtonIndex = config.mapping.mode;
+                }
+            } catch (e) {
+                console.error("Error parsing gamepadConfig, using default mode button.", e);
+            }
+        }
+
+        const gamepads = navigator.getGamepads();
+        if (gamepads && gamepads[0]) {
+            const gp = gamepads[0];
+            if (gp.buttons[modeButtonIndex] && gp.buttons[modeButtonIndex].pressed) {
+                if (!buttonPressState) {
+                    buttonPressState = true;
+                    window.location.href = 'console.html';
+                    // Stop polling immediately after navigation
+                    if (gamepadPollInterval) {
+                        cancelAnimationFrame(gamepadPollInterval);
+                        gamepadPollInterval = null;
+                    }
+                }
+            } else {
+                buttonPressState = false;
+            }
+        }
+
+        // Continue polling if we are still here
+        if (gamepadPollInterval) {
+             gamepadPollInterval = requestAnimationFrame(pollForModeButton);
         }
     }
 
-    updateDeviceStatus();
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    const isGamepadConnected = Array.from(gamepads).some(g => g);
-    updateGamepadStatus(isGamepadConnected);
-
-    function showConsoleModePrompt() {
-        if (document.getElementById('console-mode-prompt')) return; // Prevent multiple prompts
-        const prompt = document.createElement('div');
-        prompt.id = 'console-mode-prompt';
-        prompt.className = 'console-prompt';
-        prompt.innerHTML = 'Gamepad connected. Press <b>Start</b> to enter Console Mode.';
-        document.body.appendChild(prompt);
-
-        const interval = setInterval(() => {
-            const gps = navigator.getGamepads();
-            if (gps[0] && gps[0].buttons[9].pressed) {
-                clearInterval(interval);
-                window.location.href = 'console.html';
-            }
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            if (prompt) prompt.remove();
-        }, 10000);
-    }
-
     window.addEventListener('gamepadconnected', (e) => {
-        updateGamepadStatus(true);
-        showConsoleModePrompt();
+        if (gamepadNotification) {
+            gamepadNotification.innerHTML = `Mando detectado. Presiona <strong>MODE</strong> para entrar al Modo Consola.`;
+            gamepadNotification.classList.add('visible');
+        }
+
+        // We need a default 'mode' button to listen for before config exists.
+        // The HTML5 Gamepad API standard suggests button 16 for 'Home/Mode'.
+        // We will listen to this button by default to get to the wizard.
+        if (!gamepadPollInterval) {
+            gamepadPollInterval = requestAnimationFrame(pollForModeButton);
+        }
     });
 
     window.addEventListener('gamepaddisconnected', (e) => {
-        updateGamepadStatus(false);
+        if (gamepadNotification) {
+            gamepadNotification.classList.remove('visible');
+        }
+        // Always stop polling on disconnect
+        if (gamepadPollInterval) {
+            cancelAnimationFrame(gamepadPollInterval);
+            gamepadPollInterval = null;
+        }
     });
 
     // --- Favorite Games Logic ---
@@ -186,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initial population of game catalogs
-    populateGameCatalogs();
+    // Initial population of game catalogs, ONLY if the main catalog element exists
+    if (document.getElementById('all-games-catalog')) {
+        populateGameCatalogs();
+    }
 });

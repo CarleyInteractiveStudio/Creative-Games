@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Game - Modo Consola</title>
+    <title>Creatives Games - Modo Consola</title>
+    <link rel="icon" href="images/logo/logo.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/console.css">
 </head>
 <body class="console-mode">
-    <header class="console-header">
-        <div class="header-container">
-            <h1 class="logo">Creative Game</h1>
-            <div class="header-bubble search-bubble">
+    <div class="console-layout-wrapper">
+        <header class="console-header">
+            <div class="header-container">
+                <a href="index.html" class="logo-link"><img src="images/logo/logo.png" alt="Creatives Games Logo" class="logo"></a>
+                <div class="header-bubble search-bubble">
                 <div class="search-bar">
                     <input type="text" placeholder="Buscar...">
                     <button class="icon-button" aria-label="Buscar">
@@ -46,34 +48,35 @@
             </div>
         </div>
 
-        <div id="game-details-bubble" class="details-bubble">
-            <div class="details-left">
-                <h2 id="details-title" class="game-title"></h2>
-                <div id="details-short-description" class="short-description"></div>
-                <div id="details-description" class="description-scroll">
-                    <!-- La descripción y detalles del juego irán aquí -->
-                </div>
-            </div>
-            <div class="details-right">
-                <div id="details-controls" class="controls-info">
-                    <!-- La información de los controles del juego irá aquí -->
-                </div>
-                <div class="interaction-buttons">
-                    <button id="like-btn" class="icon-button"><img src="images/icons/like.svg" alt="Me gusta"></button>
-                    <button id="dislike-btn" class="icon-button"><img src="images/icons/dislike.svg" alt="No me gusta"></button>
-                    <button id="favorite-btn" class="icon-button"><img src="images/icons/favorite.svg" alt="Favorito"></button>
-                    <button id="share-btn" class="icon-button"><img src="images/icons/share.svg" alt="Compartir"></button>
-                </div>
-                <button id="details-toggle-btn" class="details-button">Detalles</button>
-            </div>
-        </div>
-
-        <div class="game-carousel-container with-top-margin">
+        <div class="game-carousel-container">
             <div id="game-carousel" class="game-carousel">
                 <!-- El carrusel de juegos se cargará dinámicamente aquí -->
             </div>
         </div>
     </main>
+</div>
+
+    <div id="game-details-bubble" class="details-bubble">
+        <div class="details-left">
+            <h2 id="details-title" class="game-title"></h2>
+            <div id="details-short-description" class="short-description"></div>
+            <div id="details-description" class="description-scroll">
+                <!-- La descripción y detalles del juego irán aquí -->
+            </div>
+        </div>
+        <div class="details-right">
+            <div id="details-controls" class="controls-info">
+                <!-- La información de los controles del juego irá aquí -->
+            </div>
+            <div class="interaction-buttons">
+                <button id="like-btn" class="icon-button"><img src="images/icons/like.svg" alt="Me gusta"></button>
+                <button id="dislike-btn" class="icon-button"><img src="images/icons/dislike.svg" alt="No me gusta"></button>
+                <button id="favorite-btn" class="icon-button"><img src="images/icons/favorite.svg" alt="Favorito"></button>
+                <button id="share-btn" class="icon-button"><img src="images/icons/share.svg" alt="Compartir"></button>
+            </div>
+            <button id="details-toggle-btn" class="details-button">Detalles</button>
+        </div>
+    </div>
 
     <script src="js/games.js"></script>
     <script src="js/main.js"></script>

@@ -106,7 +106,26 @@
     </footer>
 
     <script src="js/games.js"></script>
+    <script src="js/gamepad-config.js"></script>
     <script src="js/main.js"></script>
     <script src="js/gamepad-navigation.js"></script>
+
+    <!-- Gamepad Configuration Modal -->
+    <div id="gamepad-config-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Mando Desconocido Detectado</h2>
+            <p id="modal-instructions">Mueve el stick de tu mando arriba o abajo para navegar. Presiona el botón principal para seleccionar.</p>
+            <div id="modal-initial-options" class="modal-options">
+                <button class="modal-button" data-type="replica-xbox">Es una réplica de Xbox</button>
+                <button class="modal-button" data-type="replica-playstation">Réplica de PlayStation</button>
+                <button class="modal-button" data-type="replica-nintendo">Réplica de Nintendo</button>
+                <button class="modal-button" data-type="other">Otro Mando</button>
+            </div>
+            <div id="modal-mapping-instructions" class="hidden">
+                <p>Sigue las instrucciones para mapear los botones de tu mando.</p>
+                <p id="mapping-prompt" class="mapping-prompt"></p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

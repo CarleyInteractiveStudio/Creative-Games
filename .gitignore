@@ -1,2 +1,5 @@
 # Test results
 test-results/
+
+# Log files
+*.log

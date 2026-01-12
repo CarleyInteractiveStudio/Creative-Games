@@ -1,14 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const hamburgerMenuButton = document.getElementById('hamburger-menu-button');
-    const categoryNav = document.getElementById('category-nav');
     const profileMenuButton = document.getElementById('profile-menu-button');
     const profileDropdown = document.getElementById('profile-dropdown');
-
-    if (hamburgerMenuButton) {
-        hamburgerMenuButton.addEventListener('click', () => {
-            categoryNav.classList.toggle('hidden');
-        });
-    }
 
     if (profileMenuButton) {
         profileMenuButton.addEventListener('click', () => {
@@ -18,9 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close dropdowns if clicking outside of them
     document.addEventListener('click', (event) => {
-        if (hamburgerMenuButton && !hamburgerMenuButton.contains(event.target) && categoryNav && !categoryNav.contains(event.target)) {
-            categoryNav.classList.add('hidden');
-        }
         if (profileMenuButton && !profileMenuButton.contains(event.target) && profileDropdown && !profileDropdown.contains(event.target)) {
             profileDropdown.classList.add('hidden');
         }
@@ -160,20 +149,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const gameCardHTML = `
                 <div class="game-card" data-game-id="${gameId}">
-                    <a href="play.html?game=${encodeURIComponent(gameId)}">
-                        <img src="${gameData.thumbnail}" alt="${gameId}">
-                        <div class="game-card-title">${gameId}</div>
+                    <a href="play.html?game=${encodeURIComponent(gameId)}" class="game-card-link">
+                        <img src="${gameData.thumbnail}" alt="${gameId}" class="game-card-image">
+                        <div class="game-card-overlay">
+                            <div class="game-card-title">${gameId}</div>
+                            <div class="game-card-details">
+                                <div class="platform-icons">
+                                    ${gameData.platforms.map(p => `<img src="images/icons/${p}.svg" alt="${p}">`).join('')}
+                                </div>
+                                <div class="interaction-buttons">
+                                    <button class="icon-button ${isFavorited ? 'favorited' : ''}" aria-label="Favorite">
+                                        <img src="images/icons/favorite.svg" alt="Favorite">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </a>
-                    <div class="game-card-info">
-                        <div class="platform-icons">
-                            ${gameData.platforms.map(p => `<img src="images/icons/${p}.svg" alt="${p}">`).join('')}
-                        </div>
-                        <div class="interaction-buttons">
-                            <button class="icon-button ${isFavorited ? 'favorited' : ''}" aria-label="Favorite">
-                                <img src="images/icons/favorite.svg" alt="Favorite">
-                            </button>
-                        </div>
-                    </div>
                 </div>
             `;
 

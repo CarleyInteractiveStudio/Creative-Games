@@ -1,41 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Game - Console Mode</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Modo Consola - Creative Game</title>
+    <link rel="stylesheet" href="css/console.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="console-mode">
-    <main class="container">
-        <section class="game-catalog">
-            <h2>Favorite Games</h2>
-            <div class="game-grid">
-                <!-- Favorite games will be dynamically loaded here -->
-            </div>
-        </section>
+    <header class="console-header">
+        <div class="logo-container">
+            <h1 class="logo-text">Creative Game</h1>
+        </div>
+        <div class="search-container" id="search-container">
+            <input type="text" id="console-search" placeholder="Search games..." readonly>
+        </div>
+        <div class="header-icons">
+            <button id="profile-btn" class="header-icon-btn"><img src="images/icons/profile.svg" alt="Profile"></button>
+        </div>
+    </header>
+
+    <nav class="console-category-nav" id="category-nav">
+        <!-- Categorías dinámicas -->
+    </nav>
+
+    <main class="console-content" id="main-content">
+        <!-- Carruseles de juegos por categoría -->
     </main>
 
-    <div id="game-details-bubble" class="details-bubble hidden">
-        <div class="bubble-content">
-            <div class="bubble-image">
-                <img src="" alt="Game Thumbnail">
+    <!-- Barra de información inferior -->
+    <div id="info-bar" class="info-bar">
+        <!-- Contenido dinámico -->
+    </div>
+
+    <!-- Panel de detalles flotante -->
+    <aside id="details-panel" class="details-panel">
+        <div class="details-header">
+            <h2>Game Details</h2>
+            <button id="close-details" class="close-btn">&times;</button>
+        </div>
+        <div id="details-content" class="details-content">
+            <!-- Detalles del juego -->
+        </div>
+    </aside>
+
+    <!-- Teclado virtual -->
+    <div id="keyboard-overlay" class="keyboard-overlay hidden">
+        <div class="keyboard-container">
+            <div class="keyboard-header">
+                <input type="text" id="keyboard-input" placeholder="Type to search...">
+                <button id="keyboard-done" class="kb-btn action-btn">Done</button>
             </div>
-            <div class="bubble-info">
-                <h3>Game Title</h3>
-                <p>Game description...</p>
-                <div class="interaction-buttons">
-                    <button class="icon-button like-btn"><img src="images/icons/like.svg" alt="Like"></button>
-                    <button class="icon-button dislike-btn"><img src="images/icons/dislike.svg" alt="Dislike"></button>
-                    <button class="icon-button favorite-btn"><img src="images/icons/favorite.svg" alt="Favorite"></button>
-                </div>
+            <div id="keyboard-keys" class="keyboard-keys">
+                <!-- Teclas dinámicas -->
             </div>
         </div>
     </div>
 
     <script src="js/games.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/gamepad-navigation.js"></script>
     <script src="js/console.js"></script>
 </body>
 </html>

@@ -146,7 +146,7 @@
 .details-bubble {
     width: 80%;
     max-width: 1200px;
-    margin: 1rem auto;
+    margin: 2rem auto 0 auto; /* Add top margin, center horizontally */
     background: rgba(30, 30, 30, 0.7);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -157,7 +157,7 @@
     gap: 1.5rem;
     max-height: 160px; /* Collapsed height */
     flex-shrink: 0;
-    position: relative;
+    position: relative; /* Keep for stacking context if needed, but not fixed */
     z-index: 1;
     transition: max-height 0.5s ease-in-out;
     overflow: hidden;
@@ -175,21 +175,39 @@
 }
 
 .game-title {
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0; /* Reduced bottom margin */
     color: #FFC107;
     flex-shrink: 0;
 }
 
+.short-description {
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+    padding-bottom: 1rem;
+    flex-shrink: 0;
+    height: auto; /* Allow it to take up natural height */
+    max-height: 50px; /* Limit height */
+}
+
+.details-bubble.expanded .short-description {
+    opacity: 0;
+    max-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+}
+
 #details-description {
     opacity: 0;
+    max-height: 0; /* Start with no height */
     flex-grow: 1;
     overflow-y: auto;
-    transition: opacity 0.3s 0.2s ease-in-out; /* Delay opacity transition */
+    transition: opacity 0.3s 0.2s ease-in-out, max-height 0.5s 0.1s ease-in-out; /* Delay and sync transitions */
     padding-right: 1rem; /* Space for scrollbar if it appears */
 }
 
 .details-bubble.expanded #details-description {
     opacity: 1;
+    max-height: 150px; /* Allow it to grow */
 }
 
 .details-left .metadata {

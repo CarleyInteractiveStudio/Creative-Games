@@ -87,7 +87,38 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('gamepadconnected', (event) => {
         console.log('Gamepad connected:', event.gamepad);
         updateGamepadStatus(true);
+        showConsoleModeSuggest();
     });
+
+    function showConsoleModeSuggest() {
+        if (window.location.pathname.includes('console.html')) return;
+
+        const suggest = document.createElement('div');
+        suggest.style.cssText = `
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1a2a47;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.5s ease;
+        `;
+        suggest.innerHTML = `
+            <span>Gamepad detected! Switch to Console Mode?</span>
+            <a href="console.html" class="button" style="padding: 0.5rem 1rem;">GO</a>
+            <button id="close-suggest" style="background:none; border:none; color:white; cursor:pointer;">✕</button>
+        `;
+        document.body.appendChild(suggest);
+
+        document.getElementById('close-suggest').onclick = () => suggest.remove();
+        setTimeout(() => suggest.remove(), 10000);
+    }
 
     window.addEventListener('gamepaddisconnected', (event) => {
         console.log('Gamepad disconnected:', event.gamepad);

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Game - Tu portal de videojuegos</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="logo.png" alt="Creative Game Logo" class="logo-img">
+                <span class="logo-text">Creative <span class="gold-text">Game</span></span>
+            </div>
+
+            <div class="search-container">
+                <div class="search-bar">
+                    <img src="images/icons/search.svg" alt="Search" class="search-icon">
+                    <input type="text" id="game-search" placeholder="Buscar juegos, categorías..." autocomplete="off">
+                </div>
+            </div>
+
+            <div class="account-container">
+                <button id="profile-menu-button" class="profile-btn">
+                    <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
+                </button>
+                <div id="profile-dropdown" class="dropdown-content hidden">
+                    <div class="dropdown-header">Categorías</div>
+                    <ul id="categories-list">
+                        <!-- Categorías dinámicas -->
+                    </ul>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="console-mode-btn" class="dropdown-item gold-hover">
+                        <img src="images/icons/console.svg" alt="Console" class="small-icon">
+                        Modo Consola
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div id="hero-section">
+            <!-- Destacado opcional -->
+        </div>
+        <div id="sections-container">
+            <!-- Secciones de juegos dinámicas (Scroll horizontal) -->
+            <div class="loading-spinner">Cargando juegos...</div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2024 Creative Game. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

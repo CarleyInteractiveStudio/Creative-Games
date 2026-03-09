@@ -151,12 +151,14 @@ class ConsoleMode {
 
         // Center the selected game
         const containerHeight = this.gamesList.parentElement.offsetHeight;
-        const cardHeight = 225; // height
-        const gap = 32; // 2rem
+        const cardHeight = 247.5; // 440 * 9/16
+        const gap = 48; // 3rem
         const itemFullHeight = cardHeight + gap;
 
         if (this.filteredGames.length > 0) {
-            const offset = (containerHeight / 2) - (cardHeight / 2) - (this.selectedIndex * itemFullHeight);
+            // Adjust offset to include the padding of the list (2rem = 32px)
+            const listPadding = 32;
+            const offset = (containerHeight / 2) - (cardHeight / 2) - (this.selectedIndex * itemFullHeight) - listPadding;
             this.gamesList.style.transform = `translateY(${offset}px)`;
         } else {
             this.gamesList.style.transform = `translateY(0)`;

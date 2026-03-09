@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Mode - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/console.css">
+</head>
+<body class="console-mode">
+    <header class="console-header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="index.html" class="logo-link">
+                    <img src="Creatives Games.png" alt="Creative Game Logo" class="console-logo">
+                </a>
+            </div>
+            <div class="console-search-bar">
+                <input type="text" placeholder="Search games..." id="console-search-input">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <div class="header-right">
+                <button id="profile-menu-button" class="icon-button" aria-label="Profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="console-main">
+        <div class="console-layout">
+            <div class="games-list-container">
+                <div id="console-games-list" class="console-games-list">
+                    <!-- Games will be injected here -->
+                </div>
+            </div>
+            <div class="game-details-container">
+                <div class="details-wrapper">
+                    <div id="game-details-bubble" class="details-bubble">
+                        <div class="details-content">
+                            <h2 id="detail-title">Select a game</h2>
+                            <div class="detail-stats">
+                                <span id="detail-stars"></span>
+                                <span id="detail-likes"></span>
+                            </div>
+                            <p id="detail-description">Navigate through the list to see game details.</p>
+                            <div class="detail-actions">
+                                <button class="play-button">PLAY NOW</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="floating-hints" class="hints-bubble">
+                        <div class="hint-item">
+                            <span class="hint-icon" id="hint-nav"></span>
+                            <span class="hint-text">Navigate</span>
+                        </div>
+                        <div class="hint-item">
+                            <span class="hint-icon" id="hint-select"></span>
+                            <span class="hint-text">Select</span>
+                        </div>
+                        <div class="hint-item">
+                            <span class="hint-icon" id="hint-back"></span>
+                            <span class="hint-text">Back</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Gamepad Selection Modal -->
+    <div id="gamepad-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Select your controller</h2>
+            <div class="gamepad-options">
+                <button class="gamepad-option" data-type="xbox">
+                    <div class="option-icon xbox-icon"></div>
+                    <span>Xbox</span>
+                </button>
+                <button class="gamepad-option" data-type="playstation">
+                    <div class="option-icon ps-icon"></div>
+                    <span>PlayStation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/games-data.js"></script>
+    <script src="js/console.js"></script>
+</body>
+</html>

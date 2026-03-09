@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAuthListeners();
 });
 
-function checkAuthState() {
+async function checkAuthState() {
     const session = await getSession();
     if (session) {
         currentUser = {

@@ -100,6 +100,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid transparent;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.logo-crop.selected {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    transform: scale(1.1);
 }
 
 .console-logo-img {

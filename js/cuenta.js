@@ -31,7 +31,88 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthState();
     setupAuthListeners();
     setupProfileListeners();
+    initGamepadSupport();
 });
+
+// Gamepad Support for Account Page
+let accountMode = 'auth'; // 'auth', 'dashboard'
+let focusIndex = 0;
+let lastButtons = {};
+let focusables = [];
+
+function initGamepadSupport() {
+    window.addEventListener("gamepadconnected", () => {
+        console.log("Gamepad connected to account page");
+        gamepadLoop();
+    });
+
+    // Proactive check
+    const gps = navigator.getGamepads();
+    if (gps[0]) gamepadLoop();
+}
+
+function gamepadLoop() {
+    const gps = navigator.getGamepads();
+    if (!gps[0]) return;
+    const gp = gps[0];
+
+    const pressed = (btnIndex) => {
+        const isPressed = gp.buttons[btnIndex] && gp.buttons[btnIndex].pressed;
+        const wasPressed = lastButtons[btnIndex];
+        lastButtons[btnIndex] = isPressed;
+        return isPressed && !wasPressed;
+    };
+
+    const stickMoved = (axis, dir) => {
+        const val = gp.axes[axis];
+        const key = `axis_${axis}_${dir}`;
+        const threshold = 0.5;
+        const isMoved = dir > 0 ? val > threshold : val < -threshold;
+        const wasMoved = lastButtons[key];
+        lastButtons[key] = isMoved;
+        return isMoved && !wasMoved;
+    };
+
+    const UP = pressed(12) || stickMoved(1, -1);
+    const DOWN = pressed(13) || stickMoved(1, 1);
+    const LEFT = pressed(14) || stickMoved(0, -1);
+    const RIGHT = pressed(15) || stickMoved(0, 1);
+    const A = pressed(0);
+    const B = pressed(1);
+
+    updateFocusables();
+
+    if (UP) focusIndex = Math.max(0, focusIndex - 1);
+    if (DOWN) focusIndex = Math.min(focusables.length - 1, focusIndex + 1);
+    if (A && focusables[focusIndex]) {
+        focusables[focusIndex].focus();
+        focusables[focusIndex].click();
+    }
+    if (B) window.location.href = 'index.html';
+
+    applyFocus();
+    requestAnimationFrame(gamepadLoop);
+}
+
+function updateFocusables() {
+    const activeSection = authView.style.display !== 'none' ? authView : dashboardView;
+    // Find all interactive elements that are visible
+    focusables = Array.from(activeSection.querySelectorAll('input, button, a, [onclick]'))
+        .filter(el => {
+            const style = window.getComputedStyle(el);
+            return style.display !== 'none' && style.visibility !== 'hidden' && !el.closest('.hidden');
+        });
+}
+
+function applyFocus() {
+    focusables.forEach((el, i) => {
+        if (i === focusIndex) {
+            el.classList.add('gamepad-focused');
+        } else {
+            el.classList.remove('gamepad-focused');
+        }
+    });
+}
 
 async function checkAuthState() {
     const session = await getSession();

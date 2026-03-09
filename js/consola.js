@@ -7,7 +7,7 @@ let allGames = [];
 let displayedGames = [];
 let currentSelectedIndex = 0;
 let currentMode = 'list'; // 'list', 'header', 'keyboard', 'pause', 'selector', 'game'
-let headerIndex = 0; // 0: Search, 1: Account
+let headerIndex = 1; // 0: Logo, 1: Search, 2: Account
 let pauseIndex = 0; // 0: Resume, 1: Exit
 let gamepadType = 'xbox'; // 'xbox' or 'playstation'
 let gamepad = null;
@@ -249,10 +249,11 @@ function handleInput(pressed, axes) {
             updateHeaderFocus();
             renderGames();
         }
-        if (LEFT) { headerIndex = 0; updateHeaderFocus(); }
-        if (RIGHT) { headerIndex = 1; updateHeaderFocus(); }
+        if (LEFT) { headerIndex = Math.max(0, headerIndex - 1); updateHeaderFocus(); }
+        if (RIGHT) { headerIndex = Math.min(2, headerIndex + 1); updateHeaderFocus(); }
         if (A) {
-            if (headerIndex === 0) openKeyboard();
+            if (headerIndex === 0) window.location.href = 'index.html'; // Or show categories? Let's go home for now.
+            else if (headerIndex === 1) openKeyboard();
             else window.location.href = 'cuenta.html';
         }
     }
@@ -309,11 +310,14 @@ function moveSelection(dir) {
 }
 
 function updateHeaderFocus() {
+    const logoContainer = document.querySelector('.logo-crop');
     searchTrigger.classList.remove('selected');
     profileBtn.classList.remove('selected');
+    logoContainer.classList.remove('selected');
 
     if (currentMode === 'header') {
-        if (headerIndex === 0) searchTrigger.classList.add('selected');
+        if (headerIndex === 0) logoContainer.classList.add('selected');
+        else if (headerIndex === 1) searchTrigger.classList.add('selected');
         else profileBtn.classList.add('selected');
 
         // Unselect games

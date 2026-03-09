@@ -300,3 +300,22 @@
         border: none;
     }
 }
+
+/* Gamepad Focus Styles */
+.gamepad-focused {
+    outline: 4px solid var(--gold) !important;
+    outline-offset: 4px !important;
+    background: rgba(212, 175, 55, 0.2) !important;
+    transform: scale(1.03);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+}
+
+input.gamepad-focused {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+button.gamepad-focused, a.gamepad-focused {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}

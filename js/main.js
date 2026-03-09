@@ -53,13 +53,14 @@ const GAMES_DATA = [
 const CATEGORIES = ["Acción", "Aventura", "Estrategia", "Deportes", "Puzzle", "Arcade"];
 
 // State Management
+let allGames = [...GAMES_DATA];
 let filteredGames = [...GAMES_DATA];
 
 // DOM Elements
 const sectionsContainer = document.getElementById('sections-container');
 const searchInput = document.getElementById('game-search');
-const profileBtn = document.getElementById('profile-menu-button');
-const profileDropdown = document.getElementById('profile-dropdown');
+const logoMenuBtn = document.getElementById('logo-menu-btn');
+const logoDropdown = document.getElementById('logo-dropdown');
 const categoriesList = document.getElementById('categories-list');
 
 // Initialize
@@ -67,9 +68,20 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-function initApp() {
+async function initApp() {
     renderCategories();
-    renderSections(GAMES_DATA);
+
+    // Load from Supabase
+    try {
+        const dbGames = await getGames();
+        if (dbGames && dbGames.length > 0) {
+            allGames = dbGames;
+        }
+    } catch (e) {
+        console.warn('Supabase not available or empty, using mock data');
+    }
+
+    renderSections(allGames);
     setupEventListeners();
 }
 
@@ -77,25 +89,25 @@ function setupEventListeners() {
     // Search Filtering
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        filteredGames = GAMES_DATA.filter(game =>
+        filteredGames = allGames.filter(game =>
             game.title.toLowerCase().includes(term) ||
             game.category.toLowerCase().includes(term)
         );
         renderSections(filteredGames);
     });
 
-    // Profile Menu Toggle
-    profileBtn.addEventListener('click', (e) => {
+    // Logo Menu Toggle
+    logoMenuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        profileDropdown.classList.toggle('hidden');
+        logoDropdown.classList.toggle('hidden');
     });
 
     // Close dropdown on click outside
     document.addEventListener('click', () => {
-        profileDropdown.classList.add('hidden');
+        logoDropdown.classList.add('hidden');
     });
 
-    profileDropdown.addEventListener('click', (e) => {
+    logoDropdown.addEventListener('click', (e) => {
         e.stopPropagation();
     });
 }

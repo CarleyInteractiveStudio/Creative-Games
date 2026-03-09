@@ -57,6 +57,14 @@ body {
     align-items: center;
     gap: 0.8rem;
     cursor: pointer;
+    position: relative;
+    padding: 0.5rem;
+    border-radius: 12px;
+    transition: var(--transition);
+}
+
+.logo-container:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .logo-img {
@@ -113,6 +121,11 @@ body {
     position: relative;
 }
 
+.small-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .profile-btn {
     background: var(--glass);
     border: 1px solid var(--glass-border);
@@ -133,16 +146,22 @@ body {
 
 .dropdown-content {
     position: absolute;
-    top: 60px;
-    right: 0;
-    background: rgba(15, 15, 17, 0.95);
+    top: 100%;
+    left: 0;
+    margin-top: 10px;
+    background: rgba(15, 15, 17, 0.98);
     backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     border-radius: 15px;
-    min-width: 220px;
+    min-width: 240px;
     padding: 1rem 0;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     transition: var(--transition);
+    z-index: 1100;
+}
+
+#categories-list {
+    list-style: none;
 }
 
 .hidden {

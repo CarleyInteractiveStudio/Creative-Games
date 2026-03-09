@@ -1,0 +1,11 @@
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /images/icons/console.svg HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /images/icons/search.svg HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /images/icons/user.svg HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /js/supabase.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /images/icons/pc.svg HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /images/icons/mobile.svg HTTP/1.1" 200 -
+127.0.0.1 - - [09/Mar/2026 18:50:08] "GET /images/icons/tv.svg HTTP/1.1" 200 -

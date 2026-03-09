@@ -12,23 +12,10 @@
 <body>
     <header class="main-header">
         <div class="header-content">
-            <div class="logo-container">
+            <div class="logo-container" id="logo-menu-btn">
                 <img src="logo.png" alt="Creative Game Logo" class="logo-img">
                 <span class="logo-text">Creative <span class="gold-text">Game</span></span>
-            </div>
-
-            <div class="search-container">
-                <div class="search-bar">
-                    <img src="images/icons/search.svg" alt="Search" class="search-icon">
-                    <input type="text" id="game-search" placeholder="Buscar juegos, categorías..." autocomplete="off">
-                </div>
-            </div>
-
-            <div class="account-container">
-                <button id="profile-menu-button" class="profile-btn">
-                    <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
-                </button>
-                <div id="profile-dropdown" class="dropdown-content hidden">
+                <div id="logo-dropdown" class="dropdown-content hidden">
                     <div class="dropdown-header">Categorías</div>
                     <ul id="categories-list">
                         <!-- Categorías dinámicas -->
@@ -39,6 +26,19 @@
                         Modo Consola
                     </a>
                 </div>
+            </div>
+
+            <div class="search-container">
+                <div class="search-bar">
+                    <img src="images/icons/search.svg" alt="Search" class="search-icon">
+                    <input type="text" id="game-search" placeholder="Buscar juegos, categorías..." autocomplete="off">
+                </div>
+            </div>
+
+            <div class="account-container">
+                <a href="cuenta.html" id="account-link" class="profile-btn">
+                    <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
+                </a>
             </div>
         </div>
     </header>
@@ -57,6 +57,9 @@
         <p>&copy; 2024 Creative Game. Todos los derechos reservados.</p>
     </footer>
 
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

@@ -385,6 +385,34 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+.pulsing-icon {
+    animation: pulse 2s infinite ease-in-out;
+    background: rgba(212, 175, 55, 0.1);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    border: 2px solid var(--gold);
+}
+
+.large-icon {
+    width: 60px;
+    height: 60px;
+}
+
+.text-center {
+    text-align: center;
+}
+
 .active-title, .active-title span {
     animation: fadeIn 0.5s ease-out;
 }

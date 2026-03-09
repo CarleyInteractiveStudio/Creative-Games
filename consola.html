@@ -11,8 +11,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="console-mode">
+    <!-- Waiting for Gamepad Overlay -->
+    <div id="waiting-gamepad" class="modal-overlay">
+        <div class="modal-content glass-card text-center">
+            <div class="pulsing-icon">
+                <img src="images/icons/console.svg" alt="Mando" class="large-icon">
+            </div>
+            <h2 class="gold-text">Conecta un mando</h2>
+            <p>Para navegar por el Modo Consola, necesitas conectar un mando (Xbox o PlayStation).</p>
+        </div>
+    </div>
+
     <!-- Controller Selection Modal -->
-    <div id="controller-selector" class="modal-overlay">
+    <div id="controller-selector" class="modal-overlay hidden">
         <div class="modal-content glass-card">
             <h2 class="gold-text">Mando Detectado</h2>
             <p>Selecciona el tipo de iconos que prefieres:</p>

@@ -34,6 +34,7 @@ const kbOverlay = document.getElementById('virtual-keyboard');
 const kbDisplayInput = document.getElementById('kb-input');
 const kbKeysContainer = document.getElementById('kb-keys');
 const controllerSelector = document.getElementById('controller-selector');
+const waitingGamepad = document.getElementById('waiting-gamepad');
 const gameViewport = document.getElementById('game-viewport');
 const gameFrame = document.getElementById('game-frame');
 const pauseMenu = document.getElementById('pause-menu');
@@ -55,16 +56,30 @@ async function initConsole() {
 
     await loadConsoleGames();
 
+    // Check if gamepad is already connected
+    const gps = navigator.getGamepads();
+    if (gps[0]) {
+        handleGamepadConnected();
+    }
+}
+
+function handleGamepadConnected() {
+    waitingGamepad.classList.add('hidden');
+
     // Check for saved gamepad preference
     if (localStorage.getItem('gp_type')) {
         gamepadType = localStorage.getItem('gp_type');
         controllerSelector.classList.add('hidden');
+        currentMode = 'list';
         updateHints();
+        renderGames();
     } else {
         currentMode = 'selector';
         controllerSelector.classList.remove('hidden');
         updateSelectorFocus();
     }
+
+    gamepadLoop();
 }
 
 async function loadConsoleGames() {
@@ -147,7 +162,14 @@ function updateKeyboardCursor() {
 function setupGamepadListeners() {
     window.addEventListener("gamepadconnected", (e) => {
         console.log("Gamepad connected");
-        gamepadLoop();
+        handleGamepadConnected();
+    });
+
+    window.addEventListener("gamepaddisconnected", (e) => {
+        console.log("Gamepad disconnected");
+        waitingGamepad.classList.remove('hidden');
+        controllerSelector.classList.add('hidden');
+        currentMode = 'selector'; // Fallback
     });
 }
 

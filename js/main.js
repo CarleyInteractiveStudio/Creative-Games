@@ -63,6 +63,15 @@ const logoMenuBtn = document.getElementById('logo-menu-btn');
 const logoDropdown = document.getElementById('logo-dropdown');
 const categoriesList = document.getElementById('categories-list');
 
+// New Profile UI Elements
+const profileBar = document.getElementById('profile-management-bar');
+const userNameDisplay = document.getElementById('user-name-display');
+const profileModal = document.getElementById('profile-modal');
+const openProfileBtn = document.getElementById('open-profile-settings');
+const closeProfileBtn = document.getElementById('close-profile-modal');
+const profileForm = document.getElementById('profile-update-form');
+const newUsernameInput = document.getElementById('new-username');
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -70,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initApp() {
     renderCategories();
+
+    // Check Auth State for Profile Bar
+    checkUserAuth();
 
     // Load from Supabase
     try {
@@ -83,6 +95,18 @@ async function initApp() {
 
     renderSections(allGames);
     setupEventListeners();
+}
+
+async function checkUserAuth() {
+    const session = await getSession();
+    if (session && session.user) {
+        profileBar.classList.remove('hidden');
+        const username = session.user.user_metadata.full_name || 'Usuario';
+        userNameDisplay.textContent = username;
+        newUsernameInput.value = username;
+    } else {
+        profileBar.classList.add('hidden');
+    }
 }
 
 function setupEventListeners() {
@@ -110,6 +134,51 @@ function setupEventListeners() {
     logoDropdown.addEventListener('click', (e) => {
         e.stopPropagation();
     });
+
+    // Profile Modal Events
+    if (openProfileBtn) {
+        openProfileBtn.addEventListener('click', () => {
+            profileModal.classList.remove('hidden');
+        });
+    }
+
+    if (closeProfileBtn) {
+        closeProfileBtn.addEventListener('click', () => {
+            profileModal.classList.add('hidden');
+        });
+    }
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = newUsernameInput.value.trim();
+            if (!newName) return;
+
+            const submitBtn = profileForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            try {
+                const { error } = await window.sbClient.auth.updateUser({
+                    data: { full_name: newName }
+                });
+
+                if (error) {
+                    alert('Error al actualizar: ' + error.message);
+                } else {
+                    userNameDisplay.textContent = newName;
+                    profileModal.classList.add('hidden');
+                    // Notification system instead of alert? for now alert is fine.
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    }
 }
 
 function renderCategories() {

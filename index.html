@@ -44,6 +44,21 @@
     </header>
 
     <main id="main-content">
+        <!-- Profile Management Section (Hidden if not logged in) -->
+        <div id="profile-management-bar" class="profile-management-bar hidden">
+            <div class="profile-bar-content">
+                <div class="user-brief">
+                    <span class="welcome-msg">Hola, <span id="user-name-display" class="gold-text">Usuario</span></span>
+                </div>
+                <div class="profile-actions">
+                    <button id="open-profile-settings" class="btn-profile-action">
+                        <img src="images/icons/settings.svg" alt="Ajustes" class="small-icon">
+                        Editar Perfil
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="hero-section">
             <!-- Destacado opcional -->
         </div>
@@ -52,6 +67,25 @@
             <div class="loading-spinner">Cargando juegos...</div>
         </div>
     </main>
+
+    <!-- Profile Settings Modal -->
+    <div id="profile-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2>Ajustes de Perfil</h2>
+                <button id="close-profile-modal" class="btn-close">&times;</button>
+            </div>
+            <form id="profile-update-form">
+                <div class="form-group">
+                    <label for="new-username">Nombre de Usuario</label>
+                    <input type="text" id="new-username" class="form-input" placeholder="Tu nuevo nombre" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <footer class="main-footer">
         <p>&copy; 2024 Creative Game. Todos los derechos reservados.</p>

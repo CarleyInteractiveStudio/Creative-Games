@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Juego - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/publicar.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="index.html" class="logo-container">
+                <img src="logo.png" alt="Creative Game Logo" class="logo-img">
+                <span class="logo-text">Creative <span class="gold-text">Game</span></span>
+            </a>
+            <div class="account-container">
+                <a href="cuenta.html" class="profile-btn" title="Mi Cuenta">
+                    <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="publish-page">
+        <div class="wizard-container glass-card">
+            <!-- Progress Stepper -->
+            <div class="stepper">
+                <div class="step active" data-step="1">1<span class="step-label">Básico</span></div>
+                <div class="step" data-step="2">2<span class="step-label">Metadata</span></div>
+                <div class="step" data-step="3">3<span class="step-label">Audiencia</span></div>
+                <div class="step" data-step="4">4<span class="step-label">Políticas</span></div>
+                <div class="step" data-step="5">5<span class="step-label">Probar</span></div>
+            </div>
+
+            <form id="publish-form">
+                <!-- Step 1: Basic Info -->
+                <div class="step-content" id="step-1">
+                    <h2>Información Básica</h2>
+                    <div class="form-group">
+                        <label>Nombre del Juego</label>
+                        <input type="text" id="game-name" class="form-input" placeholder="Ej: Super Adventure" required>
+                    </div>
+                    <div class="form-group">
+                        <label>URL de GitHub (Repositorio)</label>
+                        <input type="url" id="game-repo" class="form-input" placeholder="https://github.com/..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción del Juego</label>
+                        <textarea id="game-desc" class="form-input" rows="4" placeholder="Describe tu juego..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Imagen de Portada (URL)</label>
+                        <input type="url" id="game-image" class="form-input" placeholder="https://..." required>
+                    </div>
+                </div>
+
+                <!-- Step 2: Metadata -->
+                <div class="step-content hidden" id="step-2">
+                    <h2>Metadata y Dispositivos</h2>
+                    <div class="form-group">
+                        <label>Categoría Principal</label>
+                        <select id="game-category" class="form-input" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="Acción">Acción</option>
+                            <option value="Aventura">Aventura</option>
+                            <option value="Estrategia">Estrategia</option>
+                            <option value="Deportes">Deportes</option>
+                            <option value="Puzzle">Puzzle</option>
+                            <option value="Arcade">Arcade</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Compatibilidad de Dispositivos</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="device" value="pc"> PC</label>
+                            <label><input type="checkbox" name="device" value="console"> Consola</label>
+                            <label><input type="checkbox" name="device" value="mobile"> Móvil</label>
+                            <label><input type="checkbox" name="device" value="tv"> Smart TV</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Audience -->
+                <div class="step-content hidden" id="step-3">
+                    <h2>Público Objetivo</h2>
+                    <div class="form-group">
+                        <label>Género Sugerido</label>
+                        <select id="game-gender" class="form-input">
+                            <option value="Todos">Todos</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Rango de Edad</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="age" value="6-11"> 6-11 años</label>
+                            <label><input type="checkbox" name="age" value="12-15"> 12-15 años</label>
+                            <label><input type="checkbox" name="age" value="15-17+"> 15-17+ años</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Policies -->
+                <div class="step-content hidden" id="step-4">
+                    <h2>Políticas y Términos</h2>
+                    <div class="policy-container">
+                        <div class="policy-item">
+                            <input type="checkbox" id="policy-marketing" required>
+                            <label for="policy-marketing">Acepto que Creative Game use mi juego para fines de marketing.</label>
+                        </div>
+                        <div class="policy-item">
+                            <input type="checkbox" id="policy-logo" required>
+                            <label for="policy-logo">Me comprometo a poner el logo de Creative Game en el inicio de mi juego.</label>
+                        </div>
+                        <div class="policy-divider">Restricciones de Contenido</div>
+                        <div class="policy-item">
+                            <input type="checkbox" id="policy-content" required>
+                            <label for="policy-content">Certifico que mi juego NO contiene:</label>
+                        </div>
+                        <ul class="policy-list">
+                            <li>Estafas o contenido engañoso.</li>
+                            <li>Ofensas a religiones, culturas o países.</li>
+                            <li>Explotación de guerras o situaciones económicas graves.</li>
+                            <li>Contenido sexual o pornográfico.</li>
+                            <li>Lenguaje inclusivo (ej: "elle") o contenido de ideología de género/gay.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 5: Test -->
+                <div class="step-content hidden" id="step-5">
+                    <h2>Probar Juego</h2>
+                    <p>Visualiza cómo se verá tu juego en la plataforma.</p>
+                    <div class="preview-frame-container">
+                        <iframe id="game-preview-iframe" src="about:blank"></iframe>
+                    </div>
+                    <div class="preview-actions">
+                        <button type="button" id="refresh-preview" class="btn-small">Actualizar Vista</button>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="wizard-nav">
+                    <button type="button" id="prev-btn" class="btn-nav hidden">Anterior</button>
+                    <button type="button" id="next-btn" class="btn-nav btn-primary-gold">Siguiente</button>
+                    <button type="submit" id="submit-btn" class="btn-nav btn-primary-gold hidden">Publicar Juego</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/publicar.js"></script>
+</body>
+</html>

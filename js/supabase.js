@@ -53,3 +53,26 @@ async function getSession() {
     const { data: { session } } = await _supabase.auth.getSession();
     return session;
 }
+
+// User Metadata Helpers
+async function toggleFavorite(gameId) {
+    const session = await getSession();
+    if (!session) return;
+
+    let favorites = session.user.user_metadata.favorites || [];
+    if (favorites.includes(gameId)) {
+        favorites = favorites.filter(id => id !== gameId);
+    } else {
+        favorites.push(gameId);
+    }
+
+    return await _supabase.auth.updateUser({
+        data: { favorites: favorites }
+    });
+}
+
+async function updateProfileMetadata(metadata) {
+    return await _supabase.auth.updateUser({
+        data: metadata
+    });
+}

@@ -135,6 +135,57 @@
     gap: 2rem;
 }
 
+.favorites-grid {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+.game-card-mini {
+    min-width: 180px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.game-card-mini:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-5px);
+}
+
+.game-card-mini img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+.mini-info {
+    padding: 0.8rem;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.empty-msg {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    padding: 1rem 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 .dashboard-card {
     background: var(--bg-card);
     border: 1px solid var(--glass-border);

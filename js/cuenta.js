@@ -186,7 +186,7 @@ async function loadFavorites() {
 
     favoritesListContainer.innerHTML = games.map(game => `
         <div class="game-card-mini" onclick="location.href='juego.html?id=${game.id}'">
-            <img src="${game.image}" alt="${game.title}">
+            <img src="${game.image_url}" alt="${game.title}">
             <div class="mini-info">
                 <span>${game.title}</span>
             </div>
@@ -213,11 +213,11 @@ async function loadUserGames() {
         <tr>
             <td>
                 <div class="game-row-info">
-                    <img src="${game.image}" class="game-mini-thumb">
+                    <img src="${game.image_url}" class="game-mini-thumb">
                     <span>${game.title}</span>
                 </div>
             </td>
-            <td>${game.category}</td>
+            <td>${(game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros'}</td>
             <td><span class="status-badge">Publicado</span></td>
             <td>
                 <div class="action-btns">
@@ -269,15 +269,52 @@ function setupProfileListeners() {
 }
 
 function setupAuthListeners() {
+    // Tab switching
+    const btnLoginTab = document.getElementById('btn-login-tab');
+    const btnRegisterTab = document.getElementById('btn-register-tab');
+    const btnManageTab = document.getElementById('btn-manage-tab');
+
+    function setActiveTab(btn) {
+        [btnLoginTab, btnRegisterTab, btnManageTab].forEach(b => b?.classList.remove('active'));
+        btn?.classList.add('active');
+    }
+
+    btnLoginTab?.addEventListener('click', (e) => {
+        e.preventDefault();
+        setActiveTab(btnLoginTab);
+        loginContainer.classList.remove('hidden');
+        registerContainer.classList.add('hidden');
+        recoveryContainer.classList.add('hidden');
+    });
+
+    btnRegisterTab?.addEventListener('click', (e) => {
+        e.preventDefault();
+        setActiveTab(btnRegisterTab);
+        loginContainer.classList.add('hidden');
+        registerContainer.classList.remove('hidden');
+        recoveryContainer.classList.add('hidden');
+    });
+
+    btnManageTab?.addEventListener('click', (e) => {
+        e.preventDefault();
+        setActiveTab(btnManageTab);
+        window.open('https://carleystudio.com/cuenta.html', '_blank');
+        loginContainer.classList.remove('hidden');
+        registerContainer.classList.add('hidden');
+        recoveryContainer.classList.add('hidden');
+    });
+
     // Switch between forms
     showRegisterBtn?.addEventListener('click', (e) => {
         e.preventDefault();
+        setActiveTab(btnRegisterTab);
         loginContainer.classList.add('hidden');
         registerContainer.classList.remove('hidden');
     });
 
     showLoginBtn?.addEventListener('click', (e) => {
         e.preventDefault();
+        setActiveTab(btnLoginTab);
         registerContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
     });
@@ -290,6 +327,7 @@ function setupAuthListeners() {
 
     backToLoginBtn?.addEventListener('click', (e) => {
         e.preventDefault();
+        setActiveTab(btnLoginTab);
         recoveryContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
     });

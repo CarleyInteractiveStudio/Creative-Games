@@ -6,6 +6,7 @@ const { createClient } = window.supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 window.sbClient = _supabase;
+const supabase = _supabase; // For compatibility
 
 /**
  * Fetches all approved games from the database.
@@ -111,4 +112,64 @@ async function updateProfileMetadata(metadata) {
     return await _supabase.auth.updateUser({
         data: metadata
     });
+}
+
+/**
+ * Comments & Social Helpers
+ */
+async function getComments(gameId) {
+    const { data, error } = await _supabase
+        .from('comments')
+        .select(`
+            *,
+            profiles ( username )
+        `)
+        .eq('game_id', gameId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+}
+
+async function postComment(gameId, content) {
+    const session = await getSession();
+    if (!session) throw new Error('Inicia sesión para comentar');
+
+    const { data, error } = await _supabase
+        .from('comments')
+        .insert([{
+            game_id: gameId,
+            user_id: session.user.id,
+            content: content
+        }]);
+
+    if (error) throw error;
+    return data;
+}
+
+async function toggleLike(gameId) {
+    const session = await getSession();
+    if (!session) throw new Error('Inicia sesión para dar me gusta');
+
+    const userId = session.user.id;
+
+    // Check if exists
+    const { data: existing } = await _supabase
+        .from('likes')
+        .select('*')
+        .eq('game_id', gameId)
+        .eq('user_id', userId)
+        .single();
+
+    if (existing) {
+        return await _supabase.from('likes').delete().eq('id', existing.id);
+    } else {
+        return await _supabase.from('likes').insert([{ game_id: gameId, user_id: userId }]);
+    }
+}
+
+async function reportError(gameId) {
+    const { error } = await _supabase.rpc('report_game_error', { game_id_param: gameId });
+    if (error) throw error;
+    return true;
 }

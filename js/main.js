@@ -67,15 +67,6 @@ const logoMenuBtn = document.getElementById('logo-menu-btn');
 const logoDropdown = document.getElementById('logo-dropdown');
 const categoriesList = document.getElementById('categories-list');
 
-// New Profile UI Elements
-const profileBar = document.getElementById('profile-management-bar');
-const userNameDisplay = document.getElementById('user-name-display');
-const profileModal = document.getElementById('profile-modal');
-const openProfileBtn = document.getElementById('open-profile-settings');
-const closeProfileBtn = document.getElementById('close-profile-modal');
-const profileForm = document.getElementById('profile-update-form');
-const newUsernameInput = document.getElementById('new-username');
-
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -94,10 +85,10 @@ async function initApp() {
             allGames = dbGames.map(g => ({
                 id: g.id,
                 title: g.title,
-                category: g.categories ? g.categories[0] : 'Otros',
+                category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
                 rating: g.rating || 0,
-                image: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
-                compatibility: g.devices || []
+                image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+                devices: g.devices || []
             }));
         }
     } catch (e) {
@@ -111,15 +102,7 @@ async function initApp() {
 }
 
 async function checkUserAuth() {
-    const session = await getSession();
-    if (session && session.user) {
-        profileBar.classList.remove('hidden');
-        const username = session.user.user_metadata.full_name || 'Usuario';
-        userNameDisplay.textContent = username;
-        newUsernameInput.value = username;
-    } else {
-        profileBar.classList.add('hidden');
-    }
+    // Keep for potential future use or state management
 }
 
 function setupEventListeners() {
@@ -148,50 +131,6 @@ function setupEventListeners() {
         e.stopPropagation();
     });
 
-    // Profile Modal Events
-    if (openProfileBtn) {
-        openProfileBtn.addEventListener('click', () => {
-            profileModal.classList.remove('hidden');
-        });
-    }
-
-    if (closeProfileBtn) {
-        closeProfileBtn.addEventListener('click', () => {
-            profileModal.classList.add('hidden');
-        });
-    }
-
-    if (profileForm) {
-        profileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newName = newUsernameInput.value.trim();
-            if (!newName) return;
-
-            const submitBtn = profileForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Guardando...';
-
-            try {
-                const { error } = await window.sbClient.auth.updateUser({
-                    data: { full_name: newName }
-                });
-
-                if (error) {
-                    alert('Error al actualizar: ' + error.message);
-                } else {
-                    userNameDisplay.textContent = newName;
-                    profileModal.classList.add('hidden');
-                    // Notification system instead of alert? for now alert is fine.
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        });
-    }
 }
 
 function renderCategories() {
@@ -231,14 +170,17 @@ function renderSections(games) {
 }
 
 function createGameCard(game) {
-    const compIcons = game.compatibility.map(device => `
+    const compIcons = (game.devices || []).map(device => `
         <img src="images/icons/${device}.svg" alt="${device}" class="comp-icon" title="${device}">
     `).join('');
 
+    // PC/TV/Mobile games go to juego.html
+    // Console games go to juego-consola.html (if specifically selected in console mode)
+    // For main page, we use juego.html
     return `
-        <div class="game-card" onclick="playGame(${game.id})">
+        <div class="game-card" onclick="location.href='juego.html?id=${game.id}'">
             <div class="game-thumb-container">
-                <img src="${game.image}" alt="${game.title}" class="game-thumb" loading="lazy">
+                <img src="${game.image_url}" alt="${game.title}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
                 <h3 class="game-title">${game.title}</h3>

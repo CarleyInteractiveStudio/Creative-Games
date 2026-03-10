@@ -92,11 +92,11 @@ async function loadConsoleGames() {
                 title: g.title,
                 rating: g.rating || 0,
                 description: g.description,
-                image: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
-                compatibility: g.devices || [],
+                image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+                devices: g.devices || [],
                 repo_url: g.repo_url
             }))
-            .filter(g => g.compatibility.includes('console'));
+            .filter(g => g.devices.includes('console'));
 
     } catch (e) {
         console.error('Error loading console games:', e);
@@ -113,7 +113,7 @@ function renderGames() {
     }
     gamesList.innerHTML = displayedGames.map((game, index) => `
         <div class="console-game-card ${ (currentMode === 'list' && index === currentSelectedIndex) ? 'selected' : ''}" data-index="${index}">
-            <img src="${game.image}" alt="${game.title}">
+            <img src="${game.image_url}" alt="${game.title}">
         </div>
     `).join('');
     updateActiveGame();
@@ -407,11 +407,7 @@ function performSearch() {
 function launchGame() {
     const game = displayedGames[currentSelectedIndex];
     if (game) {
-        currentMode = 'game';
-        gameViewport.classList.remove('hidden');
-        // Use repo_url or fallback
-        const url = game.repo_url || 'https://www.google.com/logos/2010/pacman10-i.html';
-        gameFrame.src = url;
+        window.location.href = `juego-consola.html?id=${game.id}`;
     }
 }
 

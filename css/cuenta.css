@@ -16,6 +16,34 @@
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
+.auth-nav-options {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+    gap: 1rem;
+}
+
+.auth-nav-link {
+    color: var(--text-gray);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.auth-nav-link:hover, .auth-nav-link.active {
+    color: var(--gold);
+}
+
+.auth-nav-link.active {
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: calc(1rem - 1px);
+    margin-bottom: -1rem;
+}
+
 .auth-header {
     text-align: center;
     margin-bottom: 2rem;

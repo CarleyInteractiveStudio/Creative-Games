@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadComments(gameId);
     await loadSidebarGames();
 
+    // Tracking
+    trackPlayTime(gameId);
+
     // Event Listeners
     setupCommentForm(gameId);
     setupActionButtons(gameId);
@@ -29,25 +32,16 @@ async function loadGameDetails(id) {
 
         document.title = `${game.title} - Creative Game`;
         document.getElementById('game-title').textContent = game.title;
-        document.getElementById('game-category').textContent = game.category;
+        document.getElementById('game-category').textContent = (game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros';
         document.getElementById('game-description').textContent = game.description;
 
         const iframe = document.getElementById('game-iframe');
         iframe.src = game.repo_url;
 
-        // Check if liked
-        const user = (await supabase.auth.getUser()).data.user;
-        if (user) {
-            const { data: like } = await supabase
-                .from('likes')
-                .select('*')
-                .eq('game_id', id)
-                .eq('user_id', user.id)
-                .single();
-
-            if (like) {
-                document.getElementById('btn-like').classList.add('active');
-            }
+        // Check if favorited
+        const favorites = await getFavorites();
+        if (favorites.includes(id)) {
+            document.getElementById('btn-like').classList.add('active');
         }
     } catch (err) {
         console.error('Error loading game:', err);
@@ -145,20 +139,11 @@ function setupActionButtons(gameId) {
     const btnFullscreen = document.getElementById('btn-fullscreen');
 
     btnLike.addEventListener('click', async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            alert('Inicia sesión para dar me gusta.');
-            return;
-        }
-
-        const isActive = btnLike.classList.contains('active');
-
-        if (isActive) {
-            await supabase.from('likes').delete().eq('game_id', gameId).eq('user_id', user.id);
-            btnLike.classList.remove('active');
-        } else {
-            await supabase.from('likes').insert([{ game_id: gameId, user_id: user.id }]);
-            btnLike.classList.add('active');
+        try {
+            await toggleFavorite(gameId);
+            btnLike.classList.toggle('active');
+        } catch (err) {
+            alert(err.message);
         }
     });
 
@@ -216,4 +201,26 @@ function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+let sessionStartTime = null;
+let currentPlaySessionId = null;
+
+async function trackPlayTime(gameId) {
+    sessionStartTime = Date.now();
+    try {
+        currentPlaySessionId = await startPlaySession(gameId, 'web');
+    } catch (e) {
+        console.warn('Analytics disabled (not logged in or server error)');
+    }
+
+    window.addEventListener('beforeunload', async () => {
+        if (currentPlaySessionId && sessionStartTime) {
+            const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+            // Using navigator.sendBeacon would be better for reliability on close
+            // but update endPlaySession to use standard fetch if possible.
+            // For now, we'll try a standard call.
+            await endPlaySession(currentPlaySessionId, duration);
+        }
+    });
 }

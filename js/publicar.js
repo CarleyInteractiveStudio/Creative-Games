@@ -14,9 +14,26 @@ const submitBtn = document.getElementById('submit-btn');
 const previewIframe = document.getElementById('game-preview-iframe');
 const refreshPreviewBtn = document.getElementById('refresh-preview');
 
-function initWizard() {
+async function initWizard() {
     setupListeners();
     updateUI();
+    await renderCategoryOptions();
+}
+
+async function renderCategoryOptions() {
+    const cats = await getCategories();
+    const container = document.getElementById('category-selection');
+    if (!container) return;
+
+    if (cats.length > 0) {
+        container.innerHTML = cats.map(cat => `
+            <label class="check-container">
+                <input type="checkbox" name="category" value="${cat}">
+                <span class="checkmark"></span>
+                ${cat}
+            </label>
+        `).join('');
+    }
 }
 
 function setupListeners() {

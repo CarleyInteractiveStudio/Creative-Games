@@ -73,10 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApp() {
-    renderCategories();
+    await renderCategories();
 
     // Check Auth State for Profile Bar
     checkUserAuth();
+
+    // Load Recommendations if logged in
+    const recommendations = await getRecommendedGames();
+    if (recommendations.length > 0) {
+        renderRecommendationSection(recommendations);
+    }
 
     // Load from Supabase
     try {
@@ -102,7 +108,12 @@ async function initApp() {
 }
 
 async function checkUserAuth() {
-    // Keep for potential future use or state management
+    // Update profile icon if logged in
+    const session = await getSession();
+    if (session) {
+        const btn = document.querySelector('.profile-btn');
+        if (btn) btn.title = `Cuenta: ${session.user.email}`;
+    }
 }
 
 function setupEventListeners() {
@@ -122,6 +133,10 @@ function setupEventListeners() {
         logoDropdown.classList.toggle('hidden');
     });
 
+    // Device filters in main page
+    window.filterByDevice = filterByDevice;
+    window.filterByCategory = filterByCategory;
+
     // Close dropdown on click outside
     document.addEventListener('click', () => {
         logoDropdown.classList.add('hidden');
@@ -133,10 +148,32 @@ function setupEventListeners() {
 
 }
 
-function renderCategories() {
-    categoriesList.innerHTML = CATEGORIES.map(cat => `
-        <li><a href="#" class="dropdown-item">${cat}</a></li>
+async function renderCategories() {
+    const cats = await getCategories();
+    const list = cats.length > 0 ? cats : CATEGORIES;
+    categoriesList.innerHTML = list.map(cat => `
+        <li><a href="#" class="dropdown-item" onclick="filterByCategory('${cat}')">${cat}</a></li>
     `).join('');
+}
+
+function filterByCategory(cat) {
+    filteredGames = allGames.filter(game =>
+        game.category === cat || (game.categories && game.categories.includes(cat))
+    );
+    renderSections(filteredGames);
+}
+
+async function filterByDevice(device) {
+    const dbGames = await getApprovedGames({ device: device });
+    const mapped = dbGames.map(g => ({
+        id: g.id,
+        title: g.title,
+        category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
+        rating: g.rating || 0,
+        image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+        devices: g.devices || []
+    }));
+    renderSections(mapped);
 }
 
 function renderSections(games) {
@@ -147,8 +184,9 @@ function renderSections(games) {
 
     // Group games by category for sections
     const grouped = games.reduce((acc, game) => {
-        if (!acc[game.category]) acc[game.category] = [];
-        acc[game.category].push(game);
+        const cat = game.category || 'Otros';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(game);
         return acc;
     }, {});
 
@@ -167,6 +205,28 @@ function renderSections(games) {
     }
 
     sectionsContainer.innerHTML = html;
+}
+
+function renderRecommendationSection(games) {
+    const sectionHtml = `
+        <section class="game-section recommendation-section">
+            <h2 class="section-title gold-text">Recomendados para ti</h2>
+            <div class="scroll-container">
+                ${games.map(game => {
+                    // Map DB game to card format
+                    const cardGame = {
+                        id: game.id,
+                        title: game.title,
+                        rating: game.rating,
+                        image_url: game.image_url,
+                        devices: game.devices
+                    };
+                    return createGameCard(cardGame);
+                }).join('')}
+            </div>
+        </section>
+    `;
+    sectionsContainer.insertAdjacentHTML('afterbegin', sectionHtml);
 }
 
 function createGameCard(game) {

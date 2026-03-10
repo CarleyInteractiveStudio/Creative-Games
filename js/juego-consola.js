@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadGameData();
     updatePauseHints();
+    trackPlayTime(gameId);
     gamepadLoop();
 });
 
@@ -155,4 +156,23 @@ function updatePauseHints() {
             <span>Volver</span>
         </div>
     `;
+}
+
+let sessionStartTime = null;
+let currentPlaySessionId = null;
+
+async function trackPlayTime(gameId) {
+    sessionStartTime = Date.now();
+    try {
+        currentPlaySessionId = await startPlaySession(gameId, 'console');
+    } catch (e) {
+        console.warn('Analytics disabled');
+    }
+
+    window.addEventListener('beforeunload', async () => {
+        if (currentPlaySessionId && sessionStartTime) {
+            const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+            await endPlaySession(currentPlaySessionId, duration);
+        }
+    });
 }

@@ -11,18 +11,40 @@ const supabase = _supabase; // For compatibility
 /**
  * Fetches all approved games from the database.
  */
-async function getApprovedGames() {
-    const { data, error } = await _supabase
+async function getApprovedGames(filter = {}) {
+    let query = _supabase
         .from('games')
         .select('*')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false });
+        .eq('status', 'approved');
+
+    if (filter.device) {
+        query = query.contains('devices', [filter.device]);
+    }
+
+    if (filter.category) {
+        query = query.contains('categories', [filter.category]);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
         console.error('Error fetching approved games:', error);
         return [];
     }
     return data;
+}
+
+/**
+ * Fetches categories from the server
+ */
+async function getCategories() {
+    const { data, error } = await _supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+
+    if (error) return [];
+    return data.map(c => c.name);
 }
 
 /**
@@ -91,21 +113,35 @@ async function getSession() {
     return session;
 }
 
-// User Metadata Helpers
+// Favorites Helpers (Database-driven)
+async function getFavorites() {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await _supabase
+        .from('favorites')
+        .select('game_id');
+
+    if (error) return [];
+    return data.map(f => f.game_id);
+}
+
 async function toggleFavorite(gameId) {
-    const session = await getSession();
-    if (!session) return;
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) throw new Error('Inicia sesión para favoritos');
 
-    let favorites = session.user.user_metadata.favorites || [];
-    if (favorites.includes(gameId)) {
-        favorites = favorites.filter(id => id !== gameId);
+    const { data: existing } = await _supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('game_id', gameId)
+        .single();
+
+    if (existing) {
+        return await _supabase.from('favorites').delete().eq('id', existing.id);
     } else {
-        favorites.push(gameId);
+        return await _supabase.from('favorites').insert([{ user_id: user.id, game_id: gameId }]);
     }
-
-    return await _supabase.auth.updateUser({
-        data: { favorites: favorites }
-    });
 }
 
 async function updateProfileMetadata(metadata) {
@@ -172,4 +208,66 @@ async function reportError(gameId) {
     const { error } = await _supabase.rpc('report_game_error', { game_id_param: gameId });
     if (error) throw error;
     return true;
+}
+
+/**
+ * Analytics / Play Tracking
+ */
+async function startPlaySession(gameId, deviceType = 'web') {
+    const { data: { user } } = await _supabase.auth.getUser();
+    const { data, error } = await _supabase
+        .from('play_sessions')
+        .insert([{
+            user_id: user ? user.id : null,
+            game_id: gameId,
+            device_type: deviceType
+        }])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data.id; // Session ID
+}
+
+async function endPlaySession(sessionId, durationSeconds) {
+    await _supabase
+        .from('play_sessions')
+        .update({ duration_seconds: durationSeconds })
+        .eq('id', sessionId);
+}
+
+async function getRecommendedGames() {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return [];
+
+    // Simple recommendation based on most played categories
+    const { data: sessions } = await _supabase
+        .from('play_sessions')
+        .select('game_id, games(categories)')
+        .eq('user_id', user.id)
+        .limit(100);
+
+    if (!sessions || sessions.length === 0) return [];
+
+    const catCounts = {};
+    sessions.forEach(s => {
+        if (s.games && s.games.categories) {
+            s.games.categories.forEach(c => {
+                catCounts[c] = (catCounts[c] || 0) + 1;
+            });
+        }
+    });
+
+    const topCategory = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a])[0];
+
+    if (!topCategory) return [];
+
+    const { data: recommended } = await _supabase
+        .from('games')
+        .select('*')
+        .eq('status', 'approved')
+        .contains('categories', [topCategory])
+        .limit(6);
+
+    return recommended || [];
 }

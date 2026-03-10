@@ -9,6 +9,19 @@ window.sbClient = _supabase;
 const sb = _supabase; // Renamed to avoid SyntaxError with global 'supabase'
 
 /**
+ * Converts a standard GitHub blob URL to a raw content URL
+ * @param {string} url
+ * @returns {string}
+ */
+function fixGitHubImageUrl(url) {
+    if (!url) return url;
+    if (url.includes('github.com') && url.includes('/blob/')) {
+        return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    }
+    return url;
+}
+
+/**
  * Fetches all approved games from the database.
  */
 async function getApprovedGames(filter = {}) {

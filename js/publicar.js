@@ -136,14 +136,30 @@ function updateUI() {
     }
 }
 
+/**
+ * Converts a standard GitHub blob URL to a raw content URL
+ * @param {string} url
+ * @returns {string}
+ */
+function fixGitHubImageUrl(url) {
+    if (!url) return url;
+    if (url.includes('github.com') && url.includes('/blob/')) {
+        return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    }
+    return url;
+}
+
 function updatePreview() {
     const repoUrl = document.getElementById('game-repo').value;
+    const imageUrl = document.getElementById('game-image').value;
+
     if (repoUrl) {
-        // Simple heuristic to try to preview from GitHub Pages or similar
-        // For a real app, we'd need a way to serve the game files
-        // Here we just set the iframe source to show it's working
         previewIframe.src = repoUrl;
     }
+
+    // Try to update cover image in a real preview if we had one,
+    // for now we just log the fix
+    console.log("Image URL processed:", fixGitHubImageUrl(imageUrl));
 }
 
 async function publishGame() {
@@ -156,7 +172,7 @@ async function publishGame() {
     const name = document.getElementById('game-name').value;
     const repo = document.getElementById('game-repo').value;
     const desc = document.getElementById('game-desc').value;
-    const image = document.getElementById('game-image').value;
+    const image = fixGitHubImageUrl(document.getElementById('game-image').value);
 
     const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(cb => cb.value);
     const devices = Array.from(document.querySelectorAll('input[name="device"]:checked')).map(cb => cb.value);

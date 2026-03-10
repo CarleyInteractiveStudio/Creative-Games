@@ -94,7 +94,7 @@ async function initApp() {
                 author: g.profiles?.username || 'Usuario',
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
                 rating: g.rating || 0,
-                image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+                image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
                 devices: g.devices || []
             }));
         }
@@ -177,7 +177,7 @@ async function filterByDevice(device) {
         title: g.title,
         category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
         rating: g.rating || 0,
-        image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+        image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
         devices: g.devices || []
     }));
     renderSections(mapped);
@@ -225,7 +225,7 @@ function renderRecommendationSection(games) {
                         id: game.id,
                         title: game.title,
                         rating: game.rating,
-                        image_url: game.image_url,
+                        image_url: fixGitHubImageUrl(game.image_url),
                         devices: game.devices
                     };
                     return createGameCard(cardGame);

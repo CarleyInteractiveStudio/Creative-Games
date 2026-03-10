@@ -202,7 +202,7 @@ async function loadFavorites() {
 
     favoritesListContainer.innerHTML = games.map(game => `
         <div class="game-card-mini" onclick="location.href='juego.html?id=${game.id}'">
-            <img src="${game.image_url}" alt="${game.title}">
+            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${game.title}">
             <div class="mini-info">
                 <span>${game.title}</span>
             </div>
@@ -235,7 +235,7 @@ async function loadUserGames() {
             <tr>
                 <td>
                     <div class="game-row-info">
-                        <img src="${game.image_url}" class="game-mini-thumb" onerror="this.src='logo.png'">
+                        <img src="${fixGitHubImageUrl(game.image_url)}" class="game-mini-thumb" onerror="this.src='logo.png'">
                         <div style="display: flex; flex-direction: column;">
                             <span>${game.title}</span>
                             <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.username || 'Tú'}</small>

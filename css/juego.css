@@ -56,7 +56,30 @@
 
 .player-actions {
     display: flex;
+    align-items: center;
     gap: 1rem;
+}
+
+.star-rating {
+    display: flex;
+    gap: 0.3rem;
+    margin-right: 1.5rem;
+}
+
+.star {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+}
+
+.star.active {
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.star:hover, .star:hover ~ .star {
+    color: var(--gold-bright);
 }
 
 .action-btn {

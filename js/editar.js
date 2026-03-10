@@ -76,7 +76,7 @@ async function updateGame(id) {
         engine: document.getElementById('game-engine').value,
         suggested_gender: document.getElementById('game-gender').value,
         categories: categories,
-        updated_at: new Date().toISOString()
+        last_updated: new Date().toISOString()
     };
 
     try {

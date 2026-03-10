@@ -524,6 +524,20 @@ select.form-input option {
     object-fit: cover;
 }
 
+.card-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--gold);
+    color: black;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
 .game-info {
     padding: 1.2rem;
 }

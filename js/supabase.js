@@ -170,6 +170,74 @@ async function updateProfileMetadata(metadata) {
 }
 
 /**
+ * Star Ratings
+ */
+async function submitRating(gameId, score) {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) throw new Error('Inicia sesión para calificar');
+
+    const { error } = await _supabase
+        .from('ratings')
+        .upsert({
+            user_id: user.id,
+            game_id: gameId,
+            score: score
+        }, { onConflict: 'user_id, game_id' });
+
+    if (error) throw error;
+}
+
+async function getUserRating(gameId) {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return 0;
+
+    const { data, error } = await _supabase
+        .from('ratings')
+        .select('score')
+        .eq('user_id', user.id)
+        .eq('game_id', gameId)
+        .maybeSingle();
+
+    return data ? data.score : 0;
+}
+
+/**
+ * Achievements
+ */
+async function awardAchievement(gameId, title, type = 'play_time') {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await _supabase
+        .from('achievements')
+        .insert([{
+            user_id: user.id,
+            game_id: gameId,
+            title: title,
+            type: type
+        }]);
+
+    if (error && error.code !== '23505') { // Ignore unique constraint errors
+        console.error('Error awarding achievement:', error);
+    } else if (!error) {
+        // Notify the user locally if needed
+        console.log('¡Logro desbloqueado!', title);
+    }
+}
+
+async function getGameAuthorGames(authorId) {
+    const { data, error } = await _supabase
+        .from('games')
+        .select('*')
+        .eq('user_id', authorId)
+        .eq('status', 'approved')
+        .limit(10);
+
+    if (error) return [];
+    return data;
+}
+
+/**
  * Comments & Social Helpers
  */
 async function getComments(gameId) {

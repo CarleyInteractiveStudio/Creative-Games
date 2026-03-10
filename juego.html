@@ -41,13 +41,25 @@
             <!-- Title & Controls -->
             <div class="player-controls">
                 <div class="game-info-basic">
-                    <h1 id="game-title">Título del Juego</h1>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <h1 id="game-title">Título del Juego</h1>
+                        <span id="badge-new" class="status-badge status-approved hidden">NUEVO</span>
+                        <span id="badge-updated" class="status-badge status-pending hidden">ACTUALIZADO</span>
+                    </div>
                     <div class="game-author-row">
                         <span id="game-category">Categoría</span> •
-                        <span id="game-author" class="gold-text">Publicado por ...</span>
+                        <span id="game-author" class="gold-text" style="cursor: pointer;">Publicado por ...</span>
+                        <span id="game-updated-at" style="color: var(--text-gray); font-size: 0.8rem; margin-left: 1rem;"></span>
                     </div>
                 </div>
                 <div class="player-actions">
+                    <div class="star-rating" id="star-rating">
+                        <span class="star" data-score="1">★</span>
+                        <span class="star" data-score="2">★</span>
+                        <span class="star" data-score="3">★</span>
+                        <span class="star" data-score="4">★</span>
+                        <span class="star" data-score="5">★</span>
+                    </div>
                     <button class="action-btn" id="btn-like">
                         <span class="icon">❤</span> Me gusta
                     </button>

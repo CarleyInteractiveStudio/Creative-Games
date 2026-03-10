@@ -95,7 +95,8 @@ async function initApp() {
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
                 rating: g.rating || 0,
                 image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
-                devices: g.devices || []
+                    devices: g.devices || [],
+                    created_at: g.created_at
             }));
         }
     } catch (e) {
@@ -292,16 +293,22 @@ function createGameCard(game) {
         <img src="images/icons/${device}.svg" alt="${device}" class="comp-icon" title="${device}">
     `).join('');
 
+    // New/Updated Badges
+    const createdDate = new Date(game.created_at);
+    const now = new Date();
+    const isNew = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24)) <= 7;
+
     return `
         <div class="game-card" onclick="location.href='juego.html?id=${game.id}'">
             <div class="game-thumb-container">
+                ${isNew ? '<span class="card-badge">NUEVO</span>' : ''}
                 <img src="${game.image_url}" alt="${game.title}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
                 <h3 class="game-title">${game.title}</h3>
                 <div class="author-label">por ${game.author || 'Usuario'}</div>
                 <div class="game-meta">
-                    <span class="rating">${game.rating}</span>
+                    <span class="rating">${Number(game.rating).toFixed(1)}</span>
                     <div class="compatibility-icons">
                         ${compIcons}
                     </div>

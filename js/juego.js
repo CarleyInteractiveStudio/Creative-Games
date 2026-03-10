@@ -24,7 +24,10 @@ async function loadGameDetails(id) {
     try {
         const { data: game, error } = await sbClient
             .from('games')
-            .select('*')
+            .select(`
+                *,
+                profiles ( username )
+            `)
             .eq('id', id)
             .single();
 
@@ -33,9 +36,25 @@ async function loadGameDetails(id) {
         document.title = `${game.title} - Creative Game`;
         document.getElementById('game-title').textContent = game.title;
         document.getElementById('game-category').textContent = (game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros';
-        document.getElementById('game-author').textContent = `Publicado por ${game.profiles?.username || 'Usuario'}`;
+
+        const authorEl = document.getElementById('game-author');
+        authorEl.textContent = `Publicado por ${game.profiles?.username || 'Usuario'}`;
+        authorEl.onclick = () => filterByAuthor(game.user_id, game.profiles?.username);
+
         document.getElementById('game-description').textContent = game.description;
         document.getElementById('game-engine-display').textContent = game.engine || 'Otros';
+
+        // Dates and Badges
+        const createdDate = new Date(game.created_at);
+        const updatedDate = new Date(game.last_updated || game.created_at);
+        const now = new Date();
+        const diffDaysCreated = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+        const diffDaysUpdated = Math.floor((now - updatedDate) / (1000 * 60 * 60 * 24));
+
+        if (diffDaysCreated <= 7) document.getElementById('badge-new').classList.remove('hidden');
+        else if (diffDaysUpdated <= 7 && game.last_updated) document.getElementById('badge-updated').classList.remove('hidden');
+
+        document.getElementById('game-updated-at').textContent = `Actualizado: ${updatedDate.toLocaleDateString()}`;
 
         // Update Meta Tags for Sharing
         document.querySelector('meta[property="og:title"]').content = game.title;
@@ -53,6 +72,12 @@ async function loadGameDetails(id) {
 
         const iframe = document.getElementById('game-iframe');
         iframe.src = game.repo_url;
+
+        // Load Rating
+        const userRating = await getUserRating(id);
+        if (userRating > 0) {
+            updateStarDisplay(userRating);
+        }
 
         // Check if favorited
         const favorites = await getFavorites();
@@ -212,6 +237,20 @@ function setupActionButtons(gameId) {
         }
     });
 
+    // Star Rating
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.addEventListener('click', async () => {
+            const score = parseInt(star.dataset.score);
+            try {
+                await submitRating(gameId, score);
+                updateStarDisplay(score);
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+    });
+
     btnFullscreen.addEventListener('click', () => {
         const iframe = document.getElementById('game-iframe');
         if (iframe.requestFullscreen) {
@@ -250,6 +289,44 @@ async function loadSidebarGames() {
     }
 }
 
+function updateStarDisplay(score) {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(s => {
+        if (parseInt(s.dataset.score) <= score) {
+            s.classList.add('active');
+        } else {
+            s.classList.remove('active');
+        }
+    });
+}
+
+async function filterByAuthor(userId, username) {
+    const container = document.getElementById('sidebar-games-list');
+    container.innerHTML = '<div class="loading-spinner">Cargando...</div>';
+
+    try {
+        const games = await getGameAuthorGames(userId);
+        document.querySelector('.sidebar-title').textContent = `Más de ${username}`;
+
+        if (games.length === 0) {
+            container.innerHTML = '<p class="empty-msg">No hay más juegos de este autor.</p>';
+            return;
+        }
+
+        container.innerHTML = games.map(g => `
+            <a href="juego.html?id=${g.id}" class="sidebar-game-card">
+                <img src="${fixGitHubImageUrl(g.image_url)}" alt="${g.title}" class="sidebar-thumb">
+                <div class="sidebar-info">
+                    <div class="sidebar-name">${g.title}</div>
+                    <div class="sidebar-category">${(g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros'}</div>
+                </div>
+            </a>
+        `).join('');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
@@ -263,6 +340,19 @@ async function trackPlayTime(gameId) {
     sessionStartTime = Date.now();
     try {
         currentPlaySessionId = await startPlaySession(gameId, 'web');
+
+        // Milestone tracking (Check every minute)
+        const checkInterval = setInterval(async () => {
+            if (!sessionStartTime) return;
+            const elapsedMinutes = Math.floor((Date.now() - sessionStartTime) / 60000);
+
+            if (elapsedMinutes === 10) await awardAchievement(gameId, 'Explorador (10 min)');
+            if (elapsedMinutes === 30) await awardAchievement(gameId, 'Dedicado (30 min)');
+            if (elapsedMinutes === 60) await awardAchievement(gameId, 'Maestro (1 hora)');
+            if (elapsedMinutes === 300) await awardAchievement(gameId, 'Leyenda (5 horas)');
+
+        }, 60000);
+
     } catch (e) {
         console.warn('Analytics disabled (not logged in or server error)');
     }
@@ -270,9 +360,6 @@ async function trackPlayTime(gameId) {
     window.addEventListener('beforeunload', async () => {
         if (currentPlaySessionId && sessionStartTime) {
             const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
-            // Using navigator.sendBeacon would be better for reliability on close
-            // but update endPlaySession to use standard fetch if possible.
-            // For now, we'll try a standard call.
             await endPlaySession(currentPlaySessionId, duration);
         }
     });

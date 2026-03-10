@@ -44,7 +44,7 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 CREATE TABLE IF NOT EXISTS public.games (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    user_id UUID REFERENCES auth.users(id) NOT NULL,
+    user_id UUID REFERENCES public.profiles(id) NOT NULL, -- Referenced to profiles for easier JOINs
     title TEXT NOT NULL,
     description TEXT,
     image_url TEXT,
@@ -65,6 +65,40 @@ CREATE TABLE IF NOT EXISTS public.games (
     controls_mobile TEXT,
     controls_tv TEXT
 );
+
+-- Ensure V5 columns exist if the table was created in an older version
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'age_ratings') THEN
+        ALTER TABLE public.games ADD COLUMN age_ratings TEXT[] DEFAULT '{}';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'engine') THEN
+        ALTER TABLE public.games ADD COLUMN engine TEXT DEFAULT 'Otros';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'controls_pc') THEN
+        ALTER TABLE public.games ADD COLUMN controls_pc TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'controls_console') THEN
+        ALTER TABLE public.games ADD COLUMN controls_console TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'controls_mobile') THEN
+        ALTER TABLE public.games ADD COLUMN controls_mobile TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'controls_tv') THEN
+        ALTER TABLE public.games ADD COLUMN controls_tv TEXT;
+    END IF;
+
+    -- Update existing constraint to point to profiles if needed
+    IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'games_user_id_fkey') THEN
+        ALTER TABLE public.games DROP CONSTRAINT games_user_id_fkey;
+        ALTER TABLE public.games ADD CONSTRAINT games_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id);
+    END IF;
+END $$;
 
 ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
 
@@ -174,3 +208,6 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 7. Sync PostgREST
+NOTIFY pgrst, 'reload schema';

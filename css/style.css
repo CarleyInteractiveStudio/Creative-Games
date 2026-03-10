@@ -538,6 +538,25 @@ select.form-input option {
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background: rgba(0, 255, 127, 0.1);
+    color: #00ff7f;
+    border: 1px solid rgba(0, 255, 127, 0.2);
+}
+
+.status-pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: #ffa500;
+    border: 1px solid rgba(255, 165, 0, 0.2);
+}
+
 .game-info {
     padding: 1.2rem;
 }

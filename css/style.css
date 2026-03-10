@@ -36,20 +36,20 @@ body {
     left: 0;
     width: 100%;
     z-index: 1000;
-    background: var(--glass);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    background: rgba(10, 10, 11, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
 }
 
 .header-content {
-    max-width: 1600px;
+    max-width: 1800px;
     margin: 0 auto;
-    padding: 0.35rem 1.2rem;
+    padding: 0.8rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1.2rem;
+    gap: 2rem;
 }
 
 .logo-container {
@@ -460,8 +460,8 @@ select.form-input option {
 
 /* Sections */
 .game-section {
-    margin-bottom: 3rem;
-    padding: 0 2rem;
+    margin-bottom: 5rem;
+    padding: 0 clamp(1rem, 6vw, 6rem);
 }
 
 .section-title {
@@ -494,8 +494,8 @@ select.form-input option {
 
 /* Game Card */
 .game-card {
-    min-width: clamp(220px, 20vw, 300px);
-    max-width: clamp(220px, 20vw, 300px);
+    min-width: clamp(240px, 15vw, 300px);
+    max-width: clamp(240px, 15vw, 300px);
     background: var(--bg-card);
     border-radius: 18px;
     overflow: hidden;

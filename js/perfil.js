@@ -27,10 +27,15 @@ async function loadAuthorProfile(id) {
         document.title = `Perfil de ${displayName} - Creative Game`;
 
         const avatarBox = document.getElementById('author-avatar-box');
+        const initials = document.getElementById('author-initials');
         if (profile.avatar_url) {
-            avatarBox.innerHTML = `<img src="${fixGitHubImageUrl(profile.avatar_url)}" alt="Avatar">`;
+            const fixedUrl = fixGitHubImageUrl(profile.avatar_url);
+            avatarBox.innerHTML = `<img src="${fixedUrl}" alt="Avatar" id="profile-img" onerror="this.style.display='none'; document.getElementById('author-initials').style.display='flex';">`;
+            initials.textContent = displayName[0].toUpperCase();
+            initials.style.display = 'none';
         } else {
-            document.getElementById('author-initials').textContent = displayName[0].toUpperCase();
+            initials.textContent = displayName[0].toUpperCase();
+            initials.style.display = 'flex';
         }
 
         if (profile.interests) {

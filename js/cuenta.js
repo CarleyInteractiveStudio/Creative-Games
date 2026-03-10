@@ -202,9 +202,14 @@ async function showDashboard() {
     const initials = document.getElementById('user-initials');
 
     if (metadata.avatar_url) {
-        avatarImg.src = metadata.avatar_url;
+        avatarImg.src = fixGitHubImageUrl(metadata.avatar_url);
         avatarImg.classList.remove('hidden');
         initials.classList.add('hidden');
+        avatarImg.onerror = () => {
+            avatarImg.classList.add('hidden');
+            initials.classList.remove('hidden');
+            initials.textContent = (metadata.full_name || 'U').charAt(0).toUpperCase();
+        };
     } else {
         avatarImg.classList.add('hidden');
         initials.classList.remove('hidden');

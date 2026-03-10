@@ -137,7 +137,8 @@ async function checkUserAuth() {
             profileBtn.title = `Cuenta: ${session.user.email}`;
             const avatarUrl = session.user.user_metadata.avatar_url;
             if (avatarUrl) {
-                profileBtn.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                const fixedUrl = fixGitHubImageUrl(avatarUrl);
+                profileBtn.innerHTML = `<img src="${fixedUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.src='images/icons/user.svg'">`;
             }
         }
 

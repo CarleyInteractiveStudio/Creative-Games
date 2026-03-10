@@ -1,8 +1,8 @@
 .world-page {
-    max-width: 1000px;
-    margin: 120px auto 50px;
+    max-width: 1400px;
+    margin: 100px auto 30px;
     padding: 0 2rem;
-    height: calc(100vh - 200px);
+    height: calc(100vh - 160px);
     display: flex;
 }
 

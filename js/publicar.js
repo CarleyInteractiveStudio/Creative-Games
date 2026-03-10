@@ -155,6 +155,7 @@ async function publishGame() {
         repo_url: repo,
         categories: categories,
         devices: devices,
+        suggested_gender: gender,
         status: 'pending'
     };
 

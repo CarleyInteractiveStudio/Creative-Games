@@ -240,6 +240,8 @@ async function getRecommendedGames() {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) return [];
 
+    const userGender = user.user_metadata.gender || 'Ambos';
+
     // Simple recommendation based on most played categories
     const { data: sessions } = await _supabase
         .from('play_sessions')
@@ -262,12 +264,18 @@ async function getRecommendedGames() {
 
     if (!topCategory) return [];
 
-    const { data: recommended } = await _supabase
+    let query = _supabase
         .from('games')
         .select('*')
         .eq('status', 'approved')
-        .contains('categories', [topCategory])
-        .limit(6);
+        .contains('categories', [topCategory]);
+
+    // Filter by gender preference if not 'Ambos'
+    if (userGender !== 'Ambos') {
+        query = query.or(`suggested_gender.eq.${userGender},suggested_gender.eq.Ambos`);
+    }
+
+    const { data: recommended } = await query.limit(6);
 
     return recommended || [];
 }

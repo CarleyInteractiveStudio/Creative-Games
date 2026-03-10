@@ -112,7 +112,13 @@ async function checkUserAuth() {
     const session = await getSession();
     if (session) {
         const btn = document.querySelector('.profile-btn');
-        if (btn) btn.title = `Cuenta: ${session.user.email}`;
+        if (btn) {
+            btn.title = `Cuenta: ${session.user.email}`;
+            const avatarUrl = session.user.user_metadata.avatar_url;
+            if (avatarUrl) {
+                btn.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            }
+        }
     }
 }
 

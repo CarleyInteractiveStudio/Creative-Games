@@ -138,7 +138,23 @@ async function showDashboard() {
     // Update User Profile UI
     userDisplayName.textContent = `Bienvenido, ${metadata.full_name || 'Usuario'}`;
     userEmailDisplay.textContent = currentUser.email;
-    userInitials.textContent = (metadata.full_name || 'U').charAt(0).toUpperCase();
+
+    // Gender & Avatar Display
+    const genderDisplay = document.getElementById('user-gender-display');
+    if (genderDisplay) genderDisplay.textContent = `Sexo: ${metadata.gender || 'No especificado'}`;
+
+    const avatarImg = document.getElementById('user-avatar-img');
+    const initials = document.getElementById('user-initials');
+
+    if (metadata.avatar_url) {
+        avatarImg.src = metadata.avatar_url;
+        avatarImg.classList.remove('hidden');
+        initials.classList.add('hidden');
+    } else {
+        avatarImg.classList.add('hidden');
+        initials.classList.remove('hidden');
+        initials.textContent = (metadata.full_name || 'U').charAt(0).toUpperCase();
+    }
 
     // Load Profile Settings
     if (metadata.birth_date) {
@@ -299,23 +315,17 @@ function setupAuthListeners() {
         e.preventDefault();
         setActiveTab(btnManageTab);
         window.open('https://carleystudio.com/cuenta.html', '_blank');
-        loginContainer.classList.remove('hidden');
-        registerContainer.classList.add('hidden');
-        recoveryContainer.classList.add('hidden');
     });
 
     // Switch between forms
     showRegisterBtn?.addEventListener('click', (e) => {
         e.preventDefault();
-        setActiveTab(btnRegisterTab);
-        loginContainer.classList.add('hidden');
-        registerContainer.classList.remove('hidden');
+        window.open('https://carleystudio.com/cuenta.html', '_blank');
     });
 
     showLoginBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         setActiveTab(btnLoginTab);
-        registerContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
     });
 
@@ -352,20 +362,6 @@ function setupAuthListeners() {
         showAuth();
     });
 
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('reg-name').value;
-        const email = document.getElementById('reg-email').value;
-        const pass = document.getElementById('reg-password').value;
-
-        const { data, error } = await signUp(email, pass, { full_name: name });
-        if (error) {
-            alert('Error: ' + error.message);
-        } else {
-            alert('Registro exitoso. Por favor revisa tu correo para confirmar la cuenta.');
-            showLoginBtn.click();
-        }
-    });
 
     document.getElementById('recovery-form').addEventListener('submit', async (e) => {
         e.preventDefault();

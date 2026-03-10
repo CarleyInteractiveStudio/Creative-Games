@@ -145,7 +145,7 @@ function setupCommentForm(gameId) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await sbClient.auth.getUser();
         if (!user) {
             alert('Debes iniciar sesión para comentar.');
             window.location.href = 'cuenta.html';
@@ -230,7 +230,7 @@ function setupActionButtons(gameId) {
         if (!confirm('¿Estás seguro de que quieres reportar un error en este juego?')) return;
 
         try {
-            const { error } = await supabase.rpc('report_game_error', { game_id_param: gameId });
+            const { error } = await sbClient.rpc('report_game_error', { game_id_param: gameId });
             if (error) throw error;
             alert('Reporte enviado. Gracias por tu ayuda.');
         } catch (err) {
@@ -268,21 +268,17 @@ async function loadSidebarGames() {
     const container = document.getElementById('sidebar-games-list');
 
     try {
-        const { data: games, error } = await supabase
+        const { data: games, error } = await sbClient
             .from('games')
             .select('*')
             .eq('status', 'approved')
-            .limit(6);
+            .limit(12);
 
         if (error) throw error;
 
         container.innerHTML = games.map(g => `
-            <a href="juego.html?id=${g.id}" class="sidebar-game-card">
+            <a href="juego.html?id=${g.id}" class="sidebar-game-card" title="${g.title}">
                 <img src="${fixGitHubImageUrl(g.image_url)}" alt="${g.title}" class="sidebar-thumb">
-                <div class="sidebar-info">
-                    <div class="sidebar-name">${g.title}</div>
-                    <div class="sidebar-category">${(g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros'}</div>
-                </div>
             </a>
         `).join('');
     } catch (err) {
@@ -315,12 +311,8 @@ async function filterByAuthor(userId, username) {
         }
 
         container.innerHTML = games.map(g => `
-            <a href="juego.html?id=${g.id}" class="sidebar-game-card">
+            <a href="juego.html?id=${g.id}" class="sidebar-game-card" title="${g.title}">
                 <img src="${fixGitHubImageUrl(g.image_url)}" alt="${g.title}" class="sidebar-thumb">
-                <div class="sidebar-info">
-                    <div class="sidebar-name">${g.title}</div>
-                    <div class="sidebar-category">${(g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros'}</div>
-                </div>
             </a>
         `).join('');
     } catch (e) {

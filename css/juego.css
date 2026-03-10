@@ -1,14 +1,18 @@
 .player-page {
-    max-width: 1400px;
+    max-width: 1500px;
     margin: 100px auto 50px;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 2rem;
+    padding: 0 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
 }
 
 /* Main Content Area */
 .player-main {
+    flex: 1;
+    min-width: 300px;
+    max-width: 1000px;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -237,45 +241,48 @@
 
 /* Sidebar */
 .player-sidebar {
+    width: 360px;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .sidebar-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .sidebar-games {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
 }
 
 .sidebar-game-card {
-    display: flex;
-    gap: 1rem;
+    position: relative;
+    aspect-ratio: 16/9;
     background: var(--bg-card);
-    padding: 0.8rem;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--glass-border);
+    overflow: hidden;
     cursor: pointer;
-    transition: var(--transition);
-    text-decoration: none;
-    color: white;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .sidebar-game-card:hover {
-    transform: translateX(5px);
-    background: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+    z-index: 2;
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
 }
 
 .sidebar-thumb {
-    width: 100px;
-    aspect-ratio: 16/9;
-    border-radius: 8px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
@@ -294,11 +301,28 @@
     color: var(--text-gray);
 }
 
-@media (max-width: 1024px) {
-    .player-page {
-        grid-template-columns: 1fr;
+@media (max-width: 1200px) {
+    .player-sidebar {
+        width: 100%;
+        max-width: 1000px;
     }
+    .sidebar-games {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
     .game-details-grid {
         grid-template-columns: 1fr;
+    }
+    .player-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .player-actions {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
     }
 }

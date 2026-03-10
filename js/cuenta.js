@@ -291,7 +291,7 @@ async function loadUserGames() {
                         <img src="${fixGitHubImageUrl(game.image_url)}" class="game-mini-thumb" onerror="this.src='logo.png'">
                         <div style="display: flex; flex-direction: column;">
                             <span>${game.title}</span>
-                            <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.username || 'Tú'}</small>
+                            <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.full_name || game.profiles?.username || 'Tú'}</small>
                         </div>
                     </div>
                 </td>

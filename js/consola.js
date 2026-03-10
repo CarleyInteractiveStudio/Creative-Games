@@ -92,7 +92,7 @@ async function loadConsoleGames() {
             .map(g => ({
                 id: g.id,
                 title: g.title,
-                author: g.profiles?.username || 'Usuario',
+                author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
                 rating: g.rating || 0,
                 description: g.description,
                 image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',

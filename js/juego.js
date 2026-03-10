@@ -38,8 +38,9 @@ async function loadGameDetails(id) {
         document.getElementById('game-category').textContent = (game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros';
 
         const authorEl = document.getElementById('game-author');
-        authorEl.textContent = `Publicado por ${game.profiles?.username || 'Usuario'}`;
-        authorEl.onclick = () => filterByAuthor(game.user_id, game.profiles?.username);
+        const authorName = game.profiles?.full_name || game.profiles?.username || 'Usuario';
+        authorEl.textContent = `Publicado por ${authorName}`;
+        authorEl.onclick = () => filterByAuthor(game.user_id, authorName);
 
         document.getElementById('game-description').textContent = game.description;
         document.getElementById('game-engine-display').textContent = game.engine || 'Otros';
@@ -115,10 +116,10 @@ async function loadComments(gameId) {
 
         container.innerHTML = comments.map(c => `
             <div class="comment-item">
-                <div class="comment-avatar">${(c.profiles?.username || 'U')[0].toUpperCase()}</div>
+                <div class="comment-avatar">${(c.profiles?.full_name || c.profiles?.username || 'U')[0].toUpperCase()}</div>
                 <div class="comment-content">
                     <div class="comment-user-info">
-                        <span class="comment-username">${c.profiles?.username || 'Usuario'}</span>
+                        <span class="comment-username">${c.profiles?.full_name || c.profiles?.username || 'Usuario'}</span>
                         <span class="comment-date">${new Date(c.created_at).toLocaleDateString()}</span>
                     </div>
                     <p class="comment-text">${escapeHTML(c.content)}</p>

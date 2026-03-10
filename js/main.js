@@ -91,7 +91,7 @@ async function initApp() {
             allGames = dbGames.map(g => ({
                 id: g.id,
                 title: g.title,
-                author: g.profiles?.username || 'Usuario',
+                    author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
                 rating: g.rating || 0,
                 image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',

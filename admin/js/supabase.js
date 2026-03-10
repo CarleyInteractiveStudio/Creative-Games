@@ -29,7 +29,7 @@ async function getApprovedGames(filter = {}) {
         .from('games')
         .select(`
             *,
-            profiles ( username )
+            profiles ( username, full_name )
         `)
         .eq('status', 'approved');
 
@@ -71,7 +71,7 @@ async function getUserGames(userId) {
         .from('games')
         .select(`
             *,
-            profiles ( username )
+            profiles ( username, full_name )
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -245,7 +245,7 @@ async function getComments(gameId) {
         .from('comments')
         .select(`
             *,
-            profiles ( username )
+            profiles ( username, full_name )
         `)
         .eq('game_id', gameId)
         .order('created_at', { ascending: false });

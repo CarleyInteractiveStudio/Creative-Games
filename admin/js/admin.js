@@ -154,7 +154,7 @@ async function loadPendingGames() {
                     <span>${g.title}</span>
                 </div>
             </td>
-            <td>${g.profiles?.username || 'Usuario'}</td>
+            <td>${g.profiles?.full_name || g.profiles?.username || 'Usuario'}</td>
             <td>
                 <button class="btn-small" onclick="openReviewModal('${g.id}')">Revisar</button>
             </td>
@@ -164,10 +164,10 @@ async function loadPendingGames() {
 
 window.openReviewModal = async (id) => {
     currentReviewId = id;
-    const { data: game } = await sbClient.from('games').select('*, profiles(username)').eq('id', id).single();
+    const { data: game } = await sbClient.from('games').select('*, profiles(username, full_name)').eq('id', id).single();
 
     document.getElementById('review-title').textContent = `Revisando: ${game.title}`;
-    document.getElementById('review-author').textContent = game.profiles?.username || 'Usuario';
+    document.getElementById('review-author').textContent = game.profiles?.full_name || game.profiles?.username || 'Usuario';
     document.getElementById('review-url').href = game.repo_url;
     document.getElementById('review-desc').textContent = game.description;
     document.getElementById('review-iframe').src = game.repo_url;

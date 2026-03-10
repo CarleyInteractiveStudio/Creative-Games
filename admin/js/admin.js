@@ -9,36 +9,58 @@ let currentReviewId = null;
 const ADMIN_EMAIL = 'johncarley14@gmail.com';
 
 async function checkAdmin() {
-    // Wait for supabase script to load if needed
     if (typeof getSession === 'undefined') {
-        console.warn('Waiting for supabase.js...');
         setTimeout(checkAdmin, 500);
         return;
     }
 
     const session = await getSession();
+    const layout = document.getElementById('main-layout');
+    const authView = document.getElementById('view-auth');
+
     if (!session) {
-        document.getElementById('main-layout').classList.add('hidden');
-        document.getElementById('view-denied').classList.remove('hidden');
-        document.getElementById('view-denied').innerHTML = `
-            <div class="denied-icon">👤</div>
-            <h1 class="view-title">Sesión Requerida</h1>
-            <p style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
-                Debes iniciar sesión en la plataforma principal antes de acceder al panel de administrador.
-            </p>
-            <button class="btn-small" onclick="location.href='../cuenta.html'">Ir a Iniciar Sesión</button>
-        `;
+        layout.classList.add('hidden');
+        authView.classList.remove('hidden');
+        setupLoginForm();
         return;
     }
 
     if (session.user.email !== ADMIN_EMAIL) {
-        document.getElementById('main-layout').classList.add('hidden');
-        document.getElementById('view-denied').classList.remove('hidden');
-        document.getElementById('admin-email').textContent = session.user.email;
+        layout.classList.add('hidden');
+        authView.classList.remove('hidden');
+        document.getElementById('auth-content').innerHTML = `
+            <div class="denied-icon">🚫</div>
+            <h1 class="view-title">Acceso Denegado</h1>
+            <p style="color: var(--text-gray); max-width: 400px; margin: 0 auto 2rem;">
+                Tu cuenta (${session.user.email}) no tiene permisos para acceder aquí.
+            </p>
+            <button class="btn-small" onclick="signOut().then(() => location.reload())">Cerrar Sesión</button>
+        `;
         return;
     }
 
+    layout.classList.remove('hidden');
+    authView.classList.add('hidden');
     document.getElementById('admin-email').textContent = session.user.email;
+}
+
+function setupLoginForm() {
+    const form = document.getElementById('admin-login-form');
+    if (!form) return;
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+
+        try {
+            const { error } = await signIn(email, pass);
+            if (error) throw error;
+            location.reload();
+        } catch (err) {
+            alert('Error de acceso: ' + err.message);
+        }
+    };
 }
 
 function setupNavigation() {
@@ -67,7 +89,7 @@ function setupNavigation() {
     // Logout
     document.getElementById('logout-btn').addEventListener('click', async () => {
         await signOut();
-        window.location.href = '../index.html';
+        location.reload();
     });
 
     // Modal Close

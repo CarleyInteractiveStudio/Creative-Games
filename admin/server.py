@@ -1,3 +1,10 @@
+# Creative Game - Admin Server Script
+# ----------------------------------
+# Para iniciar el panel de administración:
+# 1. Abre una terminal o consola en esta carpeta.
+# 2. Ejecuta: python server.py
+# 3. Se abrirá automáticamente http://localhost:8000 en tu navegador.
+
 import http.server
 import socketserver
 import webbrowser

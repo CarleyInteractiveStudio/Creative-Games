@@ -108,6 +108,23 @@
     font-weight: 600;
 }
 
+.sidebar-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+    opacity: 0.6;
+    transition: var(--transition);
+}
+
+.nav-link.active .sidebar-icon {
+    filter: none;
+    opacity: 1;
+}
+
+.nav-link:hover .sidebar-icon {
+    opacity: 1;
+}
+
 .admin-main {
     flex-grow: 1;
     padding: 4rem;
@@ -151,9 +168,8 @@
     font-weight: 800;
     line-height: 1;
     margin-bottom: 0.5rem;
-    background: linear-gradient(to bottom, #fff, #888);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
 }
 
 .stat-label {

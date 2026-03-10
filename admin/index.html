@@ -12,7 +12,7 @@
 </head>
 <body class="admin-body">
     <header class="admin-header">
-        <div class="logo-container" onclick="location.href='index.html'">
+        <div class="logo-container">
             <img src="logo.png" alt="Logo" class="logo-img">
             <span>Creative <span class="gold-text">Game</span> <small class="badge">ADMIN</small></span>
         </div>
@@ -22,23 +22,46 @@
         </div>
     </header>
 
-    <!-- Access Denied View -->
-    <div id="view-denied" class="access-denied hidden">
-        <div class="denied-icon">🚫</div>
-        <h1 class="view-title">Acceso Restringido</h1>
-        <p style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
-            Lo sentimos, solo los administradores autorizados pueden acceder a este panel.
-        </p>
-        <button class="btn-small" onclick="location.href='../cuenta.html'">Volver a mi cuenta</button>
+    <!-- Access Denied / Login View -->
+    <div id="view-auth" class="access-denied hidden">
+        <div id="auth-content">
+            <div class="denied-icon">🔐</div>
+            <h1 class="view-title" id="auth-title">Panel de Administración</h1>
+            <p id="auth-desc" style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
+                Inicia sesión con tu cuenta de administrador para continuar.
+            </p>
+
+            <form id="admin-login-form" style="max-width: 350px; margin: 0 auto; text-align: left;">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="login-email" class="form-input" required placeholder="admin@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-pass" class="form-input" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Entrar al Panel</button>
+            </form>
+        </div>
     </div>
 
     <div class="admin-layout" id="main-layout">
         <nav class="admin-sidebar">
-            <button class="nav-link active" data-view="dashboard">📊 Dashboard</button>
-            <button class="nav-link" data-view="pending">⏳ Pendientes</button>
-            <button class="nav-link" data-view="games">🎮 Todos los Juegos</button>
-            <button class="nav-link" data-view="categories">📁 Categorías</button>
-            <button class="nav-link" data-view="users">👥 Usuarios</button>
+            <button class="nav-link active" data-view="dashboard">
+                <img src="icons/settings.svg" class="sidebar-icon"> Dashboard
+            </button>
+            <button class="nav-link" data-view="pending">
+                <img src="icons/btn_pause.svg" class="sidebar-icon"> Pendientes
+            </button>
+            <button class="nav-link" data-view="games">
+                <img src="icons/console.svg" class="sidebar-icon"> Gestión Juegos
+            </button>
+            <button class="nav-link" data-view="categories">
+                <img src="icons/btn_options.svg" class="sidebar-icon"> Categorías
+            </button>
+            <button class="nav-link" data-view="users">
+                <img src="icons/user.svg" class="sidebar-icon"> Usuarios
+            </button>
         </nav>
 
         <main class="admin-main">

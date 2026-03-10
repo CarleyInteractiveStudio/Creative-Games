@@ -119,6 +119,106 @@ body {
 /* Account & Dropdown */
 .account-container {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Notifications Badge */
+.notification-btn {
+    position: relative;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.notification-btn:hover {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: var(--gold);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ff4d4d;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-dark);
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 320px;
+    background: #151517;
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    z-index: 1200;
+    overflow: hidden;
+}
+
+.notif-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+
+.notif-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.notif-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.notif-item.unread {
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.notif-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+    color: var(--gold);
+}
+
+.notif-content {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    line-height: 1.4;
+}
+
+.notif-date {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    margin-top: 0.4rem;
 }
 
 .small-icon {
@@ -487,6 +587,22 @@ select.form-input option {
     padding: 5rem;
     font-size: 1.2rem;
     color: var(--gold);
+}
+
+.share-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.share-btn {
+    padding: 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
 }
 
 @media (max-width: 768px) {

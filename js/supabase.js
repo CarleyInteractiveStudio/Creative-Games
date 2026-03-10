@@ -255,6 +255,27 @@ async function endPlaySession(sessionId, durationSeconds) {
         .eq('id', sessionId);
 }
 
+async function getNotifications() {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await _supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return data;
+}
+
+async function markNotificationRead(id) {
+    return await _supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id);
+}
+
 async function getRecommendedGames() {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) return [];

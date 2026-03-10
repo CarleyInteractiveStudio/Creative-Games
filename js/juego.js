@@ -37,6 +37,11 @@ async function loadGameDetails(id) {
         document.getElementById('game-description').textContent = game.description;
         document.getElementById('game-engine-display').textContent = game.engine || 'Otros';
 
+        // Update Meta Tags for Sharing
+        document.querySelector('meta[property="og:title"]').content = game.title;
+        document.querySelector('meta[property="og:description"]').content = game.description || 'Juega en Creative Game';
+        document.querySelector('meta[property="og:image"]').content = fixGitHubImageUrl(game.image_url);
+
         // Render controls based on compatibility (showing all relevant ones)
         let controlsHtml = '';
         if (game.controls_pc && game.devices.includes('pc')) controlsHtml += `<p><strong>💻 PC:</strong> ${game.controls_pc}</p>`;
@@ -148,6 +153,43 @@ function setupActionButtons(gameId) {
     const btnLike = document.getElementById('btn-like');
     const btnReport = document.getElementById('btn-report');
     const btnFullscreen = document.getElementById('btn-fullscreen');
+    const btnShare = document.getElementById('btn-share');
+
+    const shareModal = document.getElementById('share-modal');
+    const closeShare = document.getElementById('close-share');
+    const shareInput = document.getElementById('share-link-input');
+    const btnCopy = document.getElementById('btn-copy-link');
+
+    btnShare.addEventListener('click', () => {
+        shareModal.classList.remove('hidden');
+        shareInput.value = window.location.href;
+    });
+
+    closeShare.addEventListener('click', () => {
+        shareModal.classList.add('hidden');
+    });
+
+    btnCopy.addEventListener('click', () => {
+        shareInput.select();
+        document.execCommand('copy');
+        btnCopy.textContent = 'Copiado';
+        setTimeout(() => btnCopy.textContent = 'Copiar', 2000);
+    });
+
+    // Social Sharing
+    document.getElementById('share-whatsapp').onclick = () => {
+        const text = `¡Mira este juego en Creative Game! ${window.location.href}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    document.getElementById('share-facebook').onclick = () => {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+    };
+
+    document.getElementById('share-x').onclick = () => {
+        const text = `¡Mira este juego en Creative Game!`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+    };
 
     btnLike.addEventListener('click', async () => {
         try {

@@ -123,10 +123,63 @@ async function checkAuthState() {
             name: session.user.user_metadata.full_name || session.user.email.split('@')[0]
         };
         showDashboard();
+
+        const notifContainer = document.getElementById('notif-container');
+        if (notifContainer) {
+            notifContainer.classList.remove('hidden');
+            loadNotificationsUI();
+        }
     } else {
         showAuth();
     }
 }
+
+async function loadNotificationsUI() {
+    const notifBtn = document.getElementById('notif-btn');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    const notifList = document.getElementById('notif-list');
+    const notifCount = document.getElementById('notif-count');
+
+    if (!notifBtn || !notifList) return;
+
+    const notifs = await getNotifications();
+    const unread = notifs.filter(n => !n.is_read);
+
+    if (unread.length > 0) {
+        notifCount.textContent = unread.length;
+        notifCount.classList.remove('hidden');
+    } else {
+        notifCount.classList.add('hidden');
+    }
+
+    if (notifs.length > 0) {
+        notifList.innerHTML = notifs.map(n => `
+            <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.game_id}')">
+                <div class="notif-title">${n.title}</div>
+                <div class="notif-content">${n.content}</div>
+                <div class="notif-date">${new Date(n.created_at).toLocaleString()}</div>
+            </div>
+        `).join('');
+    }
+
+    notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+        notifDropdown.classList.add('hidden');
+    });
+}
+
+window.handleNotifClick = async (id, gameId) => {
+    await markNotificationRead(id);
+    if (gameId && gameId !== 'null') {
+        window.location.href = `juego.html?id=${gameId}`;
+    } else {
+        loadNotificationsUI();
+    }
+};
 
 async function showDashboard() {
     authView.style.display = 'none';
@@ -246,7 +299,7 @@ async function loadUserGames() {
                 <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
                 <td>
                     <div class="action-btns">
-                        <button class="btn-icon" title="Editar" onclick="alert('Función de edición próximamente')">
+                        <button class="btn-icon" title="Editar" onclick="location.href='editar.html?id=${game.id}'">
                             <img src="images/icons/edit.svg" class="table-icon">
                         </button>
                         <button class="btn-icon delete" title="Eliminar" onclick="deleteGame('${game.id}')">

@@ -136,7 +136,7 @@ async function loadComments(gameId) {
             const avatarUrl = fixGitHubImageUrl(c.profiles?.avatar_url);
 
             const avatarHtml = avatarUrl
-                ? `<img src="${avatarUrl}" class="comment-avatar" alt="Avatar">`
+                ? `<img src="${avatarUrl}" class="comment-avatar" alt="Avatar" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=comment-avatar>${displayName[0].toUpperCase()}</div>'">`
                 : `<div class="comment-avatar">${displayName[0].toUpperCase()}</div>`;
 
             return `
@@ -173,7 +173,7 @@ function setupCommentForm(gameId) {
 
         const { data: { user } } = await sbClient.auth.getUser();
         if (!user) {
-            alert('Debes iniciar sesión para comentar.');
+            showToast('Notificación', 'Debes iniciar sesión para comentar.');
             window.location.href = 'cuenta.html';
             return;
         }
@@ -196,7 +196,7 @@ function setupCommentForm(gameId) {
             charCount.textContent = '0/300';
             loadComments(gameId);
         } catch (err) {
-            alert(err.message);
+            showToast('Notificación', err.message);
         }
     });
 }
@@ -221,7 +221,7 @@ function setupActionButtons(gameId) {
     btnShareWorld.addEventListener('click', async () => {
         const session = await sbClient.auth.getSession();
         if (!session.data.session) {
-            alert('Inicia sesión para compartir en el Mundo.');
+            showToast('Notificación', 'Inicia sesión para compartir en el Mundo.');
             return;
         }
 
@@ -239,10 +239,10 @@ function setupActionButtons(gameId) {
                 }]);
 
             if (error) {
-                if (error.message.includes('world_chat')) alert('Debes esperar 15 minutos entre publicaciones en el Mundo.');
-                else alert(error.message);
+                if (error.message.includes('world_chat')) showToast('Notificación', 'Debes esperar 15 minutos entre publicaciones en el Mundo.');
+                else showToast('Notificación', error.message);
             } else {
-                alert('¡Compartido con éxito en el Mundo!');
+                showToast('Notificación', '¡Compartido con éxito en el Mundo!');
             }
         } catch (e) {
             console.error(e);
@@ -282,7 +282,7 @@ function setupActionButtons(gameId) {
             await toggleFavorite(gameId);
             btnLike.classList.toggle('active');
         } catch (err) {
-            alert(err.message);
+            showToast('Notificación', err.message);
         }
     });
 
@@ -292,9 +292,9 @@ function setupActionButtons(gameId) {
         try {
             const { error } = await sbClient.rpc('report_game_error', { game_id_param: gameId });
             if (error) throw error;
-            alert('Reporte enviado. Gracias por tu ayuda.');
+            showToast('Notificación', 'Reporte enviado. Gracias por tu ayuda.');
         } catch (err) {
-            alert(err.message);
+            showToast('Notificación', err.message);
         }
     });
 
@@ -307,7 +307,7 @@ function setupActionButtons(gameId) {
                 await submitRating(gameId, score);
                 updateStarDisplay(score);
             } catch (err) {
-                alert(err.message);
+                showToast('Notificación', err.message);
             }
         });
     });

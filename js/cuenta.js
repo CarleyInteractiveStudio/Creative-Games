@@ -383,7 +383,7 @@ async function deleteGame(id) {
         .eq('id', id);
 
     if (error) {
-        alert('Error al eliminar: ' + error.message);
+        showToast('Notificación', 'Error al eliminar: ' + error.message);
     } else {
         loadUserGames();
     }
@@ -427,9 +427,9 @@ function setupProfileListeners() {
             .eq('id', currentUser.id);
 
         if (authErr || profErr) {
-            alert('Error: ' + (authErr?.message || profErr?.message));
+            showToast('Notificación', 'Error: ' + (authErr?.message || profErr?.message));
         } else {
-            alert('Perfil actualizado');
+            showToast('Notificación', 'Perfil actualizado');
         }
     });
 }
@@ -498,7 +498,7 @@ function setupAuthListeners() {
 
         const { data, error } = await signIn(email, pass);
         if (error) {
-            alert('Error: ' + error.message);
+            showToast('Notificación', 'Error: ' + error.message);
         } else {
             checkAuthState();
         }
@@ -517,7 +517,7 @@ function setupAuthListeners() {
         const { error } = await _supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.href
         });
-        if (error) alert(error.message);
-        else alert('Se ha enviado un correo de recuperación.');
+        if (error) showToast('Notificación', error.message);
+        else showToast('Notificación', 'Se ha enviado un correo de recuperación.');
     });
 }

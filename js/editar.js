@@ -70,7 +70,7 @@ async function loadGameData(id) {
         }
 
     } catch (err) {
-        alert('Error al cargar datos: ' + err.message);
+        showToast('Notificación', 'Error al cargar datos: ' + err.message);
         window.location.href = 'cuenta.html';
     }
 }
@@ -160,10 +160,10 @@ async function updateGame(id) {
         // Optional: Delete removed achievements (careful with data loss, but user clicked remove)
         // For a more robust system, we'd compare current vs old IDs.
 
-        alert('Cambios guardados con éxito. Se ha enviado una notificación de revisión.');
+        showToast('Notificación', 'Cambios guardados con éxito. Se ha enviado una notificación de revisión.');
         window.location.href = 'cuenta.html';
     } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Notificación', 'Error: ' + err.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Guardar Cambios';

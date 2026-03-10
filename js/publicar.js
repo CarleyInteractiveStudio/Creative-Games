@@ -87,7 +87,7 @@ function addAchievementToEditor(data = null) {
     const count = container.querySelectorAll('.achievement-editor-item').length;
 
     if (count >= 100) {
-        alert('Límite de 100 logros alcanzado.');
+        showToast('Notificación', 'Límite de 100 logros alcanzado.');
         return;
     }
 
@@ -132,7 +132,7 @@ function validateStep(step) {
     });
 
     if (!valid) {
-        alert('Por favor, completa todos los campos requeridos y acepta las políticas.');
+        showToast('Notificación', 'Por favor, completa todos los campos requeridos y acepta las políticas.');
     }
 
     return valid;
@@ -205,7 +205,7 @@ function updatePreview() {
 async function publishGame() {
     const session = await getSession();
     if (!session) {
-        alert('Debes iniciar sesión para publicar un juego.');
+        showToast('Notificación', 'Debes iniciar sesión para publicar un juego.');
         return;
     }
 
@@ -250,7 +250,7 @@ async function publishGame() {
             .single();
 
         if (error) {
-            alert('Error al publicar: ' + error.message);
+            showToast('Notificación', 'Error al publicar: ' + error.message);
         } else {
             // Save Achievements
             const achItems = document.querySelectorAll('.achievement-editor-item');
@@ -270,12 +270,12 @@ async function publishGame() {
                 if (achErr) console.error('Error guardando logros:', achErr);
             }
 
-            alert('¡Juego publicado con éxito! Pendiente de revisión.');
+            showToast('Notificación', '¡Juego publicado con éxito! Pendiente de revisión.');
             window.location.href = 'cuenta.html';
         }
     } catch (err) {
         console.error(err);
-        alert('Error inesperado.');
+        showToast('Notificación', 'Error inesperado.');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Publicar Juego';

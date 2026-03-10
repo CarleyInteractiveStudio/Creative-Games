@@ -314,10 +314,12 @@ body {
 
 /* Main Content */
 main {
-    padding-top: 100px;
-    max-width: 1450px;
+    padding-top: clamp(80px, 10vh, 120px);
+    width: 95%;
+    max-width: 1800px; /* Wider for large screens */
     margin: 0 auto;
     padding-bottom: 50px;
+    min-height: 80vh;
 }
 
 /* Profile Bar */
@@ -492,13 +494,13 @@ select.form-input option {
 
 /* Game Card */
 .game-card {
-    min-width: 280px;
-    max-width: 280px;
+    min-width: clamp(220px, 20vw, 300px);
+    max-width: clamp(220px, 20vw, 300px);
     background: var(--bg-card);
     border-radius: 18px;
     overflow: hidden;
     border: 1px solid var(--glass-border);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
 }
 
@@ -733,4 +735,72 @@ select.form-input option {
     font-weight: 600;
     font-size: 0.95rem;
     color: white;
+}
+
+/* Premium Floating Notification System */
+.premium-toast-container {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    pointer-events: none;
+}
+
+.premium-toast {
+    pointer-events: auto;
+    background: rgba(15, 15, 17, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    padding: 1.2rem 1.8rem;
+    color: white;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 20px rgba(212, 175, 55, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-width: 300px;
+    max-width: 450px;
+    transform: translateX(120%);
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.premium-toast.show {
+    transform: translateX(0);
+}
+
+.premium-toast.error {
+    border-left-color: #ff4d4d;
+    border-right: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.premium-toast-icon {
+    font-size: 1.5rem;
+}
+
+.premium-toast-content {
+    flex: 1;
+}
+
+.premium-toast-title {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--gold);
+    margin-bottom: 2px;
+}
+
+.premium-toast.error .premium-toast-title {
+    color: #ff4d4d;
+}
+
+.premium-toast-msg {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    line-height: 1.4;
 }

@@ -353,6 +353,47 @@ async function markNotificationRead(id) {
         .eq('id', id);
 }
 
+/**
+ * UI: Show Premium Toast Notification
+ */
+function showPremiumToast(title, message, type = 'info') {
+    let container = document.getElementById('premium-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'premium-toast-container';
+        container.className = 'premium-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `premium-toast ${type === 'error' ? 'error' : ''}`;
+
+    const icon = type === 'error' ? '⚠️' : '✨';
+
+    toast.innerHTML = `
+        <div class="premium-toast-icon">${icon}</div>
+        <div class="premium-toast-content">
+            <span class="premium-toast-title">${title}</span>
+            <span class="premium-toast-msg">${message}</span>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 600);
+    }, 5000);
+}
+
+// Global exposure
+window.showToast = showPremiumToast;
+window.alert = (msg) => showPremiumToast('Notificación', msg);
+
 async function getRecommendedGames() {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) return [];

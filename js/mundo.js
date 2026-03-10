@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div class="message-item ${isOwn ? 'own-message' : ''}">
                     <div class="msg-avatar" onclick="location.href='perfil.html?id=${msg.user_id}'">
-                        ${avatar ? `<img src="${avatar}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--gold);color:black;font-weight:700;">${escapeHTML(authorName[0])}</div>`}
+                        ${avatar ? `<img src="${avatar}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=avatar-fallback>${escapeHTML(authorName[0])}</div>'">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--gold);color:black;font-weight:700;">${escapeHTML(authorName[0])}</div>`}
                     </div>
                     <div class="msg-bubble">
                         <div class="msg-header">
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function sendMessage(content) {
         if (!currentUser) {
-            alert('Inicia sesión para participar en el Mundo.');
+            showToast('Notificación', 'Inicia sesión para participar en el Mundo.');
             window.location.href = 'cuenta.html';
             return;
         }
@@ -116,9 +116,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) {
                 if (error.message.includes('world_chat')) { // RLS check
-                    alert('Debes esperar 15 minutos entre mensajes.');
+                    showToast('Notificación', 'Debes esperar 15 minutos entre mensajes.');
                 } else {
-                    alert('Error: ' + error.message);
+                    showToast('Notificación', 'Error: ' + error.message);
                 }
             } else {
                 chatInput.value = '';

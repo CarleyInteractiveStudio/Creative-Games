@@ -78,11 +78,23 @@ async function initApp() {
     // Check Auth State for Profile Bar
     checkUserAuth();
 
+    // Device Intelligence: Detect current device
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobile = /iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(userAgent);
+    const isTV = /smart-tv|google-tv|apple-tv|hbbtv|netcast|webos/i.test(userAgent);
+
+    let deviceType = 'pc';
+    if (isTV) deviceType = 'tv';
+    else if (isMobile) deviceType = 'mobile';
+
     // Load Recommendations if logged in
     const recommendations = await getRecommendedGames();
     if (recommendations.length > 0) {
         renderRecommendationSection(recommendations);
     }
+
+    // Special "Games for your device" section
+    await renderDeviceSpecificSection(deviceType);
 
     // Load from Supabase
     try {
@@ -184,14 +196,24 @@ window.handleNotifClick = async (id, gameId) => {
 };
 
 function setupEventListeners() {
-    // Search Filtering
+    // Search Filtering (Real-time and Redirect)
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            window.location.href = `buscar.html?q=${encodeURIComponent(searchInput.value)}`;
+        }
+    });
+
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        filteredGames = allGames.filter(game =>
-            game.title.toLowerCase().includes(term) ||
-            game.category.toLowerCase().includes(term)
-        );
-        renderSections(filteredGames);
+        if (term.length > 2) {
+            filteredGames = allGames.filter(game =>
+                game.title.toLowerCase().includes(term) ||
+                game.category.toLowerCase().includes(term)
+            );
+            renderSections(filteredGames);
+        } else if (term.length === 0) {
+            renderSections(allGames);
+        }
     });
 
     // Logo Menu Toggle
@@ -272,6 +294,44 @@ function renderSections(games) {
     }
 
     sectionsContainer.innerHTML = html;
+}
+
+async function renderDeviceSpecificSection(device) {
+    try {
+        const { data: games } = await sbClient
+            .from('games')
+            .select(`
+                *,
+                profiles ( username, full_name )
+            `)
+            .eq('status', 'approved')
+            .contains('devices', [device])
+            .limit(6);
+
+        if (games && games.length > 0) {
+            const label = device === 'mobile' ? 'Móviles' : (device === 'tv' ? 'TV' : 'PC');
+            const sectionHtml = `
+                <section class="game-section">
+                    <h2 class="section-title">Recomendados para tu <span class="gold-text">${label}</span></h2>
+                    <div class="scroll-container">
+                        ${games.map(g => createGameCard({
+                            id: g.id,
+                            user_id_raw: g.user_id,
+                            title: g.title,
+                            author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
+                            rating: g.rating,
+                            image_url: fixGitHubImageUrl(g.image_url),
+                            devices: g.devices,
+                            created_at: g.created_at
+                        })).join('')}
+                    </div>
+                </section>
+            `;
+            sectionsContainer.insertAdjacentHTML('afterbegin', sectionHtml);
+        }
+    } catch (e) {
+        console.error('Device specific error:', e);
+    }
 }
 
 function renderRecommendationSection(games) {

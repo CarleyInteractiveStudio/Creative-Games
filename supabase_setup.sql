@@ -1,4 +1,4 @@
--- MASTER SQL PARA CREATIVE GAME (V6 - FULL RECOVERY & FEATURES)
+-- MASTER SQL PARA CREATIVE GAME (V6 - FINAL STABLE)
 -- Ejecuta este script para sincronizar base de datos, administración y funciones avanzadas
 
 -- 0. TABLA DE PERFILES
@@ -11,12 +11,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Asegurar columnas en profiles (Fix ERROR: 42703)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS gender TEXT DEFAULT 'Ambos';
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
+-- Trigger para sincronizar nombres reales (John Carley)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -29,7 +35,8 @@ BEGIN
         COALESCE(NEW.raw_user_meta_data->>'gender', 'Ambos')
     ) ON CONFLICT (id) DO UPDATE SET
         full_name = EXCLUDED.full_name,
-        username = EXCLUDED.username;
+        username = EXCLUDED.username,
+        avatar_url = EXCLUDED.avatar_url;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -63,17 +70,24 @@ CREATE TABLE IF NOT EXISTS public.games (
     controls_tv TEXT
 );
 
--- Asegurar columnas V6
+-- Asegurar columnas V6 en games
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS engine TEXT DEFAULT 'Otros';
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS age_ratings TEXT[] DEFAULT '{}';
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS controls_pc TEXT;
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS controls_console TEXT;
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS controls_mobile TEXT;
+ALTER TABLE public.games ADD COLUMN IF NOT EXISTS controls_tv TEXT;
+
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'last_updated') THEN
-        ALTER TABLE public.games ADD COLUMN last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now());
+    -- FIX: Asegurar relación con tabla profiles para el JOIN de nombres
+    IF EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'games_user_id_fkey') THEN
+        ALTER TABLE public.games DROP CONSTRAINT games_user_id_fkey;
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'engine') THEN
-        ALTER TABLE public.games ADD COLUMN engine TEXT DEFAULT 'Otros';
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'games' AND column_name = 'age_ratings') THEN
-        ALTER TABLE public.games ADD COLUMN age_ratings TEXT[] DEFAULT '{}';
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE table_name = 'games' AND constraint_name = 'games_user_id_fkey_profiles') THEN
+        ALTER TABLE public.games ADD CONSTRAINT games_user_id_fkey_profiles FOREIGN KEY (user_id) REFERENCES public.profiles(id);
     END IF;
 END $$;
 
@@ -92,6 +106,7 @@ CREATE POLICY "Users can update their own games" ON public.games FOR UPDATE USIN
 CREATE POLICY "Admins can view all games" ON public.games FOR SELECT USING (auth.jwt() ->> 'email' = 'johncarley14@gmail.com');
 CREATE POLICY "Admins can update any game" ON public.games FOR UPDATE USING (auth.jwt() ->> 'email' = 'johncarley14@gmail.com');
 
+-- Trigger para last_updated
 CREATE OR REPLACE FUNCTION set_last_updated_timestamp() RETURNS TRIGGER AS $$
 BEGIN NEW.last_updated = timezone('utc'::text, now()); RETURN NEW; END; $$ LANGUAGE plpgsql;
 
@@ -125,7 +140,7 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP TRIGGER IF EXISTS trigger_update_game_rating ON public.ratings;
 CREATE TRIGGER trigger_update_game_rating AFTER INSERT OR UPDATE OR DELETE ON public.ratings FOR EACH ROW EXECUTE FUNCTION update_game_average_rating();
 
--- 3. FAVORITOS / LIKES
+-- 3. FAVORITOS
 CREATE TABLE IF NOT EXISTS public.favorites (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -152,9 +167,9 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
-DROP POLICY IF EXISTS "Admins can view all" ON public.notifications;
+DROP POLICY IF EXISTS "Admins can view all notifications" ON public.notifications;
 CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Admins can view all" ON public.notifications FOR SELECT USING (auth.jwt() ->> 'email' = 'johncarley14@gmail.com');
+CREATE POLICY "Admins can view all notifications" ON public.notifications FOR SELECT USING (auth.jwt() ->> 'email' = 'johncarley14@gmail.com');
 
 CREATE OR REPLACE FUNCTION notify_like_milestone()
 RETURNS TRIGGER AS $$
@@ -193,10 +208,10 @@ CREATE TABLE IF NOT EXISTS public.categories (
     name TEXT UNIQUE NOT NULL
 );
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public Read" ON public.categories;
-DROP POLICY IF EXISTS "Admin All" ON public.categories;
-CREATE POLICY "Public Read" ON public.categories FOR SELECT USING (true);
-CREATE POLICY "Admin All" ON public.categories FOR ALL USING (auth.jwt() ->> 'email' = 'johncarley14@gmail.com');
+DROP POLICY IF EXISTS "Public Read Categories" ON public.categories;
+DROP POLICY IF EXISTS "Admin Manage Categories" ON public.categories;
+CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Admin Manage Categories" ON public.categories FOR ALL USING (auth.jwt() ->> 'email' = 'johncarley14@gmail.com');
 
 -- 7. SESIONES DE JUEGO
 CREATE TABLE IF NOT EXISTS public.play_sessions (
@@ -240,8 +255,7 @@ BEGIN
     IF current_errors >= 5 THEN UPDATE public.games SET status = 'suspended' WHERE id = game_id_param; END IF;
 END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Sincronizar perfiles existentes
--- Sincronizar perfiles existentes y asegurar nombres correctos (John Carley)
+-- Sincronización Final
 INSERT INTO public.profiles (id, full_name, username, updated_at)
 SELECT id,
        COALESCE(raw_user_meta_data->>'full_name', 'Usuario'),

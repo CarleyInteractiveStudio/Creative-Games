@@ -95,6 +95,7 @@ async function initApp() {
 
     renderSections(allGames);
     setupEventListeners();
+    initGamepadSupport();
 }
 
 async function checkUserAuth() {
@@ -245,9 +246,120 @@ function playGame(id) {
     // Futura implementación de página de juego
 }
 
-// Supabase Placeholder
-/*
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_KEY';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-*/
+// Gamepad Support for Main Page
+let mainFocusIndex = 0;
+let lastButtonsMain = {};
+let mainFocusables = [];
+
+function initGamepadSupport() {
+    window.addEventListener("gamepadconnected", () => {
+        console.log("Gamepad connected to main page");
+        mainGamepadLoop();
+    });
+
+    // Proactive check
+    const gps = navigator.getGamepads();
+    if (gps[0]) mainGamepadLoop();
+}
+
+function mainGamepadLoop() {
+    const gps = navigator.getGamepads();
+    if (!gps[0]) return;
+    const gp = gps[0];
+
+    const pressed = (btnIndex) => {
+        const isPressed = gp.buttons[btnIndex] && gp.buttons[btnIndex].pressed;
+        const wasPressed = lastButtonsMain[btnIndex];
+        lastButtonsMain[btnIndex] = isPressed;
+        return isPressed && !wasPressed;
+    };
+
+    const stickMoved = (axis, dir) => {
+        const val = gp.axes[axis];
+        const key = `axis_${axis}_${dir}`;
+        const threshold = 0.5;
+        const isMoved = dir > 0 ? val > threshold : val < -threshold;
+        const wasMoved = lastButtonsMain[key];
+        lastButtonsMain[key] = isMoved;
+        return isMoved && !wasMoved;
+    };
+
+    const UP = pressed(12) || stickMoved(1, -1);
+    const DOWN = pressed(13) || stickMoved(1, 1);
+    const LEFT = pressed(14) || stickMoved(0, -1);
+    const RIGHT = pressed(15) || stickMoved(0, 1);
+    const A = pressed(0);
+
+    updateMainFocusables();
+
+    if (UP) {
+        // Complex vertical logic: find nearest element above
+        mainFocusIndex = findNearestVertical(mainFocusIndex, -1);
+    }
+    if (DOWN) {
+        mainFocusIndex = findNearestVertical(mainFocusIndex, 1);
+    }
+    if (LEFT) mainFocusIndex = Math.max(0, mainFocusIndex - 1);
+    if (RIGHT) mainFocusIndex = Math.min(mainFocusables.length - 1, mainFocusIndex + 1);
+
+    if (A && mainFocusables[mainFocusIndex]) {
+        mainFocusables[mainFocusIndex].click();
+    }
+
+    applyMainFocus();
+    requestAnimationFrame(mainGamepadLoop);
+}
+
+function updateMainFocusables() {
+    // Collect all visible interactive elements
+    const elements = Array.from(document.querySelectorAll('input, button, a, .game-card, .logo-container'));
+    mainFocusables = elements.filter(el => {
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden' && !el.closest('.hidden');
+    });
+}
+
+function applyMainFocus() {
+    mainFocusables.forEach((el, i) => {
+        if (i === mainFocusIndex) {
+            el.classList.add('gamepad-focused');
+            if (el.classList.contains('game-card')) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        } else {
+            el.classList.remove('gamepad-focused');
+        }
+    });
+}
+
+function findNearestVertical(currentIndex, dir) {
+    const current = mainFocusables[currentIndex];
+    if (!current) return 0;
+    const currentRect = current.getBoundingClientRect();
+
+    let bestDist = Infinity;
+    let bestIndex = currentIndex;
+
+    mainFocusables.forEach((el, i) => {
+        if (i === currentIndex) return;
+        const rect = el.getBoundingClientRect();
+
+        // Vertical check
+        const isAbove = rect.bottom <= currentRect.top;
+        const isBelow = rect.top >= currentRect.bottom;
+
+        if ((dir === -1 && isAbove) || (dir === 1 && isBelow)) {
+            // Calculate distance between centers
+            const dx = (rect.left + rect.width/2) - (currentRect.left + currentRect.width/2);
+            const dy = (rect.top + rect.height/2) - (currentRect.top + currentRect.height/2);
+            const dist = dx*dx + dy*dy;
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIndex = i;
+            }
+        }
+    });
+
+    return bestIndex;
+}

@@ -84,20 +84,23 @@ function handleGamepadConnected() {
 
 async function loadConsoleGames() {
     try {
-        allGames = await getGames();
-        // Filter only console-compatible
-        allGames = allGames.filter(g => g.compatibility && g.compatibility.includes('console'));
+        const dbGames = await getApprovedGames();
+        // Map to expected format and filter only console-compatible
+        allGames = dbGames
+            .map(g => ({
+                id: g.id,
+                title: g.title,
+                rating: g.rating || 0,
+                description: g.description,
+                image: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+                compatibility: g.devices || [],
+                repo_url: g.repo_url
+            }))
+            .filter(g => g.compatibility.includes('console'));
 
-        if (allGames.length === 0) {
-            // Fallback to mock with console compatibility
-            allGames = [
-                { id: 1, title: "Cyberpunk Drift", rating: 4.8, description: "Explora una ciudad futurista en este juego de carreras de alta velocidad.", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80" },
-                { id: 2, title: "Medieval Quest", rating: 4.5, description: "Un RPG épico en un mundo lleno de dragones y castillos.", image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80" },
-                { id: 5, title: "Neon Racing", rating: 4.9, description: "Carreras retro-futuristas con una banda sonora synthwave.", image: "https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=800&q=80" }
-            ];
-        }
     } catch (e) {
-        console.error(e);
+        console.error('Error loading console games:', e);
+        allGames = [];
     }
     displayedGames = [...allGames];
     renderGames();
@@ -406,8 +409,8 @@ function launchGame() {
     if (game) {
         currentMode = 'game';
         gameViewport.classList.remove('hidden');
-        // Check metadata for external link, otherwise default
-        const url = (game.metadata && game.metadata.external_url) ? game.metadata.external_url : 'https://www.google.com/logos/2010/pacman10-i.html';
+        // Use repo_url or fallback
+        const url = game.repo_url || 'https://www.google.com/logos/2010/pacman10-i.html';
         gameFrame.src = url;
     }
 }

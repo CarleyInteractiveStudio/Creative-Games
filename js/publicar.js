@@ -125,8 +125,8 @@ async function publishGame() {
     const repo = document.getElementById('game-repo').value;
     const desc = document.getElementById('game-desc').value;
     const image = document.getElementById('game-image').value;
-    const category = document.getElementById('game-category').value;
 
+    const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(cb => cb.value);
     const devices = Array.from(document.querySelectorAll('input[name="device"]:checked')).map(cb => cb.value);
     const ages = Array.from(document.querySelectorAll('input[name="age"]:checked')).map(cb => cb.value);
     const gender = document.getElementById('game-gender').value;
@@ -134,18 +134,11 @@ async function publishGame() {
     const gameData = {
         title: name,
         description: desc,
-        image: image,
-        category: category,
-        compatibility: devices,
-        user_id: session.user.id,
-        metadata: {
-            repo_url: repo,
-            target_audience: {
-                gender: gender,
-                ages: ages
-            },
-            status: 'pending_review'
-        }
+        image_url: image,
+        repo_url: repo,
+        categories: categories,
+        devices: devices,
+        status: 'pending'
     };
 
     const submitBtn = document.getElementById('submit-btn');

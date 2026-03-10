@@ -50,11 +50,15 @@ const GAMES_DATA = [
     }
 ];
 
-const CATEGORIES = ["Acción", "Aventura", "Estrategia", "Deportes", "Puzzle", "Arcade"];
+const CATEGORIES = [
+    "Acción", "Aventura", "Disparos", "Simulación", "Estrategia",
+    "Deportes", "Puzzle", "Arcade", "Terror", "RPG",
+    "Carreras", "Cooperativo", "Multijugador", "Indie"
+];
 
 // State Management
-let allGames = [...GAMES_DATA];
-let filteredGames = [...GAMES_DATA];
+let allGames = [];
+let filteredGames = [];
 
 // DOM Elements
 const sectionsContainer = document.getElementById('sections-container');
@@ -85,12 +89,20 @@ async function initApp() {
 
     // Load from Supabase
     try {
-        const dbGames = await getGames();
+        const dbGames = await getApprovedGames();
         if (dbGames && dbGames.length > 0) {
-            allGames = dbGames;
+            allGames = dbGames.map(g => ({
+                id: g.id,
+                title: g.title,
+                category: g.categories ? g.categories[0] : 'Otros',
+                rating: g.rating || 0,
+                image: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+                compatibility: g.devices || []
+            }));
         }
     } catch (e) {
-        console.warn('Supabase not available or empty, using mock data');
+        console.warn('Supabase not available, using empty list');
+        allGames = [];
     }
 
     renderSections(allGames);

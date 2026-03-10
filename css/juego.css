@@ -112,7 +112,7 @@
 
 @keyframes splashTyping {
     from { width: 0 }
-    to { width: 255px } /* Exact width for "Creative Gam" in Poppins 2.5rem */
+    to { width: 330px } /* Exact width for "Creative Game" with gold styling */
 }
 
 .game-container iframe {
@@ -418,6 +418,6 @@
     }
     @keyframes splashTyping {
         from { width: 0 }
-        to { width: 185px }
+        to { width: 240px }
     }
 }

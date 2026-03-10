@@ -43,23 +43,23 @@ body {
 }
 
 .header-content {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 0.8rem 2rem;
+    padding: 0.35rem 1.2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 2rem;
+    gap: 1.2rem;
 }
 
 .logo-container {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.6rem;
     cursor: pointer;
     position: relative;
-    padding: 0.5rem;
-    border-radius: 12px;
+    padding: 0.4rem;
+    border-radius: 10px;
     transition: var(--transition);
 }
 
@@ -68,12 +68,12 @@ body {
 }
 
 .logo-img {
-    height: 45px;
+    height: 28px;
     width: auto;
 }
 
 .logo-text {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: -0.5px;
 }
@@ -88,10 +88,10 @@ body {
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid var(--glass-border);
     border-radius: 50px;
-    padding: 0.6rem 1.2rem;
+    padding: 0.35rem 0.9rem;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.5rem;
     transition: var(--transition);
 }
 
@@ -237,8 +237,8 @@ body {
 .profile-btn {
     background: var(--glass);
     border: 1px solid var(--glass-border);
-    width: 45px;
-    height: 45px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -278,7 +278,7 @@ body {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .dropdown-header {

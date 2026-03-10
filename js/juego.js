@@ -26,7 +26,7 @@ async function loadGameDetails(id) {
             .from('games')
             .select(`
                 *,
-                profiles ( username )
+                profiles ( username, full_name )
             `)
             .eq('id', id)
             .single();
@@ -71,8 +71,21 @@ async function loadGameDetails(id) {
 
         document.getElementById('controls-content').innerHTML = controlsHtml || 'Este juego no tiene controles especificados.';
 
+        // --- Play Sequence ---
         const iframe = document.getElementById('game-iframe');
-        iframe.src = game.repo_url;
+        const playOverlay = document.getElementById('play-overlay');
+        const splashScreen = document.getElementById('splash-screen');
+
+        playOverlay.addEventListener('click', () => {
+            playOverlay.classList.add('hidden');
+            splashScreen.classList.remove('hidden');
+
+            // Start Intro sequence
+            setTimeout(() => {
+                iframe.src = game.repo_url;
+                splashScreen.classList.add('hidden');
+            }, 3500);
+        });
 
         // Load Rating
         const userRating = await getUserRating(id);
@@ -87,7 +100,6 @@ async function loadGameDetails(id) {
         }
     } catch (err) {
         console.error('Error loading game:', err);
-        // window.location.href = 'index.html';
     }
 }
 
@@ -100,7 +112,7 @@ async function loadComments(gameId) {
             .from('comments')
             .select(`
                 *,
-                profiles ( username )
+                profiles ( username, full_name, avatar_url )
             `)
             .eq('game_id', gameId)
             .order('created_at', { ascending: false });
@@ -114,18 +126,28 @@ async function loadComments(gameId) {
             return;
         }
 
-        container.innerHTML = comments.map(c => `
-            <div class="comment-item">
-                <div class="comment-avatar">${(c.profiles?.full_name || c.profiles?.username || 'U')[0].toUpperCase()}</div>
-                <div class="comment-content">
-                    <div class="comment-user-info">
-                        <span class="comment-username">${c.profiles?.full_name || c.profiles?.username || 'Usuario'}</span>
-                        <span class="comment-date">${new Date(c.created_at).toLocaleDateString()}</span>
+        container.innerHTML = comments.map(c => {
+            const displayName = c.profiles?.full_name || c.profiles?.username || 'Usuario';
+            const usernameLabel = c.profiles?.username ? `@${c.profiles.username}` : '';
+            const avatarUrl = fixGitHubImageUrl(c.profiles?.avatar_url);
+
+            const avatarHtml = avatarUrl
+                ? `<img src="${avatarUrl}" class="comment-avatar" alt="Avatar">`
+                : `<div class="comment-avatar">${displayName[0].toUpperCase()}</div>`;
+
+            return `
+                <div class="comment-item">
+                    ${avatarHtml}
+                    <div class="comment-content">
+                        <div class="comment-user-info">
+                            <span class="comment-username">${displayName} <small style="color:var(--text-gray); font-weight:normal; margin-left:5px;">${usernameLabel}</small></span>
+                            <span class="comment-date">${new Date(c.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p class="comment-text">${escapeHTML(c.content)}</p>
                     </div>
-                    <p class="comment-text">${escapeHTML(c.content)}</p>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
         console.error('Error loading comments:', err);

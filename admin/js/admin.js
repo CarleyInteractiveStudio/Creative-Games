@@ -135,7 +135,7 @@ async function loadPendingGames() {
         .from('games')
         .select(`
             *,
-            profiles ( username )
+            profiles ( username, full_name )
         `)
         .eq('status', 'pending');
 

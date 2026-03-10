@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadGameDetails(id) {
     try {
-        const { data: game, error } = await supabase
+        const { data: game, error } = await sbClient
             .from('games')
             .select('*')
             .eq('id', id)
@@ -54,7 +54,7 @@ async function loadComments(gameId) {
     container.innerHTML = '<p class="empty-msg">Cargando comentarios...</p>';
 
     try {
-        const { data: comments, error } = await supabase
+        const { data: comments, error } = await sbClient
             .from('comments')
             .select(`
                 *,
@@ -114,7 +114,7 @@ function setupCommentForm(gameId) {
         if (!content) return;
 
         try {
-            const { error } = await supabase
+            const { error } = await sbClient
                 .from('comments')
                 .insert([{
                     game_id: gameId,

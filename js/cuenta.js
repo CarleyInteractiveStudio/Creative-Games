@@ -305,10 +305,7 @@ function setupAuthListeners() {
 
     btnRegisterTab?.addEventListener('click', (e) => {
         e.preventDefault();
-        setActiveTab(btnRegisterTab);
-        loginContainer.classList.add('hidden');
-        registerContainer.classList.remove('hidden');
-        recoveryContainer.classList.add('hidden');
+        window.open('https://carleystudio.com/cuenta.html', '_blank');
     });
 
     btnManageTab?.addEventListener('click', (e) => {
@@ -326,20 +323,21 @@ function setupAuthListeners() {
     showLoginBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         setActiveTab(btnLoginTab);
-        loginContainer.classList.remove('hidden');
+        if (loginContainer) loginContainer.classList.remove('hidden');
+        if (recoveryContainer) recoveryContainer.classList.add('hidden');
     });
 
     showRecoveryBtn?.addEventListener('click', (e) => {
         e.preventDefault();
-        loginContainer.classList.add('hidden');
-        recoveryContainer.classList.remove('hidden');
+        if (loginContainer) loginContainer.classList.add('hidden');
+        if (recoveryContainer) recoveryContainer.classList.remove('hidden');
     });
 
     backToLoginBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         setActiveTab(btnLoginTab);
-        recoveryContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
+        if (recoveryContainer) recoveryContainer.classList.add('hidden');
+        if (loginContainer) loginContainer.classList.remove('hidden');
     });
 
     // Real Supabase Auth Handlers

@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadGameData() {
     try {
-        const { data: game, error } = await supabase
+        const { data: game, error } = await sbClient
             .from('games')
             .select('*')
             .eq('id', gameId)

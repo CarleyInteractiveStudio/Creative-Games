@@ -6,7 +6,7 @@ const { createClient } = window.supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 window.sbClient = _supabase;
-const supabase = _supabase; // For compatibility
+const sb = _supabase; // Renamed to avoid SyntaxError with global 'supabase'
 
 /**
  * Fetches all approved games from the database.

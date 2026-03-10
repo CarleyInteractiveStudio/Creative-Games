@@ -39,9 +39,42 @@ async function loadAuthorProfile(id) {
             interestsEl.classList.remove('hidden');
         }
 
+        await loadAuthorAchievements(id);
+
     } catch (err) {
         console.error('Error loading profile:', err);
         document.getElementById('author-name').textContent = 'Usuario no encontrado';
+    }
+}
+
+async function loadAuthorAchievements(id) {
+    const hero = document.querySelector('.profile-hero');
+    try {
+        const { data: achievements, error } = await sbClient
+            .from('achievements')
+            .select(`
+                *,
+                achievement_definitions ( title, icon_url )
+            `)
+            .eq('user_id', id)
+            .limit(5);
+
+        if (error) throw error;
+
+        if (achievements && achievements.length > 0) {
+            const achHtml = `
+                <div class="author-badges" style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.8rem;">
+                    ${achievements.map(ach => {
+                        const icon = fixGitHubImageUrl(ach.achievement_definitions?.icon_url) || 'images/icons/trophy.svg';
+                        const title = ach.achievement_definitions?.title || ach.title;
+                        return `<img src="${icon}" title="${escapeHTML(title)}" style="width: 32px; height: 32px; filter: drop-shadow(0 0 5px var(--gold));" onerror="this.src='images/icons/trophy.svg'">`;
+                    }).join('')}
+                </div>
+            `;
+            hero.insertAdjacentHTML('beforeend', achHtml);
+        }
+    } catch (e) {
+        console.error('Error loading author achievements:', e);
     }
 }
 
@@ -70,15 +103,22 @@ async function loadAuthorGames(id) {
     }
 }
 
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 function createSmallGameCard(game) {
     const imgUrl = fixGitHubImageUrl(game.image_url) || 'https://via.placeholder.com/400x225?text=No+Image';
     return `
         <div class="game-card" onclick="location.href='juego.html?id=${game.id}'" style="min-width: 200px;">
             <div class="game-thumb-container">
-                <img src="${imgUrl}" alt="${game.title}" class="game-thumb" loading="lazy">
+                <img src="${imgUrl}" alt="${escapeHTML(game.title)}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
-                <h3 class="game-title" style="font-size: 1rem;">${game.title}</h3>
+                <h3 class="game-title" style="font-size: 1rem;">${escapeHTML(game.title)}</h3>
                 <div class="game-meta">
                     <span class="rating">${Number(game.rating).toFixed(1)} ★</span>
                 </div>

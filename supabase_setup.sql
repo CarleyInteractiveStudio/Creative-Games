@@ -292,4 +292,47 @@ CREATE POLICY "Owners can manage achievement definitions" ON public.achievement_
 ALTER TABLE public.achievements ADD COLUMN IF NOT EXISTS definition_id UUID REFERENCES public.achievement_definitions(id) ON DELETE CASCADE;
 ALTER TABLE public.achievements ALTER COLUMN title DROP NOT NULL;
 
+-- Actualizar políticas de logros para permitir inserción y vista pública
+DROP POLICY IF EXISTS "Users view own achievements" ON public.achievements;
+DROP POLICY IF EXISTS "Public can view achievements" ON public.achievements;
+DROP POLICY IF EXISTS "Users can award themselves achievements" ON public.achievements;
+
+CREATE POLICY "Public can view achievements" ON public.achievements FOR SELECT USING (true);
+CREATE POLICY "Users can award themselves achievements" ON public.achievements FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 11. TABLA DE CHAT "MUNDO"
+CREATE TABLE IF NOT EXISTS public.world_chat (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    content TEXT NOT NULL CHECK (char_length(content) <= 500),
+    game_id UUID REFERENCES public.games(id) ON DELETE SET NULL,
+    is_game_share BOOLEAN DEFAULT false
+);
+
+ALTER TABLE public.world_chat ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public view world chat" ON public.world_chat;
+DROP POLICY IF EXISTS "Users can post to world chat" ON public.world_chat;
+
+CREATE POLICY "Public view world chat" ON public.world_chat FOR SELECT USING (true);
+CREATE POLICY "Users can post to world chat" ON public.world_chat FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND
+    NOT EXISTS (
+        SELECT 1 FROM public.world_chat
+        WHERE user_id = auth.uid()
+        AND created_at > (now() - interval '15 minutes')
+    )
+);
+
+-- 12. VISTA PARA CHAT LIMPIO (Solo hoy)
+CREATE OR REPLACE VIEW public.world_chat_today AS
+SELECT w.*, p.username, p.full_name, p.avatar_url, g.title as game_title, g.image_url as game_image
+FROM public.world_chat w
+LEFT JOIN public.profiles p ON w.user_id = p.id
+LEFT JOIN public.games g ON w.game_id = g.id
+WHERE w.created_at >= CURRENT_DATE;
+
+-- Limpieza manual opcional (Ejecutar periódicamente):
+-- DELETE FROM public.world_chat WHERE created_at < CURRENT_DATE;
+
 NOTIFY pgrst, 'reload schema';

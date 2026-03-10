@@ -110,6 +110,13 @@ async function initApp() {
     initGamepadSupport();
 }
 
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 async function checkUserAuth() {
     const session = await getSession();
     if (session) {
@@ -150,8 +157,8 @@ async function loadNotificationsUI() {
     if (notifs.length > 0) {
         notifList.innerHTML = notifs.map(n => `
             <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.game_id}')">
-                <div class="notif-title">${n.title}</div>
-                <div class="notif-content">${n.content}</div>
+                <div class="notif-title">${escapeHTML(n.title)}</div>
+                <div class="notif-content">${escapeHTML(n.content)}</div>
                 <div class="notif-date">${new Date(n.created_at).toLocaleString()}</div>
             </div>
         `).join('');
@@ -305,11 +312,11 @@ function createGameCard(game) {
         <div class="game-card">
             <div class="game-thumb-container" onclick="location.href='juego.html?id=${game.id}'">
                 ${isNew ? '<span class="card-badge">NUEVO</span>' : ''}
-                <img src="${game.image_url}" alt="${game.title}" class="game-thumb" loading="lazy">
+                <img src="${game.image_url}" alt="${escapeHTML(game.title)}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
-                <h3 class="game-title" onclick="location.href='juego.html?id=${game.id}'">${game.title}</h3>
-                <div class="author-label" onclick="event.stopPropagation(); location.href='perfil.html?id=${game.user_id_raw || ''}'">por ${game.author || 'Usuario'}</div>
+                <h3 class="game-title" onclick="location.href='juego.html?id=${game.id}'">${escapeHTML(game.title)}</h3>
+                <div class="author-label" onclick="event.stopPropagation(); location.href='perfil.html?id=${game.user_id_raw || ''}'">por ${escapeHTML(game.author) || 'Usuario'}</div>
                 <div class="game-meta">
                     <span class="rating">${Number(game.rating).toFixed(1)}</span>
                     <div class="compatibility-icons">

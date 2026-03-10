@@ -399,6 +399,68 @@
     }
 }
 
+/* Achievements in Game Page */
+.achievements-section-game {
+    margin-bottom: 2rem;
+}
+
+.game-achievements-row {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0.5rem;
+}
+
+.game-ach-card {
+    min-width: 150px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    transition: var(--transition);
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.game-ach-card.unlocked {
+    opacity: 1;
+    filter: grayscale(0);
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.game-ach-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 0.8rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-ach-icon img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.game-ach-title {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.game-ach-desc {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    line-height: 1.2;
+}
+
 @media (max-width: 768px) {
     .game-details-grid {
         grid-template-columns: 1fr;

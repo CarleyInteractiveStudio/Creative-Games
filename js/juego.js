@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadGameDetails(gameId);
     await loadComments(gameId);
     await loadSidebarGames();
+    await loadGameAchievements(gameId);
 
     // Tracking
     trackPlayTime(gameId);
@@ -205,6 +206,7 @@ function setupActionButtons(gameId) {
     const btnReport = document.getElementById('btn-report');
     const btnFullscreen = document.getElementById('btn-fullscreen');
     const btnShare = document.getElementById('btn-share');
+    const btnShareWorld = document.getElementById('btn-share-world');
 
     const shareModal = document.getElementById('share-modal');
     const closeShare = document.getElementById('close-share');
@@ -214,6 +216,39 @@ function setupActionButtons(gameId) {
     btnShare.addEventListener('click', () => {
         shareModal.classList.remove('hidden');
         shareInput.value = window.location.href;
+    });
+
+    btnShareWorld.addEventListener('click', async () => {
+        const session = await sbClient.auth.getSession();
+        if (!session.data.session) {
+            alert('Inicia sesión para compartir en el Mundo.');
+            return;
+        }
+
+        if (!confirm('¿Quieres recomendar este juego en el Mundo Social?')) return;
+
+        btnShareWorld.disabled = true;
+        try {
+            const { error } = await sbClient
+                .from('world_chat')
+                .insert([{
+                    user_id: session.data.session.user.id,
+                    content: `¡Les recomiendo este juego! Está increíble.`,
+                    game_id: gameId,
+                    is_game_share: true
+                }]);
+
+            if (error) {
+                if (error.message.includes('world_chat')) alert('Debes esperar 15 minutos entre publicaciones en el Mundo.');
+                else alert(error.message);
+            } else {
+                alert('¡Compartido con éxito en el Mundo!');
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            btnShareWorld.disabled = false;
+        }
     });
 
     closeShare.addEventListener('click', () => {
@@ -385,6 +420,52 @@ function setupAchievementAPI(gameId) {
     });
 }
 
+async function loadGameAchievements(gameId) {
+    const container = document.getElementById('game-achievements-list');
+    if (!container) return;
+
+    try {
+        // 1. Get definitions
+        const { data: defs } = await sbClient
+            .from('achievement_definitions')
+            .select('*')
+            .eq('game_id', gameId);
+
+        if (!defs || defs.length === 0) {
+            document.querySelector('.achievements-section-game').classList.add('hidden');
+            return;
+        }
+
+        // 2. Get user's earned achievements for this game
+        let earnedIds = [];
+        const session = await sbClient.auth.getSession();
+        if (session.data.session) {
+            const { data: earned } = await sbClient
+                .from('achievements')
+                .select('definition_id')
+                .eq('user_id', session.data.session.user.id)
+                .eq('game_id', gameId);
+            if (earned) earnedIds = earned.map(e => e.definition_id);
+        }
+
+        container.innerHTML = defs.map(def => {
+            const isUnlocked = earnedIds.includes(def.id);
+            return `
+                <div class="game-ach-card ${isUnlocked ? 'unlocked' : ''}">
+                    <div class="game-ach-icon">
+                        <img src="${fixGitHubImageUrl(def.icon_url) || 'images/icons/trophy.svg'}" onerror="this.src='images/icons/trophy.svg'">
+                    </div>
+                    <span class="game-ach-title">${escapeHTML(def.title)}</span>
+                    <span class="game-ach-desc">${escapeHTML(def.description) || ''}</span>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error('Error loading game achievements:', err);
+    }
+}
+
 function showAchievementNotification(name, iconUrl) {
     // Create toast if it doesn't exist
     let toast = document.getElementById('achievement-toast');
@@ -401,7 +482,7 @@ function showAchievementNotification(name, iconUrl) {
         </div>
         <div class="achievement-text">
             <span class="achievement-label">¡Logro Desbloqueado!</span>
-            <span class="achievement-name">${name}</span>
+            <span class="achievement-name">${escapeHTML(name)}</span>
         </div>
     `;
 

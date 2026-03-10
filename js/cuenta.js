@@ -264,12 +264,12 @@ async function loadUserAchievements() {
             return `
                 <div class="achievement-card">
                     <div class="achievement-card-icon">
-                        <img src="${icon}" alt="${title}" onerror="this.src='images/icons/trophy.svg'">
+                        <img src="${icon}" alt="${escapeHTML(title)}" onerror="this.src='images/icons/trophy.svg'">
                     </div>
                     <div class="achievement-card-info">
-                        <span class="achievement-card-title">${title}</span>
-                        <span class="achievement-card-desc">${desc}</span>
-                        <span class="achievement-card-game">En: ${gameTitle}</span>
+                        <span class="achievement-card-title">${escapeHTML(title)}</span>
+                        <span class="achievement-card-desc">${escapeHTML(desc)}</span>
+                        <span class="achievement-card-game">En: ${escapeHTML(gameTitle)}</span>
                     </div>
                 </div>
             `;
@@ -387,6 +387,13 @@ async function deleteGame(id) {
     } else {
         loadUserGames();
     }
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 function showAuth() {

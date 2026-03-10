@@ -19,8 +19,14 @@ CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, username, avatar_url)
-    VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'username', NEW.raw_user_meta_data->>'avatar_url');
+    INSERT INTO public.profiles (id, full_name, username, avatar_url, gender)
+    VALUES (
+        NEW.id,
+        NEW.raw_user_meta_data->>'full_name',
+        NEW.raw_user_meta_data->>'username',
+        NEW.raw_user_meta_data->>'avatar_url',
+        COALESCE(NEW.raw_user_meta_data->>'gender', 'Ambos')
+    );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -103,7 +109,12 @@ ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 -- 7. RLS Policies
 CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Public Read Approved Games" ON public.games FOR SELECT USING (status = 'approved');
-CREATE POLICY "Users Own Games" ON public.games FOR ALL USING (auth.uid() = user_id);
+
+-- Explicit policies for the 'games' table to allow all management by the owner
+CREATE POLICY "Users can insert their own games" ON public.games FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own games" ON public.games FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own games" ON public.games FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view their own non-approved games" ON public.games FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Users Own Favorites" ON public.favorites FOR ALL USING (auth.uid() = user_id);
 

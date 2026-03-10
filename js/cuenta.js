@@ -212,6 +212,8 @@ async function loadFavorites() {
 
 async function loadUserGames() {
     const gamesList = document.getElementById('user-games-list');
+    if (!gamesList) return;
+
     const games = await getUserGames(currentUser.id);
 
     if (!games || games.length === 0) {

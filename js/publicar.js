@@ -149,6 +149,7 @@ async function publishGame() {
     const gender = document.getElementById('game-gender').value;
 
     const gameData = {
+        user_id: session.user.id, // Explicitly include user_id to avoid RLS error
         title: name,
         description: desc,
         image_url: image,

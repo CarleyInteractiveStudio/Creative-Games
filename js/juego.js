@@ -185,10 +185,10 @@ async function loadSidebarGames() {
 
         container.innerHTML = games.map(g => `
             <a href="juego.html?id=${g.id}" class="sidebar-game-card">
-                <img src="${g.thumbnail_url}" alt="${g.title}" class="sidebar-thumb">
+                <img src="${g.image_url}" alt="${g.title}" class="sidebar-thumb">
                 <div class="sidebar-info">
                     <div class="sidebar-name">${g.title}</div>
-                    <div class="sidebar-category">${g.category}</div>
+                    <div class="sidebar-category">${(g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros'}</div>
                 </div>
             </a>
         `).join('');

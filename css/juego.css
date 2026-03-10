@@ -46,9 +46,12 @@
     margin-bottom: 0.2rem;
 }
 
-.game-info-basic p {
+.game-author-row {
     color: var(--text-gray);
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .player-actions {
@@ -79,6 +82,37 @@
 .action-btn.active {
     background: var(--gold);
     color: black;
+}
+
+/* Details Grid */
+.game-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+}
+
+.engine-tag {
+    font-size: 0.9rem;
+}
+
+.engine-tag .label {
+    color: var(--text-gray);
+    margin-right: 0.5rem;
+}
+
+.controls-info {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
 }
 
 /* Comments Section */
@@ -239,6 +273,9 @@
 
 @media (max-width: 1024px) {
     .player-page {
+        grid-template-columns: 1fr;
+    }
+    .game-details-grid {
         grid-template-columns: 1fr;
     }
 }

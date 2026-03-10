@@ -24,7 +24,10 @@ async function loadGameData() {
     try {
         const { data: game, error } = await sbClient
             .from('games')
-            .select('*')
+            .select(`
+                *,
+                profiles ( username )
+            `)
             .eq('id', gameId)
             .single();
 

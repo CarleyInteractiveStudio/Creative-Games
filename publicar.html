@@ -65,6 +65,18 @@
                 <div class="step-content hidden" id="step-2">
                     <h2>Metadata y Dispositivos</h2>
                     <div class="form-group">
+                        <label>Motor del Juego</label>
+                        <select id="game-engine" class="form-input">
+                            <option value="Creative Engine">Creative Engine</option>
+                            <option value="Unity">Unity</option>
+                            <option value="Unreal Engine">Unreal Engine</option>
+                            <option value="Godot">Godot</option>
+                            <option value="Construct 3">Construct 3</option>
+                            <option value="Phaser">Phaser</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Categorías (Selecciona varias)</label>
                         <div class="checkbox-grid" id="category-selection">
                             <!-- Dynamic categories from server -->
@@ -86,11 +98,32 @@
                     </div>
                     <div class="form-group">
                         <label>Compatibilidad de Dispositivos</label>
-                        <div class="checkbox-group">
+                        <div class="checkbox-group" id="device-selection">
                             <label><input type="checkbox" name="device" value="pc"> PC</label>
                             <label><input type="checkbox" name="device" value="console"> Consola</label>
                             <label><input type="checkbox" name="device" value="mobile"> Móvil</label>
                             <label><input type="checkbox" name="device" value="tv"> Smart TV</label>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Controls Section -->
+                    <div id="controls-config-container" class="hidden">
+                        <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; border-top: 1px solid #333; padding-top: 1rem;">Configuración de Controles</h3>
+                        <div class="form-group hidden" id="group-controls-pc">
+                            <label>Controles PC (Ej: WASD para mover, Espacio para saltar)</label>
+                            <textarea id="controls-pc" class="form-input" rows="2"></textarea>
+                        </div>
+                        <div class="form-group hidden" id="group-controls-console">
+                            <label>Controles Consola (Ej: Stick Izquierdo mover, Botón A saltar)</label>
+                            <textarea id="controls-console" class="form-input" rows="2"></textarea>
+                        </div>
+                        <div class="form-group hidden" id="group-controls-mobile">
+                            <label>Controles Móvil (Ej: Joystick táctil, Botones en pantalla)</label>
+                            <textarea id="controls-mobile" class="form-input" rows="2"></textarea>
+                        </div>
+                        <div class="form-group hidden" id="group-controls-tv">
+                            <label>Controles TV (Ej: Mando a distancia o Gamepad)</label>
+                            <textarea id="controls-tv" class="form-input" rows="2"></textarea>
                         </div>
                     </div>
                 </div>
@@ -109,6 +142,7 @@
                     <div class="form-group">
                         <label>Rango de Edad</label>
                         <div class="checkbox-group">
+                            <label><input type="checkbox" name="age" value="Todo Público"> Todo Público</label>
                             <label><input type="checkbox" name="age" value="6-11"> 6-11 años</label>
                             <label><input type="checkbox" name="age" value="12-15"> 12-15 años</label>
                             <label><input type="checkbox" name="age" value="15-17+"> 15-17+ años</label>

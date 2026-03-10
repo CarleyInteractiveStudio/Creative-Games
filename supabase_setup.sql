@@ -1,4 +1,4 @@
--- SQL Setup for Creative Game (V4.1 - Fully Idempotent)
+-- SQL Setup for Creative Game (V5 - Pro Features: Engines & Controls)
 -- Run this in your Supabase SQL Editor
 
 -- 0. Profiles table
@@ -13,14 +13,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies to avoid "already exists" errors
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- Trigger to create profile on signup
+-- Trigger for profile sync
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -57,7 +56,14 @@ CREATE TABLE IF NOT EXISTS public.games (
     rating FLOAT DEFAULT 0,
     play_count INTEGER DEFAULT 0,
     error_count INTEGER DEFAULT 0,
-    admin_notes TEXT
+    admin_notes TEXT,
+    -- New Fields V5
+    engine TEXT DEFAULT 'Otros',
+    age_ratings TEXT[] DEFAULT '{}',
+    controls_pc TEXT,
+    controls_console TEXT,
+    controls_mobile TEXT,
+    controls_tv TEXT
 );
 
 ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;

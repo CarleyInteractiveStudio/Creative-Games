@@ -14,7 +14,10 @@ const sb = _supabase; // Renamed to avoid SyntaxError with global 'supabase'
 async function getApprovedGames(filter = {}) {
     let query = _supabase
         .from('games')
-        .select('*')
+        .select(`
+            *,
+            profiles ( username )
+        `)
         .eq('status', 'approved');
 
     if (filter.device) {
@@ -53,7 +56,10 @@ async function getCategories() {
 async function getUserGames(userId) {
     const { data, error } = await _supabase
         .from('games')
-        .select('*')
+        .select(`
+            *,
+            profiles ( username )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 

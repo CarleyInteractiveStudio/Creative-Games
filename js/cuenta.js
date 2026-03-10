@@ -232,7 +232,10 @@ async function loadUserGames() {
             <td>
                 <div class="game-row-info">
                     <img src="${game.image_url}" class="game-mini-thumb">
-                    <span>${game.title}</span>
+                    <div style="display: flex; flex-direction: column;">
+                        <span>${game.title}</span>
+                        <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.username || 'Tú'}</small>
+                    </div>
                 </div>
             </td>
             <td>${(game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros'}</td>

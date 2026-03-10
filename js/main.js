@@ -91,6 +91,7 @@ async function initApp() {
             allGames = dbGames.map(g => ({
                 id: g.id,
                 title: g.title,
+                author: g.profiles?.username || 'Usuario',
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
                 rating: g.rating || 0,
                 image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
@@ -240,9 +241,6 @@ function createGameCard(game) {
         <img src="images/icons/${device}.svg" alt="${device}" class="comp-icon" title="${device}">
     `).join('');
 
-    // PC/TV/Mobile games go to juego.html
-    // Console games go to juego-consola.html (if specifically selected in console mode)
-    // For main page, we use juego.html
     return `
         <div class="game-card" onclick="location.href='juego.html?id=${game.id}'">
             <div class="game-thumb-container">
@@ -250,6 +248,7 @@ function createGameCard(game) {
             </div>
             <div class="game-info">
                 <h3 class="game-title">${game.title}</h3>
+                <div class="author-label">por ${game.author || 'Usuario'}</div>
                 <div class="game-meta">
                     <span class="rating">${game.rating}</span>
                     <div class="compatibility-icons">

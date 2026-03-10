@@ -37,6 +37,21 @@ async function renderCategoryOptions() {
 }
 
 function setupListeners() {
+    // Device-based controls display
+    const deviceCheckboxes = document.querySelectorAll('input[name="device"]');
+    deviceCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const container = document.getElementById('controls-config-container');
+            const anyChecked = Array.from(deviceCheckboxes).some(c => c.checked);
+
+            if (anyChecked) container.classList.remove('hidden');
+            else container.classList.add('hidden');
+
+            // Toggle individual textareas
+            document.getElementById(`group-controls-${cb.value}`).classList.toggle('hidden', !cb.checked);
+        });
+    });
+
     nextBtn.addEventListener('click', () => {
         if (validateStep(currentStep)) {
             currentStep++;
@@ -147,9 +162,10 @@ async function publishGame() {
     const devices = Array.from(document.querySelectorAll('input[name="device"]:checked')).map(cb => cb.value);
     const ages = Array.from(document.querySelectorAll('input[name="age"]:checked')).map(cb => cb.value);
     const gender = document.getElementById('game-gender').value;
+    const engine = document.getElementById('game-engine').value;
 
     const gameData = {
-        user_id: session.user.id, // Explicitly include user_id to avoid RLS error
+        user_id: session.user.id,
         title: name,
         description: desc,
         image_url: image,
@@ -157,6 +173,12 @@ async function publishGame() {
         categories: categories,
         devices: devices,
         suggested_gender: gender,
+        engine: engine,
+        age_ratings: ages,
+        controls_pc: document.getElementById('controls-pc').value,
+        controls_console: document.getElementById('controls-console').value,
+        controls_mobile: document.getElementById('controls-mobile').value,
+        controls_tv: document.getElementById('controls-tv').value,
         status: 'pending'
     };
 

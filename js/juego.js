@@ -33,7 +33,18 @@ async function loadGameDetails(id) {
         document.title = `${game.title} - Creative Game`;
         document.getElementById('game-title').textContent = game.title;
         document.getElementById('game-category').textContent = (game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros';
+        document.getElementById('game-author').textContent = `Publicado por ${game.profiles?.username || 'Usuario'}`;
         document.getElementById('game-description').textContent = game.description;
+        document.getElementById('game-engine-display').textContent = game.engine || 'Otros';
+
+        // Render controls based on compatibility (showing all relevant ones)
+        let controlsHtml = '';
+        if (game.controls_pc && game.devices.includes('pc')) controlsHtml += `<p><strong>💻 PC:</strong> ${game.controls_pc}</p>`;
+        if (game.controls_console && game.devices.includes('console')) controlsHtml += `<p><strong>🎮 Consola:</strong> ${game.controls_console}</p>`;
+        if (game.controls_mobile && game.devices.includes('mobile')) controlsHtml += `<p><strong>📱 Móvil:</strong> ${game.controls_mobile}</p>`;
+        if (game.controls_tv && game.devices.includes('tv')) controlsHtml += `<p><strong>📺 Smart TV:</strong> ${game.controls_tv}</p>`;
+
+        document.getElementById('controls-content').innerHTML = controlsHtml || 'Este juego no tiene controles especificados.';
 
         const iframe = document.getElementById('game-iframe');
         iframe.src = game.repo_url;

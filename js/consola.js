@@ -27,7 +27,9 @@ let kbCursor = { x: 0, y: 0 };
 const gamesList = document.getElementById('console-games-list');
 const activeTitle = document.getElementById('active-game-title');
 const activeRating = document.getElementById('active-game-rating');
+const activeAuthor = document.getElementById('active-game-author');
 const activeDesc = document.getElementById('active-game-desc');
+const activeControls = document.getElementById('active-game-controls');
 const searchTrigger = document.getElementById('search-trigger');
 const searchTextDisplay = document.getElementById('search-text-display');
 const kbOverlay = document.getElementById('virtual-keyboard');
@@ -90,11 +92,13 @@ async function loadConsoleGames() {
             .map(g => ({
                 id: g.id,
                 title: g.title,
+                author: g.profiles?.username || 'Usuario',
                 rating: g.rating || 0,
                 description: g.description,
                 image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
                 devices: g.devices || [],
-                repo_url: g.repo_url
+                repo_url: g.repo_url,
+                controls_console: g.controls_console
             }))
             .filter(g => g.devices.includes('console'));
 
@@ -124,7 +128,11 @@ function updateActiveGame() {
         const game = displayedGames[currentSelectedIndex];
         activeTitle.textContent = game.title;
         activeRating.textContent = game.rating;
+        activeAuthor.textContent = `por ${game.author || 'Usuario'}`;
         activeDesc.textContent = game.description || "No hay descripción disponible para este título.";
+
+        const controls = game.controls_console || "Controles de consola no especificados.";
+        activeControls.innerHTML = `<div style="margin-top:1rem; border-top:1px solid #333; padding-top:1rem;"><strong>Controles:</strong> ${controls}</div>`;
 
         // Update favorite status
         if (favorites.includes(game.id)) {

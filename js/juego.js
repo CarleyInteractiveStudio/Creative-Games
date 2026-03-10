@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event Listeners
     setupCommentForm(gameId);
     setupActionButtons(gameId);
+    setupAchievementAPI(gameId);
 });
 
 async function loadGameDetails(id) {
@@ -40,7 +41,9 @@ async function loadGameDetails(id) {
         const authorEl = document.getElementById('game-author');
         const authorName = game.profiles?.full_name || game.profiles?.username || 'Usuario';
         authorEl.textContent = `Publicado por ${authorName}`;
-        authorEl.onclick = () => filterByAuthor(game.user_id, authorName);
+        authorEl.onclick = () => {
+            window.location.href = `perfil.html?id=${game.user_id}`;
+        };
 
         document.getElementById('game-description').textContent = game.description;
         document.getElementById('game-engine-display').textContent = game.engine || 'Otros';
@@ -346,6 +349,66 @@ function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+function setupAchievementAPI(gameId) {
+    window.addEventListener('message', async (event) => {
+        const data = event.data;
+
+        if (data && data.type === 'UNLOCK_ACHIEVEMENT' && data.key) {
+            console.log('Solicitud de logro recibida:', data.key);
+            try {
+                const result = await unlockDeveloperAchievement(gameId, data.key);
+                if (result) {
+                    // Fetch full details if it was a definition achievement
+                    let title = result.title;
+                    let icon = 'images/icons/trophy.svg';
+
+                    if (result.definition_id) {
+                        const { data: def } = await sbClient
+                            .from('achievement_definitions')
+                            .select('*')
+                            .eq('id', result.definition_id)
+                            .single();
+                        if (def) {
+                            title = def.title;
+                            icon = fixGitHubImageUrl(def.icon_url) || icon;
+                        }
+                    }
+
+                    showAchievementNotification(title, icon);
+                }
+            } catch (err) {
+                console.error('Error al desbloquear logro via API:', err);
+            }
+        }
+    });
+}
+
+function showAchievementNotification(name, iconUrl) {
+    // Create toast if it doesn't exist
+    let toast = document.getElementById('achievement-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'achievement-toast';
+        toast.className = 'achievement-toast';
+        document.body.appendChild(toast);
+    }
+
+    toast.innerHTML = `
+        <div class="achievement-icon-container">
+            <img src="${iconUrl}" class="achievement-icon-img" onerror="this.src='images/icons/trophy.svg'">
+        </div>
+        <div class="achievement-text">
+            <span class="achievement-label">¡Logro Desbloqueado!</span>
+            <span class="achievement-name">${name}</span>
+        </div>
+    `;
+
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 5000);
 }
 
 let sessionStartTime = null;

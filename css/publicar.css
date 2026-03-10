@@ -212,6 +212,61 @@
     display: none;
 }
 
+.achievement-editor-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.achievement-editor-item .full-width {
+    grid-column: span 2;
+}
+
+.btn-remove-achievement {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;
+    border: 1px solid rgba(255, 77, 77, 0.2);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.btn-remove-achievement:hover {
+    background: #ff4d4d;
+    color: white;
+}
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: white;
+    transition: var(--transition);
+}
+
+.btn-small:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
 @media (max-width: 600px) {
     .step-label {
         display: none;

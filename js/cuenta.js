@@ -23,6 +23,8 @@ const userInitials = document.getElementById('user-initials');
 // Profile Settings Elements
 const birthDateInput = document.getElementById('birth-date');
 const calculatedAgeInput = document.getElementById('calculated-age');
+const interestsInput = document.getElementById('user-interests');
+const interestsCharCount = document.getElementById('interests-char-count');
 const profileDetailsForm = document.getElementById('profile-details-form');
 const favoritesListContainer = document.getElementById('favorites-list');
 
@@ -215,8 +217,68 @@ async function showDashboard() {
         updateAge(metadata.birth_date);
     }
 
+    // Load Interests from Profile (public.profiles)
+    const { data: profile } = await sbClient
+        .from('profiles')
+        .select('interests')
+        .eq('id', session.user.id)
+        .single();
+
+    if (profile && profile.interests) {
+        interestsInput.value = profile.interests;
+        interestsCharCount.textContent = `${profile.interests.length}/300`;
+    }
+
     loadUserGames();
     loadFavorites();
+    loadUserAchievements();
+}
+
+async function loadUserAchievements() {
+    const container = document.getElementById('achievements-list');
+    if (!container) return;
+
+    try {
+        const { data: achievements, error } = await sbClient
+            .from('achievements')
+            .select(`
+                *,
+                games ( title ),
+                achievement_definitions ( title, description, icon_url )
+            `)
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        if (!achievements || achievements.length === 0) {
+            container.innerHTML = '<p class="empty-msg">Aún no has desbloqueado ningún logro.</p>';
+            return;
+        }
+
+        container.innerHTML = achievements.map(ach => {
+            const title = ach.achievement_definitions?.title || ach.title;
+            const desc = ach.achievement_definitions?.description || 'Logro especial de juego.';
+            const icon = fixGitHubImageUrl(ach.achievement_definitions?.icon_url) || 'images/icons/trophy.svg';
+            const gameTitle = ach.games?.title || 'Juego desconocido';
+
+            return `
+                <div class="achievement-card">
+                    <div class="achievement-card-icon">
+                        <img src="${icon}" alt="${title}" onerror="this.src='images/icons/trophy.svg'">
+                    </div>
+                    <div class="achievement-card-info">
+                        <span class="achievement-card-title">${title}</span>
+                        <span class="achievement-card-desc">${desc}</span>
+                        <span class="achievement-card-game">En: ${gameTitle}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error('Error loading achievements:', err);
+        container.innerHTML = '<p class="empty-msg">Error al cargar logros.</p>';
+    }
 }
 
 function updateAge(birthDate) {
@@ -337,17 +399,28 @@ function setupProfileListeners() {
         updateAge(e.target.value);
     });
 
+    interestsInput?.addEventListener('input', () => {
+        interestsCharCount.textContent = `${interestsInput.value.length}/300`;
+    });
+
     profileDetailsForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const bDate = birthDateInput.value;
-        if (!bDate) return;
+        const interests = interestsInput.value.trim();
 
-        const { error } = await window.sbClient.auth.updateUser({
+        // Update auth metadata
+        const { error: authErr } = await window.sbClient.auth.updateUser({
             data: { birth_date: bDate }
         });
 
-        if (error) {
-            alert('Error: ' + error.message);
+        // Update public profile (interests)
+        const { error: profErr } = await window.sbClient
+            .from('profiles')
+            .update({ interests: interests })
+            .eq('id', currentUser.id);
+
+        if (authErr || profErr) {
+            alert('Error: ' + (authErr?.message || profErr?.message));
         } else {
             alert('Perfil actualizado');
         }

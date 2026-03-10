@@ -671,3 +671,66 @@ select.form-input option {
     border-color: var(--gold);
     background: rgba(255, 255, 255, 0.15);
 }
+
+/* Achievement Notification */
+.achievement-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(15, 15, 17, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--gold);
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    z-index: 9999;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(212, 175, 55, 0.2);
+    transform: translateX(120%);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 380px;
+}
+
+.achievement-toast.show {
+    transform: translateX(0);
+}
+
+.achievement-icon-container {
+    width: 50px;
+    height: 50px;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.achievement-icon-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.achievement-text {
+    flex-grow: 1;
+}
+
+.achievement-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.achievement-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: white;
+}

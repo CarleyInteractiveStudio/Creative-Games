@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories();
     await loadGameData(gameId);
 
+    document.getElementById('add-achievement-btn').addEventListener('click', () => {
+        addAchievementToEditor();
+    });
+
     document.getElementById('edit-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         await updateGame(gameId);
@@ -34,7 +38,10 @@ async function loadGameData(id) {
     try {
         const { data: game, error } = await sbClient
             .from('games')
-            .select('*')
+            .select(`
+                *,
+                achievement_definitions (*)
+            `)
             .eq('id', id)
             .single();
 
@@ -55,10 +62,43 @@ async function loadGameData(id) {
             });
         }
 
+        // Load achievements
+        if (game.achievement_definitions) {
+            game.achievement_definitions.forEach(ach => {
+                addAchievementToEditor(ach);
+            });
+        }
+
     } catch (err) {
         alert('Error al cargar datos: ' + err.message);
         window.location.href = 'cuenta.html';
     }
+}
+
+function addAchievementToEditor(data = null) {
+    const container = document.getElementById('achievements-list-editor');
+    const div = document.createElement('div');
+    div.className = 'achievement-editor-item';
+    div.innerHTML = `
+        <button type="button" class="btn-remove-achievement" onclick="this.parentElement.remove()">&times;</button>
+        <div class="form-group">
+            <label>Nombre del Logro</label>
+            <input type="text" class="form-input ach-title" placeholder="Ej: Primer Paso" value="${data?.title || ''}" required>
+        </div>
+        <div class="form-group">
+            <label>Clave (ID para API)</label>
+            <input type="text" class="form-input ach-key" placeholder="Ej: primer_paso" value="${data?.key || ''}" required>
+        </div>
+        <div class="form-group full-width">
+            <label>Descripción</label>
+            <input type="text" class="form-input ach-desc" placeholder="Describe cómo se obtiene..." value="${data?.description || ''}">
+        </div>
+        <div class="form-group full-width">
+            <label>URL Icono</label>
+            <input type="url" class="form-input ach-icon" placeholder="https://..." value="${data?.icon_url || ''}">
+        </div>
+    `;
+    container.appendChild(div);
 }
 
 async function updateGame(id) {
@@ -86,6 +126,23 @@ async function updateGame(id) {
             .eq('id', id);
 
         if (error) throw error;
+
+        // Save Achievements
+        await sbClient.from('achievement_definitions').delete().eq('game_id', id);
+
+        const achItems = document.querySelectorAll('.achievement-editor-item');
+        if (achItems.length > 0) {
+            const achievements = Array.from(achItems).map(item => ({
+                game_id: id,
+                title: item.querySelector('.ach-title').value,
+                key: item.querySelector('.ach-key').value,
+                description: item.querySelector('.ach-desc').value,
+                icon_url: fixGitHubImageUrl(item.querySelector('.ach-icon').value)
+            }));
+
+            const { error: achErr } = await sbClient.from('achievement_definitions').insert(achievements);
+            if (achErr) console.error('Error al guardar logros:', achErr);
+        }
 
         alert('Cambios guardados con éxito. Se ha enviado una notificación de revisión.');
         window.location.href = 'cuenta.html';

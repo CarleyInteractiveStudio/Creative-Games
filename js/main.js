@@ -90,6 +90,7 @@ async function initApp() {
         if (dbGames && dbGames.length > 0) {
             allGames = dbGames.map(g => ({
                 id: g.id,
+                user_id_raw: g.user_id,
                 title: g.title,
                     author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
@@ -275,7 +276,9 @@ function renderRecommendationSection(games) {
                     // Map DB game to card format
                     const cardGame = {
                         id: game.id,
+                        user_id_raw: game.user_id,
                         title: game.title,
+                        author: game.profiles?.full_name || game.profiles?.username || 'Usuario',
                         rating: game.rating,
                         image_url: fixGitHubImageUrl(game.image_url),
                         devices: game.devices
@@ -299,14 +302,14 @@ function createGameCard(game) {
     const isNew = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24)) <= 7;
 
     return `
-        <div class="game-card" onclick="location.href='juego.html?id=${game.id}'">
-            <div class="game-thumb-container">
+        <div class="game-card">
+            <div class="game-thumb-container" onclick="location.href='juego.html?id=${game.id}'">
                 ${isNew ? '<span class="card-badge">NUEVO</span>' : ''}
                 <img src="${game.image_url}" alt="${game.title}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
-                <h3 class="game-title">${game.title}</h3>
-                <div class="author-label">por ${game.author || 'Usuario'}</div>
+                <h3 class="game-title" onclick="location.href='juego.html?id=${game.id}'">${game.title}</h3>
+                <div class="author-label" onclick="event.stopPropagation(); location.href='perfil.html?id=${game.user_id_raw || ''}'">por ${game.author || 'Usuario'}</div>
                 <div class="game-meta">
                     <span class="rating">${Number(game.rating).toFixed(1)}</span>
                     <div class="compatibility-icons">

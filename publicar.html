@@ -33,7 +33,8 @@
                 <div class="step" data-step="2">2<span class="step-label">Metadata</span></div>
                 <div class="step" data-step="3">3<span class="step-label">Audiencia</span></div>
                 <div class="step" data-step="4">4<span class="step-label">Políticas</span></div>
-                <div class="step" data-step="5">5<span class="step-label">Probar</span></div>
+                <div class="step" data-step="5">5<span class="step-label">Logros</span></div>
+                <div class="step" data-step="6">6<span class="step-label">Probar</span></div>
             </div>
 
             <form id="publish-form">
@@ -177,8 +178,25 @@
                     </div>
                 </div>
 
-                <!-- Step 5: Test -->
+                <!-- Step 5: Achievements -->
                 <div class="step-content hidden" id="step-5">
+                    <h2>Configuración de Logros (API)</h2>
+                    <p style="margin-bottom: 1.5rem; color: var(--text-gray);">Crea hasta 100 logros que los jugadores puedan desbloquear.</p>
+
+                    <div id="achievements-list-editor" class="achievements-editor">
+                        <!-- Achievements will be added here -->
+                    </div>
+
+                    <button type="button" id="add-achievement-btn" class="btn-small" style="margin-top: 1rem; background: var(--glass);">+ Añadir Logro</button>
+
+                    <div class="info-box gold-text" style="margin-top: 2rem; font-size: 0.85rem; background: rgba(212, 175, 55, 0.05); padding: 1rem; border-radius: 10px;">
+                        <strong>💡 Tip:</strong> Usa la clave del logro en tu juego con:<br>
+                        <code>parent.postMessage({ type: 'UNLOCK_ACHIEVEMENT', key: 'tu_clave' }, '*')</code>
+                    </div>
+                </div>
+
+                <!-- Step 6: Test -->
+                <div class="step-content hidden" id="step-6">
                     <h2>Probar Juego</h2>
                     <p>Visualiza cómo se verá tu juego en la plataforma.</p>
                     <div class="preview-frame-container">

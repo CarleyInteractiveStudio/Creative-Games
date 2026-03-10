@@ -66,6 +66,14 @@
                     </div>
                 </div>
 
+                <!-- Achievements Card -->
+                <div class="dashboard-card">
+                    <div class="card-title">Mis Logros Obtenidos</div>
+                    <div id="achievements-list" class="achievements-grid-display">
+                        <p class="empty-msg">Aún no has desbloqueado ningún logro.</p>
+                    </div>
+                </div>
+
                 <!-- Manage Games Card -->
                 <div class="dashboard-card">
                     <div class="card-title">
@@ -106,6 +114,11 @@
                                 <label>Edad calculada</label>
                                 <input type="text" class="form-input" id="calculated-age" readonly placeholder="--">
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mis Intereses (Ayúdanos a recomendarte juegos)</label>
+                            <textarea id="user-interests" class="form-input" rows="3" maxlength="300" placeholder="Ej: Me gustan los juegos de combate, disparos y carreras..."></textarea>
+                            <span class="char-count" id="interests-char-count" style="font-size: 0.75rem; color: var(--text-gray);">0/300</span>
                         </div>
                         <button type="submit" class="btn-primary" style="width: auto; padding: 0.8rem 2rem;">Actualizar Datos</button>
                     </form>

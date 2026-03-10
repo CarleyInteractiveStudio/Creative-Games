@@ -9,9 +9,25 @@ let currentReviewId = null;
 const ADMIN_EMAIL = 'johncarley14@gmail.com';
 
 async function checkAdmin() {
+    // Wait for supabase script to load if needed
+    if (typeof getSession === 'undefined') {
+        console.warn('Waiting for supabase.js...');
+        setTimeout(checkAdmin, 500);
+        return;
+    }
+
     const session = await getSession();
     if (!session) {
-        window.location.href = '../cuenta.html';
+        document.getElementById('main-layout').classList.add('hidden');
+        document.getElementById('view-denied').classList.remove('hidden');
+        document.getElementById('view-denied').innerHTML = `
+            <div class="denied-icon">👤</div>
+            <h1 class="view-title">Sesión Requerida</h1>
+            <p style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
+                Debes iniciar sesión en la plataforma principal antes de acceder al panel de administrador.
+            </p>
+            <button class="btn-small" onclick="location.href='/cuenta.html'">Ir a Iniciar Sesión</button>
+        `;
         return;
     }
 

@@ -6,16 +6,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 let currentReviewId = null;
 
+const ADMIN_EMAIL = 'johncarley14@gmail.com';
+
 async function checkAdmin() {
     const session = await getSession();
     if (!session) {
-        alert('Debes iniciar sesión');
         window.location.href = '../cuenta.html';
         return;
     }
 
-    // In a real app, we'd check a 'role' column in public.profiles
-    // For now we'll just display the email
+    if (session.user.email !== ADMIN_EMAIL) {
+        document.getElementById('main-layout').classList.add('hidden');
+        document.getElementById('view-denied').classList.remove('hidden');
+        document.getElementById('admin-email').textContent = session.user.email;
+        return;
+    }
+
     document.getElementById('admin-email').textContent = session.user.email;
 }
 

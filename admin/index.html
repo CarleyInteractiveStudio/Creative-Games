@@ -22,7 +22,17 @@
         </div>
     </header>
 
-    <div class="admin-layout">
+    <!-- Access Denied View -->
+    <div id="view-denied" class="access-denied hidden">
+        <div class="denied-icon">🚫</div>
+        <h1 class="view-title">Acceso Restringido</h1>
+        <p style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
+            Lo sentimos, solo los administradores autorizados pueden acceder a este panel.
+        </p>
+        <button class="btn-small" onclick="location.href='../cuenta.html'">Volver a mi cuenta</button>
+    </div>
+
+    <div class="admin-layout" id="main-layout">
         <nav class="admin-sidebar">
             <button class="nav-link active" data-view="dashboard">📊 Dashboard</button>
             <button class="nav-link" data-view="pending">⏳ Pendientes</button>

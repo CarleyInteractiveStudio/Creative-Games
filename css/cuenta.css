@@ -285,17 +285,44 @@
     background: none;
     border: none;
     cursor: pointer;
+    transition: var(--transition);
+}
+
+.table-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
     opacity: 0.6;
     transition: var(--transition);
 }
 
-.btn-icon:hover {
+.btn-icon:hover .table-icon {
     opacity: 1;
-    transform: scale(1.1);
+    filter: brightness(0) invert(1) drop-shadow(0 0 5px var(--gold));
 }
 
-.btn-icon.delete:hover {
-    filter: invert(27%) sepia(91%) saturate(2352%) hue-rotate(345deg) brightness(94%) contrast(92%); /* Reddish */
+.btn-icon.delete:hover .table-icon {
+    filter: invert(27%) sepia(91%) saturate(2352%) hue-rotate(345deg) brightness(94%) contrast(92%);
+    opacity: 1;
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background: rgba(0, 255, 127, 0.1);
+    color: #00ff7f;
+    border: 1px solid rgba(0, 255, 127, 0.2);
+}
+
+.status-pending {
+    background: rgba(255, 165, 0, 0.1);
+    color: #ffa500;
+    border: 1px solid rgba(255, 165, 0, 0.2);
 }
 
 .btn-logout {

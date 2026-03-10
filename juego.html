@@ -13,10 +13,10 @@
 <body>
     <header class="main-header">
         <div class="header-content">
-            <a href="index.html" class="logo-container">
+            <div class="logo-container" onclick="location.href='index.html'">
                 <img src="logo.png" alt="Creative Game Logo" class="logo-img">
                 <span class="logo-text">Creative <span class="gold-text">Game</span></span>
-            </a>
+            </div>
             <div class="account-container">
                 <a href="index.html" class="profile-btn" title="Volver al inicio">
                     <img src="images/icons/home.svg" alt="Inicio" class="user-icon" style="filter: invert(1);">
@@ -103,6 +103,10 @@
             </div>
         </aside>
     </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Creative Game. Todos los derechos reservados.</p>
+    </footer>
 
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

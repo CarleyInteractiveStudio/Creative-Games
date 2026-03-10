@@ -351,6 +351,11 @@ main {
     box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
 }
 
+select.form-input option {
+    background-color: #1a1a1c;
+    color: white;
+}
+
 /* Sections */
 .game-section {
     margin-bottom: 3rem;

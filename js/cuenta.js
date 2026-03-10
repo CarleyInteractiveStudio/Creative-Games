@@ -227,27 +227,36 @@ async function loadUserGames() {
         return;
     }
 
-    gamesList.innerHTML = games.map(game => `
-        <tr>
-            <td>
-                <div class="game-row-info">
-                    <img src="${game.image_url}" class="game-mini-thumb">
-                    <div style="display: flex; flex-direction: column;">
-                        <span>${game.title}</span>
-                        <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.username || 'Tú'}</small>
+    gamesList.innerHTML = games.map(game => {
+        const statusLabel = game.status === 'approved' ? 'Publicado' : 'En revisión';
+        const statusClass = game.status === 'approved' ? 'status-approved' : 'status-pending';
+
+        return `
+            <tr>
+                <td>
+                    <div class="game-row-info">
+                        <img src="${game.image_url}" class="game-mini-thumb" onerror="this.src='logo.png'">
+                        <div style="display: flex; flex-direction: column;">
+                            <span>${game.title}</span>
+                            <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.username || 'Tú'}</small>
+                        </div>
                     </div>
-                </div>
-            </td>
-            <td>${(game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros'}</td>
-            <td><span class="status-badge">Publicado</span></td>
-            <td>
-                <div class="action-btns">
-                    <button class="btn-icon" title="Editar">✏️</button>
-                    <button class="btn-icon delete" title="Eliminar" onclick="deleteGame(${game.id})">🗑️</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+                </td>
+                <td>${(game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros'}</td>
+                <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-icon" title="Editar" onclick="alert('Función de edición próximamente')">
+                            <img src="images/icons/edit.svg" class="table-icon">
+                        </button>
+                        <button class="btn-icon delete" title="Eliminar" onclick="deleteGame('${game.id}')">
+                            <img src="images/icons/trash.svg" class="table-icon">
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function deleteGame(id) {
@@ -258,8 +267,11 @@ async function deleteGame(id) {
         .delete()
         .eq('id', id);
 
-    if (error) alert(error.message);
-    else loadUserGames();
+    if (error) {
+        alert('Error al eliminar: ' + error.message);
+    } else {
+        loadUserGames();
+    }
 }
 
 function showAuth() {

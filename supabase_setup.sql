@@ -1,7 +1,7 @@
--- SQL Setup for Creative Game (V4 - Analytics, Favorites & Categories)
+-- SQL Setup for Creative Game (V4.1 - Fully Idempotent)
 -- Run this in your Supabase SQL Editor
 
--- 0. Profiles table (Sync with auth.users)
+-- 0. Profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     username TEXT,
@@ -12,6 +12,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies to avoid "already exists" errors
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
@@ -36,7 +41,7 @@ CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 1. Create the games table (Extended)
+-- 1. Games table
 CREATE TABLE IF NOT EXISTS public.games (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -55,21 +60,38 @@ CREATE TABLE IF NOT EXISTS public.games (
     admin_notes TEXT
 );
 
--- 2. Create the categories table
+ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public Read Approved Games" ON public.games;
+DROP POLICY IF EXISTS "Users can insert their own games" ON public.games;
+DROP POLICY IF EXISTS "Users can update their own games" ON public.games;
+DROP POLICY IF EXISTS "Users can delete their own games" ON public.games;
+DROP POLICY IF EXISTS "Users can view their own non-approved games" ON public.games;
+
+CREATE POLICY "Public Read Approved Games" ON public.games FOR SELECT USING (status = 'approved');
+CREATE POLICY "Users can insert their own games" ON public.games FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own games" ON public.games FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own games" ON public.games FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view their own non-approved games" ON public.games FOR SELECT USING (auth.uid() = user_id);
+
+-- 2. Categories table
 CREATE TABLE IF NOT EXISTS public.categories (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
     icon TEXT
 );
 
--- Seed categories
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Categories" ON public.categories;
+CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
+
 INSERT INTO public.categories (name) VALUES
 ('Acción'), ('Aventura'), ('Disparos'), ('Simulación'), ('Estrategia'),
 ('Deportes'), ('Puzzle'), ('Arcade'), ('Terror'), ('RPG'),
 ('Carreras'), ('Cooperativo'), ('Multijugador'), ('Indie')
 ON CONFLICT (name) DO NOTHING;
 
--- 3. Create the favorites table
+-- 3. Favorites table
 CREATE TABLE IF NOT EXISTS public.favorites (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -78,7 +100,11 @@ CREATE TABLE IF NOT EXISTS public.favorites (
     UNIQUE(user_id, game_id)
 );
 
--- 4. Create play sessions table for tracking
+ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users Own Favorites" ON public.favorites;
+CREATE POLICY "Users Own Favorites" ON public.favorites FOR ALL USING (auth.uid() = user_id);
+
+-- 4. Play sessions
 CREATE TABLE IF NOT EXISTS public.play_sessions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -88,7 +114,14 @@ CREATE TABLE IF NOT EXISTS public.play_sessions (
     device_type TEXT
 );
 
--- 5. Create the comments table
+ALTER TABLE public.play_sessions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can log play sessions" ON public.play_sessions;
+DROP POLICY IF EXISTS "Users can see their own sessions" ON public.play_sessions;
+
+CREATE POLICY "Anyone can log play sessions" ON public.play_sessions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can see their own sessions" ON public.play_sessions FOR SELECT USING (auth.uid() = user_id);
+
+-- 5. Comments
 CREATE TABLE IF NOT EXISTS public.comments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -99,34 +132,14 @@ CREATE TABLE IF NOT EXISTS public.comments (
     is_positive BOOLEAN DEFAULT true
 );
 
--- 6. Enable RLS
-ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.play_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
-
--- 7. RLS Policies
-CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
-CREATE POLICY "Public Read Approved Games" ON public.games FOR SELECT USING (status = 'approved');
-
--- Explicit policies for the 'games' table to allow all management by the owner
-CREATE POLICY "Users can insert their own games" ON public.games FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own games" ON public.games FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own games" ON public.games FOR DELETE USING (auth.uid() = user_id);
-CREATE POLICY "Users can view their own non-approved games" ON public.games FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users Own Favorites" ON public.favorites FOR ALL USING (auth.uid() = user_id);
-
-CREATE POLICY "Anyone can log play sessions" ON public.play_sessions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Users can see their own sessions" ON public.play_sessions FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Anyone can view comments" ON public.comments;
+DROP POLICY IF EXISTS "Users can post comments" ON public.comments;
 
 CREATE POLICY "Anyone can view comments" ON public.comments FOR SELECT USING (true);
 CREATE POLICY "Users can post comments" ON public.comments FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- 8. Functions & Triggers
-
--- Increment play count on session start
+-- 6. Functions & Triggers
 CREATE OR REPLACE FUNCTION increment_game_play_count()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -135,11 +148,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_increment_play_count ON public.play_sessions;
 CREATE TRIGGER trigger_increment_play_count
 AFTER INSERT ON public.play_sessions
 FOR EACH ROW EXECUTE FUNCTION increment_game_play_count();
 
--- Report game error
 CREATE OR REPLACE FUNCTION report_game_error(game_id_param UUID)
 RETURNS void AS $$
 DECLARE

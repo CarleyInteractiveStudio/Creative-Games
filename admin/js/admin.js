@@ -26,7 +26,7 @@ async function checkAdmin() {
             <p style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
                 Debes iniciar sesión en la plataforma principal antes de acceder al panel de administrador.
             </p>
-            <button class="btn-small" onclick="location.href='/cuenta.html'">Ir a Iniciar Sesión</button>
+            <button class="btn-small" onclick="location.href='../cuenta.html'">Ir a Iniciar Sesión</button>
         `;
         return;
     }

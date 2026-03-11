@@ -122,35 +122,43 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
     background: var(--bg-card);
-    padding: 0.8rem 1.2rem;
-    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
     border: 1px solid var(--glass-border);
 }
 
+.game-info-basic {
+    min-width: 200px;
+}
+
 .game-info-basic h1 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     margin-bottom: 0.1rem;
 }
 
 .game-author-row {
     color: var(--text-gray);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.4rem;
 }
 
 .player-actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.8rem;
 }
 
 .star-rating {
     display: flex;
     gap: 0.3rem;
-    margin-right: 1.5rem;
+    margin-right: 0.5rem;
 }
 
 .star {
@@ -501,7 +509,6 @@
     }
     .player-actions {
         width: 100%;
-        overflow-x: auto;
         padding-bottom: 0.5rem;
     }
     .splash-text {

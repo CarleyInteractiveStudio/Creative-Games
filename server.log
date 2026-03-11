@@ -1,0 +1,16 @@
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /juego.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /css/juego.css HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/share.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /js/supabase.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /js/juego.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/mobile.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/pc.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/tv.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /js/main.js HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/search.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/console.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/user.svg HTTP/1.1" 200 -
+127.0.0.1 - - [11/Mar/2026 00:54:46] "GET /images/icons/bell.svg HTTP/1.1" 200 -

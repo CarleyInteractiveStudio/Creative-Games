@@ -345,14 +345,31 @@
 .sidebar-games {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
+    gap: 0.8rem;
+    padding: 0.5rem; /* Space for hover scale */
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+}
+
+.sidebar-games::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-games::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
 }
 
 .sidebar-game-card {
+    display: block;
     position: relative;
-    aspect-ratio: 16/9;
+    width: 100%;
+    height: 0;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio hack for stability */
     background: var(--bg-card);
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid var(--glass-border);
     overflow: hidden;
     cursor: pointer;
@@ -367,9 +384,13 @@
 }
 
 .sidebar-thumb {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .sidebar-info {
@@ -401,7 +422,9 @@
         order: 1;
     }
     .sidebar-games {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        max-height: none; /* No scroll on mobile sidebar (it flows naturally) */
+        overflow-y: visible;
     }
 }
 

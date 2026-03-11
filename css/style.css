@@ -287,10 +287,18 @@ body {
     border: 1px solid var(--glass-border);
     border-radius: 15px;
     min-width: 240px;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     padding: 1rem 0;
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     transition: var(--transition);
     z-index: 1100;
+}
+
+.dropdown-content::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 #categories-list {

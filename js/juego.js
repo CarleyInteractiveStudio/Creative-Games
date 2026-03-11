@@ -64,7 +64,16 @@ async function loadGameDetails(id) {
         // Update Meta Tags for Sharing
         document.querySelector('meta[property="og:title"]').content = game.title;
         document.querySelector('meta[property="og:description"]').content = game.description || 'Juega en Creative Game';
-        document.querySelector('meta[property="og:image"]').content = fixGitHubImageUrl(game.image_url);
+
+        // Ensure the sharing image is a full URL or fallback to logo
+        const shareImg = fixGitHubImageUrl(game.image_url);
+        if (shareImg && !shareImg.includes('placeholder')) {
+            document.querySelector('meta[property="og:image"]').content = shareImg;
+        } else {
+            // Full URL to logo for social crawlers
+            const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+            document.querySelector('meta[property="og:image"]').content = `${baseUrl}/logo.png`;
+        }
 
         // Render controls based on compatibility (showing all relevant ones)
         let controlsHtml = '';

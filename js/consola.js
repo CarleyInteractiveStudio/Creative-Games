@@ -92,10 +92,10 @@ async function loadConsoleGames() {
             .map(g => ({
                 id: g.id,
                 title: g.title,
-                author: g.profiles?.username || 'Usuario',
+                author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
                 rating: g.rating || 0,
                 description: g.description,
-                image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+                image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
                 devices: g.devices || [],
                 repo_url: g.repo_url,
                 controls_console: g.controls_console
@@ -117,7 +117,7 @@ function renderGames() {
     }
     gamesList.innerHTML = displayedGames.map((game, index) => `
         <div class="console-game-card ${ (currentMode === 'list' && index === currentSelectedIndex) ? 'selected' : ''}" data-index="${index}">
-            <img src="${game.image_url}" alt="${game.title}">
+            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${game.title}">
         </div>
     `).join('');
     updateActiveGame();

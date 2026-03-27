@@ -1,28 +1,118 @@
 .player-page {
-    max-width: 1400px;
-    margin: 100px auto 50px;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 2rem;
+    max-width: 1600px;
+    margin: 60px auto 30px;
+    padding: 0 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    justify-content: center;
 }
 
 /* Main Content Area */
 .player-main {
+    flex: 1;
+    min-width: 300px;
+    max-width: 1100px;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.8rem;
 }
 
 .game-container {
     width: 100%;
     aspect-ratio: 16/9;
     background: #000;
-    border-radius: 20px;
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
     border: 1px solid var(--glass-border);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Play Overlay */
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.play-overlay:hover {
+    background: rgba(0,0,0,0.5);
+}
+
+.play-btn-large {
+    width: 100px;
+    height: 100px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+    transition: var(--transition);
+}
+
+.play-overlay:hover .play-btn-large {
+    transform: scale(1.1);
+    background: var(--gold-bright);
+}
+
+.play-icon {
+    width: 40px;
+    height: 40px;
+    fill: black;
+    margin-left: 5px;
+}
+
+/* Splash Screen */
+.splash-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 110;
+    gap: 2rem;
+}
+
+.splash-logo {
+    width: 120px;
+    opacity: 0;
+    transform: scale(0.8);
+    animation: splashFadeIn 0.8s forwards;
+}
+
+.splash-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0;
+    animation: splashTyping 1.8s steps(20, end) forwards;
+}
+
+@keyframes splashFadeIn {
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes splashTyping {
+    from { width: 0 }
+    to { width: 330px } /* Exact width for "Creative Game" with gold styling */
 }
 
 .game-container iframe {
@@ -36,40 +126,63 @@
     justify-content: space-between;
     align-items: center;
     background: var(--bg-card);
-    padding: 1rem 1.5rem;
-    border-radius: 15px;
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
     border: 1px solid var(--glass-border);
 }
 
 .game-info-basic h1 {
-    font-size: 1.5rem;
-    margin-bottom: 0.2rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.1rem;
 }
 
 .game-author-row {
     color: var(--text-gray);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .player-actions {
     display: flex;
+    align-items: center;
     gap: 1rem;
+}
+
+.star-rating {
+    display: flex;
+    gap: 0.3rem;
+    margin-right: 1.5rem;
+}
+
+.star {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+}
+
+.star.active {
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.star:hover, .star:hover ~ .star {
+    color: var(--gold-bright);
 }
 
 .action-btn {
     background: var(--glass);
     border: 1px solid var(--glass-border);
     color: white;
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
+    gap: 0.4rem;
+    font-size: 0.8rem;
     transition: var(--transition);
 }
 
@@ -173,8 +286,8 @@
 }
 
 .comment-avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--gold);
     flex-shrink: 0;
@@ -183,6 +296,8 @@
     justify-content: center;
     font-weight: 600;
     color: black;
+    object-fit: cover;
+    border: 1px solid var(--glass-border);
 }
 
 .comment-content {
@@ -198,7 +313,7 @@
 
 .comment-username {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .comment-date {
@@ -214,45 +329,48 @@
 
 /* Sidebar */
 .player-sidebar {
+    width: 320px;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 .sidebar-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.8rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .sidebar-games {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
 }
 
 .sidebar-game-card {
-    display: flex;
-    gap: 1rem;
+    position: relative;
+    aspect-ratio: 16/9;
     background: var(--bg-card);
-    padding: 0.8rem;
-    border-radius: 12px;
+    border-radius: 6px;
     border: 1px solid var(--glass-border);
+    overflow: hidden;
     cursor: pointer;
-    transition: var(--transition);
-    text-decoration: none;
-    color: white;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .sidebar-game-card:hover {
-    transform: translateX(5px);
-    background: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+    z-index: 2;
+    border-color: var(--gold);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
 }
 
 .sidebar-thumb {
-    width: 100px;
-    aspect-ratio: 16/9;
-    border-radius: 8px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
@@ -271,11 +389,35 @@
     color: var(--text-gray);
 }
 
-@media (max-width: 1024px) {
-    .player-page {
-        grid-template-columns: 1fr;
+@media (max-width: 1200px) {
+    .player-sidebar {
+        width: 100%;
+        max-width: 1100px;
     }
+    .sidebar-games {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
     .game-details-grid {
         grid-template-columns: 1fr;
+    }
+    .player-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+    .player-actions {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    .splash-text {
+        font-size: 1.8rem;
+    }
+    @keyframes splashTyping {
+        from { width: 0 }
+        to { width: 240px }
     }
 }

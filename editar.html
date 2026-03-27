@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Juego - Creative <span class="gold-text">Game</span></title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/publicar.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-container" onclick="location.href='index.html'">
+                <img src="logo.png" alt="Creative Game Logo" class="logo-img">
+                <span class="logo-text">Creative <span class="gold-text">Game</span></span>
+            </div>
+            <div class="account-container">
+                <a href="cuenta.html" class="profile-btn" title="Mi Cuenta">
+                    <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="publish-page">
+        <div class="wizard-container glass-card">
+            <h1 style="color: var(--gold); margin-bottom: 2rem;">Editar Juego</h1>
+
+            <form id="edit-form">
+                <div class="step-content">
+                    <div class="form-group">
+                        <label>Nombre del Juego</label>
+                        <input type="text" id="game-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>URL del Juego (GitHub Pages)</label>
+                        <input type="url" id="game-repo" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción del Juego</label>
+                        <textarea id="game-desc" class="form-input" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Imagen de Portada (URL)</label>
+                        <input type="url" id="game-image" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motor del Juego</label>
+                        <select id="game-engine" class="form-input">
+                            <option value="Creative Engine">Creative Engine</option>
+                            <option value="Unity">Unity</option>
+                            <option value="Unreal Engine">Unreal Engine</option>
+                            <option value="Godot">Godot</option>
+                            <option value="Construct 3">Construct 3</option>
+                            <option value="Phaser">Phaser</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categorías (Selecciona varias)</label>
+                        <div class="checkbox-grid" id="category-selection">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Género Sugerido</label>
+                        <select id="game-gender" class="form-input">
+                            <option value="Ambos">Ambos</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="wizard-nav">
+                    <button type="button" onclick="location.href='cuenta.html'" class="btn-nav">Cancelar</button>
+                    <button type="submit" id="submit-btn" class="btn-nav btn-primary-gold">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/editar.js"></script>
+</body>
+</html>

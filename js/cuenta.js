@@ -123,10 +123,63 @@ async function checkAuthState() {
             name: session.user.user_metadata.full_name || session.user.email.split('@')[0]
         };
         showDashboard();
+
+        const notifContainer = document.getElementById('notif-container');
+        if (notifContainer) {
+            notifContainer.classList.remove('hidden');
+            loadNotificationsUI();
+        }
     } else {
         showAuth();
     }
 }
+
+async function loadNotificationsUI() {
+    const notifBtn = document.getElementById('notif-btn');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    const notifList = document.getElementById('notif-list');
+    const notifCount = document.getElementById('notif-count');
+
+    if (!notifBtn || !notifList) return;
+
+    const notifs = await getNotifications();
+    const unread = notifs.filter(n => !n.is_read);
+
+    if (unread.length > 0) {
+        notifCount.textContent = unread.length;
+        notifCount.classList.remove('hidden');
+    } else {
+        notifCount.classList.add('hidden');
+    }
+
+    if (notifs.length > 0) {
+        notifList.innerHTML = notifs.map(n => `
+            <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.game_id}')">
+                <div class="notif-title">${n.title}</div>
+                <div class="notif-content">${n.content}</div>
+                <div class="notif-date">${new Date(n.created_at).toLocaleString()}</div>
+            </div>
+        `).join('');
+    }
+
+    notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+        notifDropdown.classList.add('hidden');
+    });
+}
+
+window.handleNotifClick = async (id, gameId) => {
+    await markNotificationRead(id);
+    if (gameId && gameId !== 'null') {
+        window.location.href = `juego.html?id=${gameId}`;
+    } else {
+        loadNotificationsUI();
+    }
+};
 
 async function showDashboard() {
     authView.style.display = 'none';
@@ -202,7 +255,7 @@ async function loadFavorites() {
 
     favoritesListContainer.innerHTML = games.map(game => `
         <div class="game-card-mini" onclick="location.href='juego.html?id=${game.id}'">
-            <img src="${game.image_url}" alt="${game.title}">
+            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${game.title}">
             <div class="mini-info">
                 <span>${game.title}</span>
             </div>
@@ -227,27 +280,36 @@ async function loadUserGames() {
         return;
     }
 
-    gamesList.innerHTML = games.map(game => `
-        <tr>
-            <td>
-                <div class="game-row-info">
-                    <img src="${game.image_url}" class="game-mini-thumb">
-                    <div style="display: flex; flex-direction: column;">
-                        <span>${game.title}</span>
-                        <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.username || 'Tú'}</small>
+    gamesList.innerHTML = games.map(game => {
+        const statusLabel = game.status === 'approved' ? 'Publicado' : 'En revisión';
+        const statusClass = game.status === 'approved' ? 'status-approved' : 'status-pending';
+
+        return `
+            <tr>
+                <td>
+                    <div class="game-row-info">
+                        <img src="${fixGitHubImageUrl(game.image_url)}" class="game-mini-thumb" onerror="this.src='logo.png'">
+                        <div style="display: flex; flex-direction: column;">
+                            <span>${game.title}</span>
+                            <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.full_name || game.profiles?.username || 'Tú'}</small>
+                        </div>
                     </div>
-                </div>
-            </td>
-            <td>${(game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros'}</td>
-            <td><span class="status-badge">Publicado</span></td>
-            <td>
-                <div class="action-btns">
-                    <button class="btn-icon" title="Editar">✏️</button>
-                    <button class="btn-icon delete" title="Eliminar" onclick="deleteGame(${game.id})">🗑️</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+                </td>
+                <td>${(game.categories && game.categories.length > 0) ? game.categories[0] : 'Otros'}</td>
+                <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-icon" title="Editar" onclick="location.href='editar.html?id=${game.id}'">
+                            <img src="images/icons/edit.svg" class="table-icon">
+                        </button>
+                        <button class="btn-icon delete" title="Eliminar" onclick="deleteGame('${game.id}')">
+                            <img src="images/icons/trash.svg" class="table-icon">
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function deleteGame(id) {
@@ -258,8 +320,11 @@ async function deleteGame(id) {
         .delete()
         .eq('id', id);
 
-    if (error) alert(error.message);
-    else loadUserGames();
+    if (error) {
+        alert('Error al eliminar: ' + error.message);
+    } else {
+        loadUserGames();
+    }
 }
 
 function showAuth() {

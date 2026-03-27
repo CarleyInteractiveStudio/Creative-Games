@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publicar Juego - Creative Game</title>
+    <title>Publicar Juego - Creative <span class="gold-text">Game</span></title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/publicar.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,10 +13,10 @@
 <body>
     <header class="main-header">
         <div class="header-content">
-            <a href="index.html" class="logo-container">
+            <div class="logo-container" onclick="location.href='index.html'">
                 <img src="logo.png" alt="Creative Game Logo" class="logo-img">
                 <span class="logo-text">Creative <span class="gold-text">Game</span></span>
-            </a>
+            </div>
             <div class="account-container">
                 <a href="cuenta.html" class="profile-btn" title="Mi Cuenta">
                     <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
@@ -156,11 +156,11 @@
                     <div class="policy-container">
                         <div class="policy-item">
                             <input type="checkbox" id="policy-marketing" required>
-                            <label for="policy-marketing">Acepto que Creative Game use mi juego para fines de marketing.</label>
+                            <label for="policy-marketing">Acepto que Creative <span class="gold-text">Game</span> use mi juego para fines de marketing.</label>
                         </div>
                         <div class="policy-item">
                             <input type="checkbox" id="policy-logo" required>
-                            <label for="policy-logo">Me comprometo a poner el logo de Creative Game en el inicio de mi juego.</label>
+                            <label for="policy-logo">Me comprometo a poner el logo de Creative <span class="gold-text">Game</span> en el inicio de mi juego.</label>
                         </div>
                         <div class="policy-divider">Restricciones de Contenido</div>
                         <div class="policy-item">
@@ -198,6 +198,10 @@
             </form>
         </div>
     </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Creative <span class="gold-text">Game</span>. Todos los derechos reservados.</p>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>

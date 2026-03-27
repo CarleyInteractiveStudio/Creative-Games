@@ -91,11 +91,12 @@ async function initApp() {
             allGames = dbGames.map(g => ({
                 id: g.id,
                 title: g.title,
-                author: g.profiles?.username || 'Usuario',
+                    author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
                 rating: g.rating || 0,
-                image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
-                devices: g.devices || []
+                image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
+                    devices: g.devices || [],
+                    created_at: g.created_at
             }));
         }
     } catch (e) {
@@ -109,19 +110,70 @@ async function initApp() {
 }
 
 async function checkUserAuth() {
-    // Update profile icon if logged in
     const session = await getSession();
     if (session) {
-        const btn = document.querySelector('.profile-btn');
-        if (btn) {
-            btn.title = `Cuenta: ${session.user.email}`;
+        const profileBtn = document.querySelector('.profile-btn');
+        if (profileBtn) {
+            profileBtn.title = `Cuenta: ${session.user.email}`;
             const avatarUrl = session.user.user_metadata.avatar_url;
             if (avatarUrl) {
-                btn.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                profileBtn.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
             }
+        }
+
+        // Show notification container
+        const notifContainer = document.getElementById('notif-container');
+        if (notifContainer) {
+            notifContainer.classList.remove('hidden');
+            loadNotificationsUI();
         }
     }
 }
+
+async function loadNotificationsUI() {
+    const notifBtn = document.getElementById('notif-btn');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    const notifList = document.getElementById('notif-list');
+    const notifCount = document.getElementById('notif-count');
+
+    const notifs = await getNotifications();
+    const unread = notifs.filter(n => !n.is_read);
+
+    if (unread.length > 0) {
+        notifCount.textContent = unread.length;
+        notifCount.classList.remove('hidden');
+    } else {
+        notifCount.classList.add('hidden');
+    }
+
+    if (notifs.length > 0) {
+        notifList.innerHTML = notifs.map(n => `
+            <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.game_id}')">
+                <div class="notif-title">${n.title}</div>
+                <div class="notif-content">${n.content}</div>
+                <div class="notif-date">${new Date(n.created_at).toLocaleString()}</div>
+            </div>
+        `).join('');
+    }
+
+    notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+        notifDropdown.classList.add('hidden');
+    });
+}
+
+window.handleNotifClick = async (id, gameId) => {
+    await markNotificationRead(id);
+    if (gameId && gameId !== 'null') {
+        window.location.href = `juego.html?id=${gameId}`;
+    } else {
+        loadNotificationsUI();
+    }
+};
 
 function setupEventListeners() {
     // Search Filtering
@@ -177,7 +229,7 @@ async function filterByDevice(device) {
         title: g.title,
         category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
         rating: g.rating || 0,
-        image_url: g.image_url || 'https://via.placeholder.com/800x450?text=No+Image',
+        image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
         devices: g.devices || []
     }));
     renderSections(mapped);
@@ -225,7 +277,7 @@ function renderRecommendationSection(games) {
                         id: game.id,
                         title: game.title,
                         rating: game.rating,
-                        image_url: game.image_url,
+                        image_url: fixGitHubImageUrl(game.image_url),
                         devices: game.devices
                     };
                     return createGameCard(cardGame);
@@ -241,16 +293,22 @@ function createGameCard(game) {
         <img src="images/icons/${device}.svg" alt="${device}" class="comp-icon" title="${device}">
     `).join('');
 
+    // New/Updated Badges
+    const createdDate = new Date(game.created_at);
+    const now = new Date();
+    const isNew = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24)) <= 7;
+
     return `
         <div class="game-card" onclick="location.href='juego.html?id=${game.id}'">
             <div class="game-thumb-container">
+                ${isNew ? '<span class="card-badge">NUEVO</span>' : ''}
                 <img src="${game.image_url}" alt="${game.title}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
                 <h3 class="game-title">${game.title}</h3>
                 <div class="author-label">por ${game.author || 'Usuario'}</div>
                 <div class="game-meta">
-                    <span class="rating">${game.rating}</span>
+                    <span class="rating">${Number(game.rating).toFixed(1)}</span>
                     <div class="compatibility-icons">
                         ${compIcons}
                     </div>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <header class="admin-header">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            <span>Creative <span class="gold-text">Game</span> <small class="badge">ADMIN</small></span>
+        </div>
+        <div class="admin-user">
+            <span id="admin-email">Cargando...</span>
+            <button id="logout-btn" class="btn-logout">Salir</button>
+        </div>
+    </header>
+
+    <!-- Access Denied / Login View -->
+    <div id="view-auth" class="access-denied hidden">
+        <div id="auth-content">
+            <div class="denied-icon">🔐</div>
+            <h1 class="view-title" id="auth-title">Panel de Administración</h1>
+            <p id="auth-desc" style="color: var(--text-gray); max-width: 400px; margin-bottom: 2rem;">
+                Inicia sesión con tu cuenta de administrador para continuar.
+            </p>
+
+            <form id="admin-login-form" style="max-width: 350px; margin: 0 auto; text-align: left;">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="login-email" class="form-input" required placeholder="admin@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-pass" class="form-input" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Entrar al Panel</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-layout" id="main-layout">
+        <nav class="admin-sidebar">
+            <button class="nav-link active" data-view="dashboard">
+                <img src="icons/settings.svg" class="sidebar-icon"> Dashboard
+            </button>
+            <button class="nav-link" data-view="pending">
+                <img src="icons/btn_pause.svg" class="sidebar-icon"> Pendientes
+            </button>
+            <button class="nav-link" data-view="games">
+                <img src="icons/console.svg" class="sidebar-icon"> Gestión Juegos
+            </button>
+            <button class="nav-link" data-view="categories">
+                <img src="icons/btn_options.svg" class="sidebar-icon"> Categorías
+            </button>
+            <button class="nav-link" data-view="users">
+                <img src="icons/user.svg" class="sidebar-icon"> Usuarios
+            </button>
+        </nav>
+
+        <main class="admin-main">
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view">
+                <h2 class="view-title">Resumen General</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-total-games">0</span>
+                        <span class="stat-label">Juegos Totales</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-pending-games" style="color: var(--gold);">0</span>
+                        <span class="stat-label">Esperando Revisión</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-total-plays">0</span>
+                        <span class="stat-label">Jugadas Totales</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-total-errors" style="color: #ff4d4d;">0</span>
+                        <span class="stat-label">Errores Reportados</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pending Games View -->
+            <section id="view-pending" class="view hidden">
+                <h2 class="view-title">Juegos por Aprobar</h2>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Juego</th>
+                                <th>Autor</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-list">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Categories View -->
+            <section id="view-categories" class="view hidden">
+                <div class="header-with-action">
+                    <h2 class="view-title">Gestión de Categorías</h2>
+                    <button class="btn-small" id="btn-add-category">+ Nueva</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categories-list-admin">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="review-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-card large-modal">
+            <div class="modal-header">
+                <h3 id="review-title">Revisar Juego</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="review-grid">
+                <div class="review-info">
+                    <p><strong>Autor:</strong> <span id="review-author"></span></p>
+                    <p><strong>URL:</strong> <a href="#" id="review-url" target="_blank">Abrir Juego</a></p>
+                    <p><strong>Descripción:</strong></p>
+                    <div id="review-desc" class="scrollbox"></div>
+                </div>
+                <div class="review-preview">
+                    <iframe id="review-iframe" src="about:blank"></iframe>
+                </div>
+            </div>
+            <div class="review-actions">
+                <textarea id="review-notes" class="form-input" placeholder="Notas del administrador (opcional)"></textarea>
+                <div class="btn-group">
+                    <button class="btn-primary" id="btn-approve" style="background: #2ecc71;">APROBAR</button>
+                    <button class="btn-primary" id="btn-reject" style="background: #e74c3c;">RECHAZAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Use local relative paths -->
+    <script src="js/supabase.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargando Juego... - Creative Game</title>
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" id="og-title" content="Creative Game">
+    <meta property="og:description" id="og-desc" content="Juega gratis en Creative <span class="gold-text">Game</span>">
+    <meta property="og:image" id="og-image" content="logo.png">
+    <meta property="og:type" content="website">
+
+    <title>Cargando Juego... - Creative <span class="gold-text">Game</span></title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/juego.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,10 +19,10 @@
 <body>
     <header class="main-header">
         <div class="header-content">
-            <a href="index.html" class="logo-container">
+            <div class="logo-container" onclick="location.href='index.html'">
                 <img src="logo.png" alt="Creative Game Logo" class="logo-img">
                 <span class="logo-text">Creative <span class="gold-text">Game</span></span>
-            </a>
+            </div>
             <div class="account-container">
                 <a href="index.html" class="profile-btn" title="Volver al inicio">
                     <img src="images/icons/home.svg" alt="Inicio" class="user-icon" style="filter: invert(1);">
@@ -29,21 +35,45 @@
         <div class="player-main">
             <!-- Video/Game Frame -->
             <div class="game-container">
+                <div id="play-overlay" class="play-overlay">
+                    <div class="play-btn-large">
+                        <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                </div>
+                <div id="splash-screen" class="splash-screen hidden">
+                    <img src="logo.png" class="splash-logo" alt="Logo">
+                    <div class="splash-text">Creative <span class="gold-text">Game</span></div>
+                </div>
                 <iframe id="game-iframe" src="" allowfullscreen></iframe>
             </div>
 
             <!-- Title & Controls -->
             <div class="player-controls">
                 <div class="game-info-basic">
-                    <h1 id="game-title">Título del Juego</h1>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <h1 id="game-title">Título del Juego</h1>
+                        <span id="badge-new" class="status-badge status-approved hidden">NUEVO</span>
+                        <span id="badge-updated" class="status-badge status-pending hidden">ACTUALIZADO</span>
+                    </div>
                     <div class="game-author-row">
                         <span id="game-category">Categoría</span> •
-                        <span id="game-author" class="gold-text">Publicado por ...</span>
+                        <span id="game-author" class="gold-text" style="cursor: pointer;">Publicado por ...</span>
+                        <span id="game-updated-at" style="color: var(--text-gray); font-size: 0.8rem; margin-left: 1rem;"></span>
                     </div>
                 </div>
                 <div class="player-actions">
+                    <div class="star-rating" id="star-rating">
+                        <span class="star" data-score="1">★</span>
+                        <span class="star" data-score="2">★</span>
+                        <span class="star" data-score="3">★</span>
+                        <span class="star" data-score="4">★</span>
+                        <span class="star" data-score="5">★</span>
+                    </div>
                     <button class="action-btn" id="btn-like">
                         <span class="icon">❤</span> Me gusta
+                    </button>
+                    <button class="action-btn" id="btn-share">
+                        <img src="images/icons/share.svg" class="small-icon"> Compartir
                     </button>
                     <button class="action-btn" id="btn-report">
                         <span class="icon">⚠</span> Reportar Error
@@ -103,6 +133,32 @@
             </div>
         </aside>
     </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Creative <span class="gold-text">Game</span>. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>Compartir Juego</h3>
+                <button class="btn-close" id="close-share">&times;</button>
+            </div>
+            <div class="share-options-grid">
+                <button class="btn-primary share-btn" id="share-whatsapp" style="background: #25D366; color: white;">WhatsApp</button>
+                <button class="btn-primary share-btn" id="share-facebook" style="background: #1877F2; color: white;">Facebook</button>
+                <button class="btn-primary share-btn" id="share-x" style="background: #000000; color: white;">X (Twitter)</button>
+            </div>
+            <div class="form-group" style="margin-top: 2rem;">
+                <label>Enlace Directo</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="share-link-input" class="form-input" readonly>
+                    <button class="btn-primary" id="btn-copy-link" style="width: auto; padding: 0 1.5rem;">Copiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

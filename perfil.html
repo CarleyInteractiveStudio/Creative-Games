@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Autor - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cuenta.css"> <!-- Reusing dashboard styles for glassmorphism -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .profile-hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .profile-avatar-xl {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            border: 3px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            background: var(--bg-card);
+            overflow: hidden;
+        }
+        .profile-avatar-xl img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .interests-tag {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--gold);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            max-width: 600px;
+        }
+    </style>
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property=og:title content="Creative Game">
+    <meta property=og:description content="Tu portal de videojuegos premium.">
+    <meta property=og:image content="https://carley-interactive-studio.github.io/logo.png">
+    <meta property=og:type content="website">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-container" onclick="location.href='index.html'">
+                <img src="logo.png" alt="Creative Game Logo" class="logo-img">
+                <span class="logo-text">Creative <span class="gold-text">Game</span></span>
+            </div>
+            <div class="account-container">
+                <a href="mundo.html" class="profile-btn" title="Comunidad Mundo">
+                    <img src="images/icons/share.svg" alt="Mundo" class="user-icon" style="filter: invert(1);">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="account-page">
+        <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 2rem 1rem;">
+            <section class="profile-hero">
+                <div class="profile-avatar-xl" id="author-avatar-box">
+                    <span id="author-initials">?</span>
+                </div>
+                <h1 id="author-name" class="gold-text">Cargando...</h1>
+                <p id="author-username" style="color: var(--text-gray);">@usuario</p>
+                <div id="author-interests" class="interests-tag hidden"></div>
+            </section>
+
+            <h2 class="section-title">Juegos Publicados</h2>
+            <div id="author-games-grid" class="favorites-grid">
+                <!-- Games will be loaded here -->
+                <div class="loading-spinner">Cargando juegos...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Creative <span class="gold-text">Game</span>. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/perfil.js"></script>
+</body>
+</html>

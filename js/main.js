@@ -78,11 +78,23 @@ async function initApp() {
     // Check Auth State for Profile Bar
     checkUserAuth();
 
+    // Device Intelligence: Detect current device
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobile = /iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(userAgent);
+    const isTV = /smart-tv|google-tv|apple-tv|hbbtv|netcast|webos/i.test(userAgent);
+
+    let deviceType = 'pc';
+    if (isTV) deviceType = 'tv';
+    else if (isMobile) deviceType = 'mobile';
+
     // Load Recommendations if logged in
     const recommendations = await getRecommendedGames();
     if (recommendations.length > 0) {
         renderRecommendationSection(recommendations);
     }
+
+    // Special "Games for your device" section
+    await renderDeviceSpecificSection(deviceType);
 
     // Load from Supabase
     try {
@@ -90,6 +102,7 @@ async function initApp() {
         if (dbGames && dbGames.length > 0) {
             allGames = dbGames.map(g => ({
                 id: g.id,
+                user_id_raw: g.user_id,
                 title: g.title,
                     author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
                 category: (g.categories && g.categories.length > 0) ? g.categories[0] : 'Otros',
@@ -109,6 +122,13 @@ async function initApp() {
     initGamepadSupport();
 }
 
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 async function checkUserAuth() {
     const session = await getSession();
     if (session) {
@@ -117,7 +137,8 @@ async function checkUserAuth() {
             profileBtn.title = `Cuenta: ${session.user.email}`;
             const avatarUrl = session.user.user_metadata.avatar_url;
             if (avatarUrl) {
-                profileBtn.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                const fixedUrl = fixGitHubImageUrl(avatarUrl);
+                profileBtn.innerHTML = `<img src="${fixedUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.src='images/icons/user.svg'">`;
             }
         }
 
@@ -149,8 +170,8 @@ async function loadNotificationsUI() {
     if (notifs.length > 0) {
         notifList.innerHTML = notifs.map(n => `
             <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.game_id}')">
-                <div class="notif-title">${n.title}</div>
-                <div class="notif-content">${n.content}</div>
+                <div class="notif-title">${escapeHTML(n.title)}</div>
+                <div class="notif-content">${escapeHTML(n.content)}</div>
                 <div class="notif-date">${new Date(n.created_at).toLocaleString()}</div>
             </div>
         `).join('');
@@ -176,14 +197,24 @@ window.handleNotifClick = async (id, gameId) => {
 };
 
 function setupEventListeners() {
-    // Search Filtering
+    // Search Filtering (Real-time and Redirect)
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            window.location.href = `buscar.html?q=${encodeURIComponent(searchInput.value)}`;
+        }
+    });
+
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        filteredGames = allGames.filter(game =>
-            game.title.toLowerCase().includes(term) ||
-            game.category.toLowerCase().includes(term)
-        );
-        renderSections(filteredGames);
+        if (term.length > 2) {
+            filteredGames = allGames.filter(game =>
+                game.title.toLowerCase().includes(term) ||
+                game.category.toLowerCase().includes(term)
+            );
+            renderSections(filteredGames);
+        } else if (term.length === 0) {
+            renderSections(allGames);
+        }
     });
 
     // Logo Menu Toggle
@@ -266,6 +297,44 @@ function renderSections(games) {
     sectionsContainer.innerHTML = html;
 }
 
+async function renderDeviceSpecificSection(device) {
+    try {
+        const { data: games } = await sbClient
+            .from('games')
+            .select(`
+                *,
+                profiles ( username, full_name )
+            `)
+            .eq('status', 'approved')
+            .contains('devices', [device])
+            .limit(6);
+
+        if (games && games.length > 0) {
+            const label = device === 'mobile' ? 'Móviles' : (device === 'tv' ? 'TV' : 'PC');
+            const sectionHtml = `
+                <section class="game-section">
+                    <h2 class="section-title">Recomendados para tu <span class="gold-text">${label}</span></h2>
+                    <div class="scroll-container">
+                        ${games.map(g => createGameCard({
+                            id: g.id,
+                            user_id_raw: g.user_id,
+                            title: g.title,
+                            author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
+                            rating: g.rating,
+                            image_url: fixGitHubImageUrl(g.image_url),
+                            devices: g.devices,
+                            created_at: g.created_at
+                        })).join('')}
+                    </div>
+                </section>
+            `;
+            sectionsContainer.insertAdjacentHTML('afterbegin', sectionHtml);
+        }
+    } catch (e) {
+        console.error('Device specific error:', e);
+    }
+}
+
 function renderRecommendationSection(games) {
     const sectionHtml = `
         <section class="game-section recommendation-section">
@@ -275,7 +344,9 @@ function renderRecommendationSection(games) {
                     // Map DB game to card format
                     const cardGame = {
                         id: game.id,
+                        user_id_raw: game.user_id,
                         title: game.title,
+                        author: game.profiles?.full_name || game.profiles?.username || 'Usuario',
                         rating: game.rating,
                         image_url: fixGitHubImageUrl(game.image_url),
                         devices: game.devices
@@ -299,14 +370,14 @@ function createGameCard(game) {
     const isNew = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24)) <= 7;
 
     return `
-        <div class="game-card" onclick="location.href='juego.html?id=${game.id}'">
-            <div class="game-thumb-container">
+        <div class="game-card">
+            <div class="game-thumb-container" onclick="location.href='juego.html?id=${game.id}'">
                 ${isNew ? '<span class="card-badge">NUEVO</span>' : ''}
-                <img src="${game.image_url}" alt="${game.title}" class="game-thumb" loading="lazy">
+                <img src="${game.image_url}" alt="${escapeHTML(game.title)}" class="game-thumb" loading="lazy">
             </div>
             <div class="game-info">
-                <h3 class="game-title">${game.title}</h3>
-                <div class="author-label">por ${game.author || 'Usuario'}</div>
+                <h3 class="game-title" onclick="location.href='juego.html?id=${game.id}'">${escapeHTML(game.title)}</h3>
+                <div class="author-label" onclick="event.stopPropagation(); location.href='perfil.html?id=${game.user_id_raw || ''}'">por ${escapeHTML(game.author) || 'Usuario'}</div>
                 <div class="game-meta">
                     <span class="rating">${Number(game.rating).toFixed(1)}</span>
                     <div class="compatibility-icons">

@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuenta - Creative <span class="gold-text">Game</span></title>
+    <title>Cuenta - Creative Game</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/cuenta.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property=og:title content="Creative Game">
+    <meta property=og:description content="Tu portal de videojuegos premium.">
+    <meta property=og:image content="https://carley-interactive-studio.github.io/logo.png">
+    <meta property=og:type content="website">
 </head>
 <body>
     <header class="main-header">
@@ -18,6 +24,9 @@
                 <span class="logo-text">Creative <span class="gold-text">Game</span></span>
             </div>
             <div class="account-container">
+                <a href="mundo.html" class="profile-btn" title="Comunidad Mundo" style="margin-right: 1rem;">
+                    <img src="images/icons/share.svg" alt="Mundo" class="user-icon">
+                </a>
                 <div id="notif-container" class="hidden">
                     <div class="notification-btn" id="notif-btn">
                         <img src="images/icons/bell.svg" alt="Notificaciones" class="small-icon">
@@ -32,9 +41,6 @@
                         </div>
                     </div>
                 </div>
-                <a href="index.html" class="profile-btn" title="Volver al inicio">
-                    <img src="images/icons/home.svg" alt="Inicio" class="user-icon">
-                </a>
             </div>
         </div>
     </header>
@@ -63,6 +69,14 @@
                     <div class="card-title">Mis Juegos Favoritos</div>
                     <div id="favorites-list" class="favorites-grid">
                         <p class="empty-msg">No tienes juegos favoritos aún.</p>
+                    </div>
+                </div>
+
+                <!-- Achievements Card -->
+                <div class="dashboard-card">
+                    <div class="card-title">Mis Logros Obtenidos</div>
+                    <div id="achievements-list" class="achievements-grid-display">
+                        <p class="empty-msg">Aún no has desbloqueado ningún logro.</p>
                     </div>
                 </div>
 
@@ -106,6 +120,11 @@
                                 <label>Edad calculada</label>
                                 <input type="text" class="form-input" id="calculated-age" readonly placeholder="--">
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mis Intereses (Ayúdanos a recomendarte juegos)</label>
+                            <textarea id="user-interests" class="form-input" rows="3" maxlength="300" placeholder="Ej: Me gustan los juegos de combate, disparos y carreras..."></textarea>
+                            <span class="char-count" id="interests-char-count" style="font-size: 0.75rem; color: var(--text-gray);">0/300</span>
                         </div>
                         <button type="submit" class="btn-primary" style="width: auto; padding: 0.8rem 2rem;">Actualizar Datos</button>
                     </form>

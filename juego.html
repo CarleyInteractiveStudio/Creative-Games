@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Open Graph for Social Sharing -->
     <meta property="og:title" id="og-title" content="Creative Game">
-    <meta property="og:description" id="og-desc" content="Juega gratis en Creative <span class="gold-text">Game</span>">
-    <meta property="og:image" id="og-image" content="logo.png">
+    <meta property="og:description" id="og-desc" content="Juega gratis en Creative Game">
+    <meta property="og:image" id="og-image" content="https://carley-interactive-studio.github.io/logo.png">
     <meta property="og:type" content="website">
 
-    <title>Cargando Juego... - Creative <span class="gold-text">Game</span></title>
+    <title>Cargando Juego... - Creative Game</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/juego.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,8 +24,8 @@
                 <span class="logo-text">Creative <span class="gold-text">Game</span></span>
             </div>
             <div class="account-container">
-                <a href="index.html" class="profile-btn" title="Volver al inicio">
-                    <img src="images/icons/home.svg" alt="Inicio" class="user-icon" style="filter: invert(1);">
+                <a href="mundo.html" class="profile-btn" title="Comunidad Mundo">
+                    <img src="images/icons/share.svg" alt="Mundo" class="user-icon" style="filter: invert(1);">
                 </a>
             </div>
         </div>
@@ -69,20 +69,31 @@
                         <span class="star" data-score="4">★</span>
                         <span class="star" data-score="5">★</span>
                     </div>
-                    <button class="action-btn" id="btn-like">
-                        <span class="icon">❤</span> Me gusta
+                    <button class="action-btn" id="btn-like" title="Me gusta">
+                        <span class="icon">❤</span>
                     </button>
-                    <button class="action-btn" id="btn-share">
-                        <img src="images/icons/share.svg" class="small-icon"> Compartir
+                    <button class="action-btn" id="btn-share-world" style="border-color: var(--gold); color: var(--gold);" title="Compartir en Mundo">
+                        🌍
                     </button>
-                    <button class="action-btn" id="btn-report">
-                        <span class="icon">⚠</span> Reportar Error
+                    <button class="action-btn" id="btn-share" title="Compartir">
+                        <img src="images/icons/share.svg" class="small-icon">
                     </button>
-                    <button class="action-btn" id="btn-fullscreen">
-                        <span class="icon">⛶</span> Pantalla Completa
+                    <button class="action-btn" id="btn-report" title="Reportar Error">
+                        <span class="icon">⚠</span>
+                    </button>
+                    <button class="action-btn" id="btn-fullscreen" title="Pantalla Completa">
+                        <span class="icon">⛶</span>
                     </button>
                 </div>
             </div>
+
+            <!-- Achievements Display Section -->
+            <section class="achievements-section-game">
+                <h2 class="section-title gold-text">Logros Disponibles</h2>
+                <div id="game-achievements-list" class="game-achievements-row">
+                    <!-- Achievements will be loaded here -->
+                </div>
+            </section>
 
             <!-- Details & Controls -->
             <div class="game-details-grid">

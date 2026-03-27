@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo - Comunidad Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mundo.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property=og:title content="Creative Game">
+    <meta property=og:description content="Tu portal de videojuegos premium.">
+    <meta property=og:image content="https://carley-interactive-studio.github.io/logo.png">
+    <meta property=og:type content="website">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-container" onclick="location.href='index.html'">
+                <img src="logo.png" alt="Creative Game Logo" class="logo-img">
+                <span class="logo-text">Creative <span class="gold-text">Game</span></span>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link">Inicio</a>
+                <a href="mundo.html" class="nav-link active">Mundo</a>
+            </nav>
+            <div class="account-container">
+                <a href="cuenta.html" class="profile-btn" title="Mi Cuenta">
+                    <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="world-page">
+        <div class="chat-container glass-card">
+            <div class="chat-header">
+                <div class="chat-status">
+                    <span class="online-dot"></span>
+                    <div>
+                        <h2>Mundo Social</h2>
+                        <p id="chat-info">Conéctate con otros jugadores. Los mensajes se limpian cada día.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-messages" class="chat-messages">
+                <div class="loading-spinner">Conectando al mundo...</div>
+            </div>
+
+            <div class="chat-input-area">
+                <form id="chat-form">
+                    <div class="cooldown-timer hidden" id="cooldown-box">
+                        Próximo mensaje en: <span id="cooldown-timer">15:00</span>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea id="chat-input" placeholder="Escribe un mensaje..." maxlength="500" required></textarea>
+                        <button type="submit" id="send-btn" class="btn-send">
+                            <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
+                    </div>
+                    <div class="char-count" id="chat-char-count">0/500</div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/mundo.js"></script>
+</body>
+</html>

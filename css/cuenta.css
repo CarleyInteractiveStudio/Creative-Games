@@ -164,10 +164,10 @@
 }
 
 .favorites-grid {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1.5rem;
-    overflow-x: auto;
-    padding-bottom: 1rem;
+    padding: 1rem 0;
 }
 
 .game-card-mini {
@@ -373,4 +373,72 @@ input.gamepad-focused {
 
 button.gamepad-focused, a.gamepad-focused {
     box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+}
+
+/* Achievements Display Grid */
+.achievements-grid-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.achievement-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: var(--transition);
+}
+
+.achievement-card:hover {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.achievement-card-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.achievement-card-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.achievement-card-info {
+    flex-grow: 1;
+}
+
+.achievement-card-title {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--gold);
+    margin-bottom: 2px;
+}
+
+.achievement-card-desc {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    line-height: 1.4;
+}
+
+.achievement-card-game {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    margin-top: 5px;
+    font-style: italic;
 }

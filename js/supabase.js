@@ -204,25 +204,50 @@ async function getUserRating(gameId) {
 /**
  * Achievements
  */
-async function awardAchievement(gameId, title, type = 'play_time') {
+async function awardAchievement(gameId, title, type = 'play_time', definitionId = null) {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await _supabase
+    const payload = {
+        user_id: user.id,
+        game_id: gameId,
+        type: type
+    };
+
+    if (definitionId) payload.definition_id = definitionId;
+    else payload.title = title;
+
+    const { data, error } = await _supabase
         .from('achievements')
-        .insert([{
-            user_id: user.id,
-            game_id: gameId,
-            title: title,
-            type: type
-        }]);
+        .insert([payload])
+        .select();
 
     if (error && error.code !== '23505') { // Ignore unique constraint errors
         console.error('Error awarding achievement:', error);
-    } else if (!error) {
-        // Notify the user locally if needed
-        console.log('¡Logro desbloqueado!', title);
+        return null;
     }
+
+    if (error && error.code === '23505') return null; // Already unlocked
+
+    return data ? data[0] : { title: title };
+}
+
+async function unlockDeveloperAchievement(gameId, key) {
+    // 1. Find the definition
+    const { data: def, error: defErr } = await _supabase
+        .from('achievement_definitions')
+        .select('*')
+        .eq('game_id', gameId)
+        .eq('key', key)
+        .single();
+
+    if (defErr || !def) {
+        console.error('Achievement definition not found:', key);
+        return null;
+    }
+
+    // 2. Award it
+    return await awardAchievement(gameId, def.title, 'developer', def.id);
 }
 
 async function getGameAuthorGames(authorId) {
@@ -328,11 +353,68 @@ async function markNotificationRead(id) {
         .eq('id', id);
 }
 
+/**
+ * UI: Show Premium Toast Notification
+ */
+function showPremiumToast(title, message, type = 'info') {
+    let container = document.getElementById('premium-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'premium-toast-container';
+        container.className = 'premium-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `premium-toast ${type === 'error' ? 'error' : ''}`;
+
+    const icon = type === 'error' ? '⚠️' : '✨';
+
+    toast.innerHTML = `
+        <div class="premium-toast-icon">${icon}</div>
+        <div class="premium-toast-content">
+            <span class="premium-toast-title">${title}</span>
+            <span class="premium-toast-msg">${message}</span>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 600);
+    }, 5000);
+}
+
+// Global exposure
+window.showToast = showPremiumToast;
+window.alert = (msg) => showPremiumToast('Notificación', msg);
+
 async function getRecommendedGames() {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) return [];
 
     const userGender = user.user_metadata.gender || 'Ambos';
+
+    // Fetch user interests
+    const { data: profile } = await _supabase
+        .from('profiles')
+        .select('interests')
+        .eq('id', user.id)
+        .single();
+
+    let keywords = [];
+    if (profile && profile.interests) {
+        // Extract keywords (longer than 3 chars)
+        keywords = profile.interests.toLowerCase()
+            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+            .split(/\s+/)
+            .filter(w => w.length > 3);
+    }
 
     // Simple recommendation based on most played categories
     const { data: sessions } = await _supabase
@@ -354,20 +436,30 @@ async function getRecommendedGames() {
 
     const topCategory = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a])[0];
 
-    if (!topCategory) return [];
-
     let query = _supabase
         .from('games')
-        .select('*')
-        .eq('status', 'approved')
-        .contains('categories', [topCategory]);
+        .select(`
+            *,
+            profiles ( username, full_name )
+        `)
+        .eq('status', 'approved');
+
+    if (topCategory) {
+        query = query.contains('categories', [topCategory]);
+    }
+
+    // If we have keywords from interests, try to match them in title or description
+    if (keywords.length > 0) {
+        const orConditions = keywords.map(w => `title.ilike.%${w}%,description.ilike.%${w}%`).join(',');
+        query = query.or(orConditions);
+    }
 
     // Filter by gender preference if not 'Ambos'
     if (userGender !== 'Ambos') {
         query = query.or(`suggested_gender.eq.${userGender},suggested_gender.eq.Ambos`);
     }
 
-    const { data: recommended } = await query.limit(6);
+    const { data: recommended } = await query.limit(10);
 
     return recommended || [];
 }

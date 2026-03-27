@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Juego - Creative <span class="gold-text">Game</span></title>
+    <title>Editar Juego - Creative Game</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/publicar.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property=og:title content="Creative Game">
+    <meta property=og:description content="Tu portal de videojuegos premium.">
+    <meta property=og:image content="https://carley-interactive-studio.github.io/logo.png">
+    <meta property=og:type content="website">
 </head>
 <body>
     <header class="main-header">
@@ -76,6 +82,12 @@
                             <option value="Femenino">Femenino</option>
                         </select>
                     </div>
+
+                    <h2 style="margin-top: 2rem; color: var(--gold);">Logros del Juego</h2>
+                    <div id="achievements-list-editor" class="achievements-editor">
+                        <!-- Achievements will be loaded here -->
+                    </div>
+                    <button type="button" id="add-achievement-btn" class="btn-small" style="margin-top: 1rem; background: var(--glass);">+ Añadir Logro</button>
                 </div>
 
                 <div class="wizard-nav">

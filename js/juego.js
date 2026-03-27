@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadGameDetails(gameId);
     await loadComments(gameId);
     await loadSidebarGames();
+    await loadGameAchievements(gameId);
 
     // Tracking
     trackPlayTime(gameId);
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event Listeners
     setupCommentForm(gameId);
     setupActionButtons(gameId);
+    setupAchievementAPI(gameId);
 });
 
 async function loadGameDetails(id) {
@@ -40,7 +42,9 @@ async function loadGameDetails(id) {
         const authorEl = document.getElementById('game-author');
         const authorName = game.profiles?.full_name || game.profiles?.username || 'Usuario';
         authorEl.textContent = `Publicado por ${authorName}`;
-        authorEl.onclick = () => filterByAuthor(game.user_id, authorName);
+        authorEl.onclick = () => {
+            window.location.href = `perfil.html?id=${game.user_id}`;
+        };
 
         document.getElementById('game-description').textContent = game.description;
         document.getElementById('game-engine-display').textContent = game.engine || 'Otros';
@@ -60,7 +64,16 @@ async function loadGameDetails(id) {
         // Update Meta Tags for Sharing
         document.querySelector('meta[property="og:title"]').content = game.title;
         document.querySelector('meta[property="og:description"]').content = game.description || 'Juega en Creative Game';
-        document.querySelector('meta[property="og:image"]').content = fixGitHubImageUrl(game.image_url);
+
+        // Ensure the sharing image is a full URL or fallback to logo
+        const shareImg = fixGitHubImageUrl(game.image_url);
+        if (shareImg && !shareImg.includes('placeholder')) {
+            document.querySelector('meta[property="og:image"]').content = shareImg;
+        } else {
+            // Full URL to logo for social crawlers
+            const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+            document.querySelector('meta[property="og:image"]').content = `${baseUrl}/logo.png`;
+        }
 
         // Render controls based on compatibility (showing all relevant ones)
         let controlsHtml = '';
@@ -132,7 +145,7 @@ async function loadComments(gameId) {
             const avatarUrl = fixGitHubImageUrl(c.profiles?.avatar_url);
 
             const avatarHtml = avatarUrl
-                ? `<img src="${avatarUrl}" class="comment-avatar" alt="Avatar">`
+                ? `<img src="${avatarUrl}" class="comment-avatar" alt="Avatar" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=comment-avatar>${displayName[0].toUpperCase()}</div>'">`
                 : `<div class="comment-avatar">${displayName[0].toUpperCase()}</div>`;
 
             return `
@@ -169,7 +182,7 @@ function setupCommentForm(gameId) {
 
         const { data: { user } } = await sbClient.auth.getUser();
         if (!user) {
-            alert('Debes iniciar sesión para comentar.');
+            showToast('Notificación', 'Debes iniciar sesión para comentar.');
             window.location.href = 'cuenta.html';
             return;
         }
@@ -192,7 +205,7 @@ function setupCommentForm(gameId) {
             charCount.textContent = '0/300';
             loadComments(gameId);
         } catch (err) {
-            alert(err.message);
+            showToast('Notificación', err.message);
         }
     });
 }
@@ -202,6 +215,7 @@ function setupActionButtons(gameId) {
     const btnReport = document.getElementById('btn-report');
     const btnFullscreen = document.getElementById('btn-fullscreen');
     const btnShare = document.getElementById('btn-share');
+    const btnShareWorld = document.getElementById('btn-share-world');
 
     const shareModal = document.getElementById('share-modal');
     const closeShare = document.getElementById('close-share');
@@ -211,6 +225,39 @@ function setupActionButtons(gameId) {
     btnShare.addEventListener('click', () => {
         shareModal.classList.remove('hidden');
         shareInput.value = window.location.href;
+    });
+
+    btnShareWorld.addEventListener('click', async () => {
+        const session = await sbClient.auth.getSession();
+        if (!session.data.session) {
+            showToast('Notificación', 'Inicia sesión para compartir en el Mundo.');
+            return;
+        }
+
+        if (!confirm('¿Quieres recomendar este juego en el Mundo Social?')) return;
+
+        btnShareWorld.disabled = true;
+        try {
+            const { error } = await sbClient
+                .from('world_chat')
+                .insert([{
+                    user_id: session.data.session.user.id,
+                    content: `¡Les recomiendo este juego! Está increíble.`,
+                    game_id: gameId,
+                    is_game_share: true
+                }]);
+
+            if (error) {
+                if (error.message.includes('world_chat')) showToast('Notificación', 'Debes esperar 15 minutos entre publicaciones en el Mundo.');
+                else showToast('Notificación', error.message);
+            } else {
+                showToast('Notificación', '¡Compartido con éxito en el Mundo!');
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            btnShareWorld.disabled = false;
+        }
     });
 
     closeShare.addEventListener('click', () => {
@@ -244,7 +291,7 @@ function setupActionButtons(gameId) {
             await toggleFavorite(gameId);
             btnLike.classList.toggle('active');
         } catch (err) {
-            alert(err.message);
+            showToast('Notificación', err.message);
         }
     });
 
@@ -254,9 +301,9 @@ function setupActionButtons(gameId) {
         try {
             const { error } = await sbClient.rpc('report_game_error', { game_id_param: gameId });
             if (error) throw error;
-            alert('Reporte enviado. Gracias por tu ayuda.');
+            showToast('Notificación', 'Reporte enviado. Gracias por tu ayuda.');
         } catch (err) {
-            alert(err.message);
+            showToast('Notificación', err.message);
         }
     });
 
@@ -269,7 +316,7 @@ function setupActionButtons(gameId) {
                 await submitRating(gameId, score);
                 updateStarDisplay(score);
             } catch (err) {
-                alert(err.message);
+                showToast('Notificación', err.message);
             }
         });
     });
@@ -346,6 +393,112 @@ function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+function setupAchievementAPI(gameId) {
+    window.addEventListener('message', async (event) => {
+        const data = event.data;
+
+        if (data && data.type === 'UNLOCK_ACHIEVEMENT' && data.key) {
+            console.log('Solicitud de logro recibida:', data.key);
+            try {
+                const result = await unlockDeveloperAchievement(gameId, data.key);
+                if (result) {
+                    // Fetch full details if it was a definition achievement
+                    let title = result.title;
+                    let icon = 'images/icons/trophy.svg';
+
+                    if (result.definition_id) {
+                        const { data: def } = await sbClient
+                            .from('achievement_definitions')
+                            .select('*')
+                            .eq('id', result.definition_id)
+                            .single();
+                        if (def) {
+                            title = def.title;
+                            icon = fixGitHubImageUrl(def.icon_url) || icon;
+                        }
+                    }
+
+                    showAchievementNotification(title, icon);
+                }
+            } catch (err) {
+                console.error('Error al desbloquear logro via API:', err);
+            }
+        }
+    });
+}
+
+async function loadGameAchievements(gameId) {
+    const container = document.getElementById('game-achievements-list');
+    if (!container) return;
+
+    try {
+        // 1. Get definitions
+        const { data: defs } = await sbClient
+            .from('achievement_definitions')
+            .select('*')
+            .eq('game_id', gameId);
+
+        if (!defs || defs.length === 0) {
+            document.querySelector('.achievements-section-game').classList.add('hidden');
+            return;
+        }
+
+        // 2. Get user's earned achievements for this game
+        let earnedIds = [];
+        const session = await sbClient.auth.getSession();
+        if (session.data.session) {
+            const { data: earned } = await sbClient
+                .from('achievements')
+                .select('definition_id')
+                .eq('user_id', session.data.session.user.id)
+                .eq('game_id', gameId);
+            if (earned) earnedIds = earned.map(e => e.definition_id);
+        }
+
+        container.innerHTML = defs.map(def => {
+            const isUnlocked = earnedIds.includes(def.id);
+            return `
+                <div class="game-ach-card ${isUnlocked ? 'unlocked' : ''}">
+                    <div class="game-ach-icon">
+                        <img src="${fixGitHubImageUrl(def.icon_url) || 'images/icons/trophy.svg'}" onerror="this.src='images/icons/trophy.svg'">
+                    </div>
+                    <span class="game-ach-title">${escapeHTML(def.title)}</span>
+                    <span class="game-ach-desc">${escapeHTML(def.description) || ''}</span>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error('Error loading game achievements:', err);
+    }
+}
+
+function showAchievementNotification(name, iconUrl) {
+    // Create toast if it doesn't exist
+    let toast = document.getElementById('achievement-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'achievement-toast';
+        toast.className = 'achievement-toast';
+        document.body.appendChild(toast);
+    }
+
+    toast.innerHTML = `
+        <div class="achievement-icon-container">
+            <img src="${iconUrl}" class="achievement-icon-img" onerror="this.src='images/icons/trophy.svg'">
+        </div>
+        <div class="achievement-text">
+            <span class="achievement-label">¡Logro Desbloqueado!</span>
+            <span class="achievement-name">${escapeHTML(name)}</span>
+        </div>
+    `;
+
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 5000);
 }
 
 let sessionStartTime = null;

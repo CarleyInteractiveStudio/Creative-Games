@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let currentStep = 1;
-const totalSteps = 5;
+const totalSteps = 6;
 
 // DOM Elements
 const steps = document.querySelectorAll('.step-content');
@@ -73,6 +73,46 @@ function setupListeners() {
         e.preventDefault();
         await publishGame();
     });
+
+    const addAchievementBtn = document.getElementById('add-achievement-btn');
+    if (addAchievementBtn) {
+        addAchievementBtn.addEventListener('click', () => {
+            addAchievementToEditor();
+        });
+    }
+}
+
+function addAchievementToEditor(data = null) {
+    const container = document.getElementById('achievements-list-editor');
+    const count = container.querySelectorAll('.achievement-editor-item').length;
+
+    if (count >= 100) {
+        showToast('Notificación', 'Límite de 100 logros alcanzado.');
+        return;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'achievement-editor-item';
+    div.innerHTML = `
+        <button type="button" class="btn-remove-achievement" onclick="this.parentElement.remove()">&times;</button>
+        <div class="form-group">
+            <label>Nombre del Logro</label>
+            <input type="text" class="form-input ach-title" placeholder="Ej: Primer Paso" value="${data?.title || ''}" required>
+        </div>
+        <div class="form-group">
+            <label>Clave (ID para API)</label>
+            <input type="text" class="form-input ach-key" placeholder="Ej: primer_paso" value="${data?.key || ''}" required>
+        </div>
+        <div class="form-group full-width">
+            <label>Descripción</label>
+            <input type="text" class="form-input ach-desc" placeholder="Describe cómo se obtiene..." value="${data?.description || ''}">
+        </div>
+        <div class="form-group full-width">
+            <label>URL Icono</label>
+            <input type="url" class="form-input ach-icon" placeholder="https://..." value="${data?.icon_url || ''}">
+        </div>
+    `;
+    container.appendChild(div);
 }
 
 function validateStep(step) {
@@ -92,7 +132,7 @@ function validateStep(step) {
     });
 
     if (!valid) {
-        alert('Por favor, completa todos los campos requeridos y acepta las políticas.');
+        showToast('Notificación', 'Por favor, completa todos los campos requeridos y acepta las políticas.');
     }
 
     return valid;
@@ -165,7 +205,7 @@ function updatePreview() {
 async function publishGame() {
     const session = await getSession();
     if (!session) {
-        alert('Debes iniciar sesión para publicar un juego.');
+        showToast('Notificación', 'Debes iniciar sesión para publicar un juego.');
         return;
     }
 
@@ -203,19 +243,39 @@ async function publishGame() {
     submitBtn.textContent = 'Publicando...';
 
     try {
-        const { data, error } = await window.sbClient
+        const { data: game, error } = await window.sbClient
             .from('games')
-            .insert([gameData]);
+            .insert([gameData])
+            .select()
+            .single();
 
         if (error) {
-            alert('Error al publicar: ' + error.message);
+            showToast('Notificación', 'Error al publicar: ' + error.message);
         } else {
-            alert('¡Juego publicado con éxito! Pendiente de revisión.');
+            // Save Achievements
+            const achItems = document.querySelectorAll('.achievement-editor-item');
+            if (achItems.length > 0) {
+                const achievements = Array.from(achItems).map(item => ({
+                    game_id: game.id,
+                    title: item.querySelector('.ach-title').value,
+                    key: item.querySelector('.ach-key').value,
+                    description: item.querySelector('.ach-desc').value,
+                    icon_url: fixGitHubImageUrl(item.querySelector('.ach-icon').value)
+                }));
+
+                const { error: achErr } = await window.sbClient
+                    .from('achievement_definitions')
+                    .insert(achievements);
+
+                if (achErr) console.error('Error guardando logros:', achErr);
+            }
+
+            showToast('Notificación', '¡Juego publicado con éxito! Pendiente de revisión.');
             window.location.href = 'cuenta.html';
         }
     } catch (err) {
         console.error(err);
-        alert('Error inesperado.');
+        showToast('Notificación', 'Error inesperado.');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Publicar Juego';

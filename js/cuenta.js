@@ -119,7 +119,9 @@ async function loadNotificationsUI() {
 
     if (!notifBtn || !notifList) return;
 
-    const notifs = await getNotifications();
+    const { data: notifs } = await getNotifications();
+    if (!notifs) return;
+
     const unread = notifs.filter(n => !n.is_read);
 
     if (unread.length > 0) {
@@ -213,12 +215,10 @@ async function loadUserAchievements() {
     if (!container) return;
 
     try {
-        const achievements = await bridgeCall('SUPABASE_CALL', {
-            table: 'achievements',
-            method: 'select',
-            query: `*, games ( title ), achievement_definitions ( title, description, icon_url )`,
-            filter: { user_id: currentUser.id }
-        });
+        const { data: achievements } = await sbClient
+            .from('achievements')
+            .select(`*, games ( title ), achievement_definitions ( title, description, icon_url )`)
+            .eq('user_id', currentUser.id);
 
         if (!achievements || achievements.length === 0) {
             container.innerHTML = '<p class="empty-msg">Aún no has desbloqueado ningún logro.</p>';
@@ -261,19 +261,17 @@ function updateAge(birthDate) {
 }
 
 async function loadFavoritesUI() {
-    const favorites = await getFavorites();
+    const { data: favorites } = await getFavorites();
 
     if (!favorites || favorites.length === 0) {
         favoritesListContainer.innerHTML = '<p class="empty-msg">No tienes juegos favoritos aún.</p>';
         return;
     }
 
-    const games = await bridgeCall('SUPABASE_CALL', {
-        table: 'games',
-        method: 'select',
-        query: '*',
-        filter: { id: favorites } // Assuming bridge handles array-in
-    });
+    const { data: games } = await sbClient
+        .from('games')
+        .select('*')
+        .in('id', favorites);
 
     if (!games || games.length === 0) {
         favoritesListContainer.innerHTML = '<p class="empty-msg">No se pudieron cargar tus favoritos.</p>';
@@ -294,7 +292,7 @@ async function loadUserGames() {
     const gamesList = document.getElementById('user-games-list');
     if (!gamesList) return;
 
-    const games = await getUserGames(currentUser.id);
+    const { data: games } = await getUserGames(currentUser.id);
 
     if (!games || games.length === 0) {
         gamesList.innerHTML = `
@@ -342,22 +340,15 @@ async function loadUserGames() {
 async function deleteGame(id) {
     if (!confirm('¿Estás seguro de que quieres eliminar este juego?')) return;
     try {
-        await bridgeCall('SUPABASE_CALL', {
-            table: 'games',
-            method: 'delete',
-            filter: { id: id }
-        });
+        const { error } = await sbClient
+            .from('games')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         loadUserGames();
     } catch (e) {
         showToast('Error', 'No se pudo eliminar el juego.');
     }
-}
-
-function escapeHTML(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
 }
 
 function showAuth() {
@@ -377,10 +368,11 @@ function setupProfileListeners() {
         const interests = interestsInput.value.trim();
 
         try {
-            await updateProfileMetadata({
+            const { error } = await updateProfileMetadata({
                 birth_date: bDate,
                 interests: interests
             });
+            if (error) throw error;
             showToast('Éxito', 'Perfil actualizado correctamente');
         } catch (e) {
             showToast('Error', 'No se pudo actualizar el perfil');

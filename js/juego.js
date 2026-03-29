@@ -65,17 +65,14 @@ async function loadGameDetails(id) {
         document.querySelector('meta[property="og:title"]').content = game.title;
         document.querySelector('meta[property="og:description"]').content = game.description || 'Juega en Creative Game';
 
-        // Ensure the sharing image is a full URL or fallback to logo
         const shareImg = fixGitHubImageUrl(game.image_url);
         if (shareImg && !shareImg.includes('placeholder')) {
             document.querySelector('meta[property="og:image"]').content = shareImg;
         } else {
-            // Full URL to logo for social crawlers
             const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
             document.querySelector('meta[property="og:image"]').content = `${baseUrl}/logo.png`;
         }
 
-        // Render controls based on compatibility (showing all relevant ones)
         let controlsHtml = '';
         if (game.controls_pc && game.devices.includes('pc')) controlsHtml += `<p><strong>💻 PC:</strong> ${game.controls_pc}</p>`;
         if (game.controls_console && game.devices.includes('console')) controlsHtml += `<p><strong>🎮 Consola:</strong> ${game.controls_console}</p>`;
@@ -93,7 +90,6 @@ async function loadGameDetails(id) {
             playOverlay.classList.add('hidden');
             splashScreen.classList.remove('hidden');
 
-            // Start Intro sequence
             setTimeout(() => {
                 iframe.src = game.repo_url;
                 splashScreen.classList.add('hidden');
@@ -107,8 +103,8 @@ async function loadGameDetails(id) {
         }
 
         // Check if favorited
-        const favorites = await getFavorites();
-        if (favorites.includes(id)) {
+        const { data: favorites } = await getFavorites();
+        if (favorites && favorites.includes(id)) {
             document.getElementById('btn-like').classList.add('active');
         }
     } catch (err) {
@@ -228,8 +224,8 @@ function setupActionButtons(gameId) {
     });
 
     btnShareWorld.addEventListener('click', async () => {
-        const session = await sbClient.auth.getSession();
-        if (!session.data.session) {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (!session) {
             showToast('Notificación', 'Inicia sesión para compartir en el Mundo.');
             return;
         }
@@ -241,7 +237,7 @@ function setupActionButtons(gameId) {
             const { error } = await sbClient
                 .from('world_chat')
                 .insert([{
-                    user_id: session.data.session.user.id,
+                    user_id: session.user.id,
                     content: `¡Les recomiendo este juego! Está increíble.`,
                     game_id: gameId,
                     is_game_share: true
@@ -271,7 +267,6 @@ function setupActionButtons(gameId) {
         setTimeout(() => btnCopy.textContent = 'Copiar', 2000);
     });
 
-    // Social Sharing
     document.getElementById('share-whatsapp').onclick = () => {
         const text = `¡Mira este juego en Creative Game! ${window.location.href}`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
@@ -307,7 +302,6 @@ function setupActionButtons(gameId) {
         }
     });
 
-    // Star Rating
     const stars = document.querySelectorAll('.star');
     stars.forEach(star => {
         star.addEventListener('click', async () => {
@@ -371,10 +365,10 @@ async function filterByAuthor(userId, username) {
     container.innerHTML = '<div class="loading-spinner">Cargando...</div>';
 
     try {
-        const games = await getGameAuthorGames(userId);
+        const { data: games } = await getGameAuthorGames(userId);
         document.querySelector('.sidebar-title').textContent = `Más de ${username}`;
 
-        if (games.length === 0) {
+        if (!games || games.length === 0) {
             container.innerHTML = '<p class="empty-msg">No hay más juegos de este autor.</p>';
             return;
         }
@@ -389,12 +383,6 @@ async function filterByAuthor(userId, username) {
     }
 }
 
-function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
 function setupAchievementAPI(gameId) {
     window.addEventListener('message', async (event) => {
         const data = event.data;
@@ -402,9 +390,8 @@ function setupAchievementAPI(gameId) {
         if (data && data.type === 'UNLOCK_ACHIEVEMENT' && data.key) {
             console.log('Solicitud de logro recibida:', data.key);
             try {
-                const result = await unlockDeveloperAchievement(gameId, data.key);
+                const { data: result } = await unlockDeveloperAchievement(gameId, data.key);
                 if (result) {
-                    // Fetch full details if it was a definition achievement
                     let title = result.title;
                     let icon = 'images/icons/trophy.svg';
 
@@ -434,7 +421,6 @@ async function loadGameAchievements(gameId) {
     if (!container) return;
 
     try {
-        // 1. Get definitions
         const { data: defs } = await sbClient
             .from('achievement_definitions')
             .select('*')
@@ -445,14 +431,13 @@ async function loadGameAchievements(gameId) {
             return;
         }
 
-        // 2. Get user's earned achievements for this game
         let earnedIds = [];
-        const session = await sbClient.auth.getSession();
-        if (session.data.session) {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) {
             const { data: earned } = await sbClient
                 .from('achievements')
                 .select('definition_id')
-                .eq('user_id', session.data.session.user.id)
+                .eq('user_id', session.user.id)
                 .eq('game_id', gameId);
             if (earned) earnedIds = earned.map(e => e.definition_id);
         }
@@ -476,7 +461,6 @@ async function loadGameAchievements(gameId) {
 }
 
 function showAchievementNotification(name, iconUrl) {
-    // Create toast if it doesn't exist
     let toast = document.getElementById('achievement-toast');
     if (!toast) {
         toast = document.createElement('div');
@@ -509,7 +493,6 @@ async function trackPlayTime(gameId) {
     try {
         currentPlaySessionId = await startPlaySession(gameId, 'web');
 
-        // Milestone tracking (Check every minute)
         const checkInterval = setInterval(async () => {
             if (!sessionStartTime) return;
             const elapsedMinutes = Math.floor((Date.now() - sessionStartTime) / 60000);

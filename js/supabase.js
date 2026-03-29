@@ -73,9 +73,6 @@ function handleSSOCallback() {
 
     if (token) {
         console.log("SSO Session received");
-        // We don't necessarily need to store it locally if we use the bridge,
-        // but we might want to refresh the bridge or something.
-        // For now, just clean the URL.
         history.replaceState(null, null, window.location.pathname + window.location.search);
         // Refresh session state
         getSession().then(session => {
@@ -85,6 +82,18 @@ function handleSSOCallback() {
 }
 
 window.addEventListener('load', handleSSOCallback);
+
+/**
+ * Utility to escape HTML and prevent XSS
+ */
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+window.escapeHTML = escapeHTML;
 
 /**
  * Converts a standard GitHub blob URL to a raw content URL
@@ -102,16 +111,16 @@ function fixGitHubImageUrl(url) {
  */
 async function getApprovedGames(filter = {}) {
     try {
-        const result = await bridgeCall('SUPABASE_CALL', {
+        const payload = await bridgeCall('SUPABASE_CALL', {
             table: 'games',
             method: 'select',
             query: `*, profiles ( username, full_name )`,
             filter: { status: 'approved', ...filter }
         });
-        return result || [];
+        return { data: payload || [], error: null };
     } catch (error) {
         console.error('Error fetching approved games:', error);
-        return [];
+        return { data: [], error };
     }
 }
 
@@ -120,14 +129,14 @@ async function getApprovedGames(filter = {}) {
  */
 async function getCategories() {
     try {
-        const result = await bridgeCall('SUPABASE_CALL', {
+        const payload = await bridgeCall('SUPABASE_CALL', {
             table: 'categories',
             method: 'select',
             query: 'name'
         });
-        return (result || []).map(c => c.name).sort();
+        return { data: (payload || []).map(c => c.name).sort(), error: null };
     } catch (error) {
-        return [];
+        return { data: [], error };
     }
 }
 
@@ -136,16 +145,16 @@ async function getCategories() {
  */
 async function getUserGames(userId) {
     try {
-        const result = await bridgeCall('SUPABASE_CALL', {
+        const payload = await bridgeCall('SUPABASE_CALL', {
             table: 'games',
             method: 'select',
             query: `*, profiles ( username, full_name )`,
             filter: { user_id: userId }
         });
-        return result || [];
+        return { data: payload || [], error: null };
     } catch (error) {
         console.error('Error fetching user games:', error);
-        return [];
+        return { data: [], error };
     }
 }
 
@@ -167,11 +176,16 @@ async function submitGame(gameData) {
         status: 'pending'
     };
 
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'games',
-        method: 'insert',
-        payload: [payload]
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'games',
+            method: 'insert',
+            payload: [payload]
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 // Auth Wrappers
@@ -182,14 +196,11 @@ async function signIn() {
 }
 
 async function signUp() {
-    // Both sign in and sign up use the same SSO page usually, or we can just redirect to the same
     signIn();
 }
 
 async function signOut() {
-    // We might need a bridge call for sign out or redirect to carleystudio.com/logout
-    // For now, let's assume we redirect to a logout page or just clear local state if any
-    window.location.href = `${BRIDGE_ORIGIN}/cuenta.html`; // Directing to central account page to logout
+    window.location.href = `${BRIDGE_ORIGIN}/cuenta.html`;
 }
 
 async function getSession() {
@@ -212,18 +223,18 @@ async function getSessionUser() {
 // Favorites Helpers
 async function getFavorites() {
     const user = await getSessionUser();
-    if (!user) return [];
+    if (!user) return { data: [], error: null };
 
     try {
-        const result = await bridgeCall('SUPABASE_CALL', {
+        const payload = await bridgeCall('SUPABASE_CALL', {
             table: 'favorites',
             method: 'select',
             query: 'game_id',
             filter: { user_id: user.id }
         });
-        return (result || []).map(f => f.game_id);
-    } catch (e) {
-        return [];
+        return { data: (payload || []).map(f => f.game_id), error: null };
+    } catch (error) {
+        return { data: [], error };
     }
 }
 
@@ -231,26 +242,32 @@ async function toggleFavorite(gameId) {
     const user = await getSessionUser();
     if (!user) throw new Error('Inicia sesión para favoritos');
 
-    const existing = await bridgeCall('SUPABASE_CALL', {
-        table: 'favorites',
-        method: 'select',
-        query: '*',
-        filter: { user_id: user.id, game_id: gameId },
-        single: true
-    });
+    try {
+        const existing = await bridgeCall('SUPABASE_CALL', {
+            table: 'favorites',
+            method: 'select',
+            query: '*',
+            filter: { user_id: user.id, game_id: gameId },
+            single: true
+        });
 
-    if (existing) {
-        return await bridgeCall('SUPABASE_CALL', {
-            table: 'favorites',
-            method: 'delete',
-            filter: { id: existing.id }
-        });
-    } else {
-        return await bridgeCall('SUPABASE_CALL', {
-            table: 'favorites',
-            method: 'insert',
-            payload: [{ user_id: user.id, game_id: gameId }]
-        });
+        if (existing) {
+            const data = await bridgeCall('SUPABASE_CALL', {
+                table: 'favorites',
+                method: 'delete',
+                filter: { id: existing.id }
+            });
+            return { data, error: null };
+        } else {
+            const data = await bridgeCall('SUPABASE_CALL', {
+                table: 'favorites',
+                method: 'insert',
+                payload: [{ user_id: user.id, game_id: gameId }]
+            });
+            return { data, error: null };
+        }
+    } catch (error) {
+        return { data: null, error };
     }
 }
 
@@ -258,13 +275,17 @@ async function updateProfileMetadata(metadata) {
     const user = await getSessionUser();
     if (!user) throw new Error('No autenticado');
 
-    // Update profiles table instead of auth.updateUser metadata directly via bridge
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'profiles',
-        method: 'update',
-        payload: metadata,
-        filter: { id: user.id }
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'profiles',
+            method: 'update',
+            payload: metadata,
+            filter: { id: user.id }
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 /**
@@ -274,30 +295,38 @@ async function submitRating(gameId, score) {
     const user = await getSessionUser();
     if (!user) throw new Error('Inicia sesión para calificar');
 
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'ratings',
-        method: 'upsert',
-        payload: {
-            user_id: user.id,
-            game_id: gameId,
-            score: score
-        }
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'ratings',
+            method: 'upsert',
+            payload: {
+                user_id: user.id,
+                game_id: gameId,
+                score: score
+            }
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 async function getUserRating(gameId) {
     const user = await getSessionUser();
     if (!user) return 0;
 
-    const data = await bridgeCall('SUPABASE_CALL', {
-        table: 'ratings',
-        method: 'select',
-        query: 'score',
-        filter: { user_id: user.id, game_id: gameId },
-        single: true
-    });
-
-    return data ? data.score : 0;
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'ratings',
+            method: 'select',
+            query: 'score',
+            filter: { user_id: user.id, game_id: gameId },
+            single: true
+        });
+        return data ? data.score : 0;
+    } catch (e) {
+        return 0;
+    }
 }
 
 /**
@@ -305,7 +334,7 @@ async function getUserRating(gameId) {
  */
 async function awardAchievement(gameId, title, type = 'play_time', definitionId = null) {
     const user = await getSessionUser();
-    if (!user) return;
+    if (!user) return { data: null, error: null };
 
     const payload = {
         user_id: user.id,
@@ -317,65 +346,84 @@ async function awardAchievement(gameId, title, type = 'play_time', definitionId 
     else payload.title = title;
 
     try {
-        return await bridgeCall('SUPABASE_CALL', {
+        const data = await bridgeCall('SUPABASE_CALL', {
             table: 'achievements',
             method: 'insert',
             payload: [payload]
         });
+        return { data, error: null };
     } catch (error) {
-        // Ignore unique constraint errors
-        return null;
+        return { data: null, error };
     }
 }
 
 async function unlockDeveloperAchievement(gameId, key) {
-    const def = await bridgeCall('SUPABASE_CALL', {
-        table: 'achievement_definitions',
-        method: 'select',
-        query: '*',
-        filter: { game_id: gameId, key: key },
-        single: true
-    });
+    try {
+        const def = await bridgeCall('SUPABASE_CALL', {
+            table: 'achievement_definitions',
+            method: 'select',
+            query: '*',
+            filter: { game_id: gameId, key: key },
+            single: true
+        });
 
-    if (!def) return null;
-    return await awardAchievement(gameId, def.title, 'developer', def.id);
+        if (!def) return { data: null, error: new Error('Achievement not found') };
+        return await awardAchievement(gameId, def.title, 'developer', def.id);
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 async function getGameAuthorGames(authorId) {
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'games',
-        method: 'select',
-        query: '*',
-        filter: { user_id: authorId, status: 'approved' },
-        limit: 10
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'games',
+            method: 'select',
+            query: '*',
+            filter: { user_id: authorId, status: 'approved' },
+            limit: 10
+        });
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
 }
 
 /**
  * Comments & Social Helpers
  */
 async function getComments(gameId) {
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'comments',
-        method: 'select',
-        query: `*, profiles ( username, full_name )`,
-        filter: { game_id: gameId }
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'comments',
+            method: 'select',
+            query: `*, profiles ( username, full_name )`,
+            filter: { game_id: gameId }
+        });
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
 }
 
 async function postComment(gameId, content) {
     const user = await getSessionUser();
     if (!user) throw new Error('Inicia sesión para comentar');
 
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'comments',
-        method: 'insert',
-        payload: [{
-            game_id: gameId,
-            user_id: user.id,
-            content: content
-        }]
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'comments',
+            method: 'insert',
+            payload: [{
+                game_id: gameId,
+                user_id: user.id,
+                content: content
+            }]
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 async function toggleLike(gameId) {
@@ -383,11 +431,15 @@ async function toggleLike(gameId) {
 }
 
 async function reportError(gameId) {
-    // Assuming bridge supports RPC
-    return await bridgeCall('SUPABASE_RPC', {
-        function: 'report_game_error',
-        params: { game_id_param: gameId }
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_RPC', {
+            function: 'report_game_error',
+            params: { game_id_param: gameId }
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 /**
@@ -395,49 +447,64 @@ async function reportError(gameId) {
  */
 async function startPlaySession(gameId, deviceType = 'web') {
     const user = await getSessionUser();
-    const data = await bridgeCall('SUPABASE_CALL', {
-        table: 'play_sessions',
-        method: 'insert',
-        payload: [{
-            user_id: user ? user.id : null,
-            game_id: gameId,
-            device_type: deviceType
-        }],
-        select: true
-    });
-
-    return data ? data[0].id : null;
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'play_sessions',
+            method: 'insert',
+            payload: [{
+                user_id: user ? user.id : null,
+                game_id: gameId,
+                device_type: deviceType
+            }],
+            select: true
+        });
+        return data ? data[0].id : null;
+    } catch (e) {
+        return null;
+    }
 }
 
 async function endPlaySession(sessionId, durationSeconds) {
     if (!sessionId) return;
-    await bridgeCall('SUPABASE_CALL', {
-        table: 'play_sessions',
-        method: 'update',
-        payload: { duration_seconds: durationSeconds },
-        filter: { id: sessionId }
-    });
+    try {
+        await bridgeCall('SUPABASE_CALL', {
+            table: 'play_sessions',
+            method: 'update',
+            payload: { duration_seconds: durationSeconds },
+            filter: { id: sessionId }
+        });
+    } catch (e) {}
 }
 
 async function getNotifications() {
     const user = await getSessionUser();
-    if (!user) return [];
+    if (!user) return { data: [], error: null };
 
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'notifications',
-        method: 'select',
-        query: '*',
-        filter: { user_id: user.id }
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'notifications',
+            method: 'select',
+            query: '*',
+            filter: { user_id: user.id }
+        });
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
+    }
 }
 
 async function markNotificationRead(id) {
-    return await bridgeCall('SUPABASE_CALL', {
-        table: 'notifications',
-        method: 'update',
-        payload: { is_read: true },
-        filter: { id: id }
-    });
+    try {
+        const data = await bridgeCall('SUPABASE_CALL', {
+            table: 'notifications',
+            method: 'update',
+            payload: { is_read: true },
+            filter: { id: id }
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
 }
 
 /**
@@ -483,32 +550,34 @@ window.alert = (msg) => showPremiumToast('Notificación', msg);
 
 async function getRecommendedGames() {
     const user = await getSessionUser();
-    if (!user) return [];
+    if (!user) return { data: [], error: null };
 
     try {
-        return await bridgeCall('SUPABASE_CALL', {
+        const data = await bridgeCall('SUPABASE_CALL', {
             table: 'games',
             method: 'select',
             query: `*, profiles ( username, full_name )`,
             filter: { status: 'approved' },
             limit: 10
         });
-    } catch (e) {
-        return [];
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
     }
 }
 
 async function getGamesByDevice(device, limit = 6) {
     try {
-        return await bridgeCall('SUPABASE_CALL', {
+        const data = await bridgeCall('SUPABASE_CALL', {
             table: 'games',
             method: 'select',
             query: `*, profiles ( username, full_name )`,
-            filter: { status: 'approved', devices: [device] }, // Assuming bridge handles array contains in filter or I need to adjust
+            filter: { status: 'approved', devices: [device] },
             limit: limit
         });
-    } catch (e) {
-        return [];
+        return { data: data || [], error: null };
+    } catch (error) {
+        return { data: [], error };
     }
 }
 
@@ -574,6 +643,11 @@ window.sbClient = {
             },
             maybeSingle: () => {
                 currentQuery.single = true;
+                return builder;
+            },
+            in: (col, val) => {
+                if (!currentQuery.filter) currentQuery.filter = {};
+                currentQuery.filter[col] = val;
                 return builder;
             },
             then: (resolve, reject) => {

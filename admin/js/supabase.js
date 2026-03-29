@@ -96,45 +96,83 @@ async function signOut() {
 
 // Compatibility shim for Admin
 window.sbClient = {
+    auth: {
+        getSession: async () => {
+            const user = await bridgeCall('CHECK_SESSION');
+            return { data: { session: user ? { user } : null }, error: null };
+        },
+        getUser: async () => {
+            const user = await bridgeCall('CHECK_SESSION');
+            return { data: { user }, error: null };
+        },
+        signOut: signOut,
+        signInWithPassword: () => { window.location.href = `${BRIDGE_ORIGIN}/sso.html?domain=creativegame.online&redirect_to=${encodeURIComponent(window.location.href)}`; },
+        signUp: () => { window.location.href = `${BRIDGE_ORIGIN}/sso.html?domain=creativegame.online&redirect_to=${encodeURIComponent(window.location.href)}`; }
+    },
     from: (table) => {
-        return {
+        let currentQuery = { table };
+        const builder = {
             select: (query, opts) => {
-                let currentQuery = { table, method: 'select', query };
+                currentQuery.method = 'select';
+                currentQuery.query = query;
                 if (opts?.count) currentQuery.count = opts.count;
-
-                const exec = (q) => bridgeCall('SUPABASE_CALL', q);
-
-                return {
-                    eq: (col, val) => {
-                        currentQuery.filter = { ...currentQuery.filter, [col]: val };
-                        return {
-                            single: () => exec({ ...currentQuery, single: true }),
-                            order: (c, o) => exec({ ...currentQuery, order: c, ascending: o?.ascending }),
-                            limit: (l) => exec({ ...currentQuery, limit: l })
-                        };
-                    },
-                    order: (c, o) => {
-                        currentQuery.order = c;
-                        currentQuery.ascending = o?.ascending;
-                        return {
-                            limit: (l) => exec({ ...currentQuery, limit: l }),
-                            then: (resolve) => exec(currentQuery).then(resolve)
-                        };
-                    },
-                    limit: (l) => {
-                        currentQuery.limit = l;
-                        return { then: (resolve) => exec(currentQuery).then(resolve) };
-                    },
-                    then: (resolve) => exec(currentQuery).then(resolve)
-                };
+                return builder;
             },
-            insert: (payload) => bridgeCall('SUPABASE_CALL', { table, method: 'insert', payload }),
-            update: (payload) => ({
-                eq: (col, val) => bridgeCall('SUPABASE_CALL', { table, method: 'update', payload, filter: { [col]: val } })
-            }),
-            delete: () => ({
-                eq: (col, val) => bridgeCall('SUPABASE_CALL', { table, method: 'delete', filter: { [col]: val } })
-            })
+            insert: (payload) => {
+                currentQuery.method = 'insert';
+                currentQuery.payload = payload;
+                return builder;
+            },
+            update: (payload) => {
+                currentQuery.method = 'update';
+                currentQuery.payload = payload;
+                return builder;
+            },
+            delete: () => {
+                currentQuery.method = 'delete';
+                return builder;
+            },
+            upsert: (payload) => {
+                currentQuery.method = 'upsert';
+                currentQuery.payload = payload;
+                return builder;
+            },
+            eq: (col, val) => {
+                if (!currentQuery.filter) currentQuery.filter = {};
+                currentQuery.filter[col] = val;
+                return builder;
+            },
+            order: (col, opts) => {
+                currentQuery.order = col;
+                currentQuery.ascending = opts?.ascending !== false;
+                return builder;
+            },
+            limit: (l) => {
+                currentQuery.limit = l;
+                return builder;
+            },
+            single: () => {
+                currentQuery.single = true;
+                return builder;
+            },
+            maybeSingle: () => {
+                currentQuery.single = true;
+                return builder;
+            },
+            then: (resolve, reject) => {
+                bridgeCall('SUPABASE_CALL', currentQuery)
+                    .then(payload => resolve({ data: payload, error: null }))
+                    .catch(err => resolve({ data: null, error: err }));
+            }
+        };
+        return builder;
+    },
+    rpc: async (fn, params) => {
+        try {
+            const data = await bridgeCall('SUPABASE_RPC', { function: fn, params });
+            return { data, error: null };
+        } catch (error) {
+            return { data: null, error };
         }
     }
 };

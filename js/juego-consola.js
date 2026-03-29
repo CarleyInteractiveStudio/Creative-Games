@@ -82,7 +82,7 @@ function gamepadLoop() {
     const DOWN = pressed(13) || stickMoved(1, 1);
     const A = pressed(0);
     const B = pressed(1);
-    const START = pressed(9) || pressed(16); // Start or Home
+    const START = pressed(9) || pressed(16);
 
     if (START) {
         togglePause();
@@ -129,13 +129,13 @@ function updatePauseFocus() {
 }
 
 function handlePauseSelection() {
-    if (pauseIndex === 0) { // Resume
+    if (pauseIndex === 0) {
         togglePause();
-    } else if (pauseIndex === 1) { // Restart
+    } else if (pauseIndex === 1) {
         const frame = document.getElementById('game-frame');
         frame.src = frame.src;
         togglePause();
-    } else if (pauseIndex === 2) { // Exit
+    } else if (pauseIndex === 2) {
         window.location.href = 'consola.html';
     }
 }

@@ -46,7 +46,7 @@ window.checkAdminSession = checkAdmin;
 function setupLoginForm() {
     const btn = document.createElement('button');
     btn.className = 'btn-primary';
-    btn.textContent = 'Iniciar Sesión con SSO';
+    btn.textContent = 'Iniciar Sesión';
     btn.onclick = () => {
         const domain = "creativegame.online";
         const redirectTo = window.location.href;
@@ -111,7 +111,8 @@ function setupNavigation() {
 
 async function loadDashboardStats() {
     try {
-        const games = await sbClient.from('games').select('status, play_count, error_count');
+        const { data: games } = await sbClient.from('games').select('status, play_count, error_count');
+        if (!games) return;
 
         const totalGames = games.length;
         const pendingGames = games.filter(g => g.status === 'pending').length;
@@ -132,7 +133,7 @@ async function loadPendingGames() {
     list.innerHTML = '<tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>';
 
     try {
-        const games = await sbClient.from('games').select('*, profiles(username, full_name)').eq('status', 'pending');
+        const { data: games } = await sbClient.from('games').select('*, profiles(username, full_name)').eq('status', 'pending');
 
         if (!games || games.length === 0) {
             list.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay juegos pendientes.</td></tr>';
@@ -161,7 +162,8 @@ async function loadPendingGames() {
 window.openReviewModal = async (id) => {
     currentReviewId = id;
     try {
-        const game = await sbClient.from('games').select('*, profiles(username, full_name)').eq('id', id).single();
+        const { data: game } = await sbClient.from('games').select('*, profiles(username, full_name)').eq('id', id).single();
+        if (!game) throw new Error('Game not found');
 
         document.getElementById('review-title').textContent = `Revisando: ${game.title}`;
         document.getElementById('review-author').textContent = game.profiles?.full_name || game.profiles?.username || 'Usuario';
@@ -192,7 +194,8 @@ async function updateGameStatus(status) {
 async function loadCategoriesAdmin() {
     const list = document.getElementById('categories-list-admin');
     try {
-        const cats = await sbClient.from('categories').select('*').order('name');
+        const { data: cats } = await sbClient.from('categories').select('*').order('name');
+        if (!cats) return;
 
         list.innerHTML = cats.map(c => `
             <tr>

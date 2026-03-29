@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    await loadCategories();
+    await renderCategoriesEditor();
     await loadGameData(gameId);
 
     document.getElementById('add-achievement-btn').addEventListener('click', () => {
@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-async function loadCategories() {
-    const cats = await getCategories();
+async function renderCategoriesEditor() {
+    const { data: cats } = await getCategories();
     const container = document.getElementById('category-selection');
-    if (cats.length > 0) {
+    if (cats && cats.length > 0) {
         container.innerHTML = cats.map(cat => `
             <label class="check-container">
                 <input type="checkbox" name="category" value="${cat}">
@@ -45,7 +45,7 @@ async function loadGameData(id) {
             .eq('id', id)
             .single();
 
-        if (error) throw error;
+        if (error || !game) throw error;
 
         document.getElementById('game-name').value = game.title;
         document.getElementById('game-repo').value = game.repo_url;
@@ -54,7 +54,6 @@ async function loadGameData(id) {
         document.getElementById('game-engine').value = game.engine || 'Otros';
         document.getElementById('game-gender').value = game.suggested_gender || 'Ambos';
 
-        // Check categories
         if (game.categories) {
             game.categories.forEach(cat => {
                 const cb = document.querySelector(`input[name="category"][value="${cat}"]`);
@@ -62,7 +61,6 @@ async function loadGameData(id) {
             });
         }
 
-        // Load achievements
         if (game.achievement_definitions) {
             game.achievement_definitions.forEach(ach => {
                 addAchievementToEditor(ach);
@@ -79,7 +77,7 @@ function addAchievementToEditor(data = null) {
     const container = document.getElementById('achievements-list-editor');
     const div = document.createElement('div');
     div.className = 'achievement-editor-item';
-    if (data?.id) div.dataset.id = data.id; // Keep track of existing IDs
+    if (data?.id) div.dataset.id = data.id;
 
     div.innerHTML = `
         <button type="button" class="btn-remove-achievement" onclick="this.parentElement.remove()">&times;</button>
@@ -101,13 +99,6 @@ function addAchievementToEditor(data = null) {
         </div>
     `;
     container.appendChild(div);
-}
-
-function escapeHTML(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
 }
 
 async function updateGame(id) {
@@ -136,7 +127,6 @@ async function updateGame(id) {
 
         if (error) throw error;
 
-        // Save Achievements (UPSERT to avoid data loss on earned achievements)
         const achItems = document.querySelectorAll('.achievement-editor-item');
         const achievements = Array.from(achItems).map(item => {
             const achData = {
@@ -151,16 +141,12 @@ async function updateGame(id) {
         });
 
         if (achievements.length > 0) {
-            const { error: achErr } = await sbClient
+            await sbClient
                 .from('achievement_definitions')
                 .upsert(achievements, { onConflict: 'game_id, key' });
-            if (achErr) console.error('Error al guardar logros:', achErr);
         }
 
-        // Optional: Delete removed achievements (careful with data loss, but user clicked remove)
-        // For a more robust system, we'd compare current vs old IDs.
-
-        showToast('Notificación', 'Cambios guardados con éxito. Se ha enviado una notificación de revisión.');
+        showToast('Notificación', 'Cambios guardados con éxito.');
         window.location.href = 'cuenta.html';
     } catch (err) {
         showToast('Notificación', 'Error: ' + err.message);

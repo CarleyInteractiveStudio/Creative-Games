@@ -23,7 +23,7 @@
     </header>
 
     <!-- Access Denied / Login View -->
-    <div id="view-auth" class="access-denied hidden">
+    <div id="view-auth" class="access-denied">
         <div id="auth-content">
             <div class="denied-icon">🔐</div>
             <h1 class="view-title" id="auth-title">Panel de Administración</h1>
@@ -31,17 +31,10 @@
                 Inicia sesión con tu cuenta de administrador para continuar.
             </p>
 
-            <form id="admin-login-form" style="max-width: 350px; margin: 0 auto; text-align: left;">
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" id="login-email" class="form-input" required placeholder="admin@ejemplo.com">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="login-pass" class="form-input" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn-primary">Entrar al Panel</button>
-            </form>
+            <div id="admin-login-form" style="max-width: 350px; margin: 0 auto;">
+                <!-- Dynamically injected SSO button -->
+                <div class="loading-spinner">Cargando sistema de acceso...</div>
+            </div>
         </div>
     </div>
 

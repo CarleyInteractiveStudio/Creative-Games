@@ -299,15 +299,7 @@ function renderSections(games) {
 
 async function renderDeviceSpecificSection(device) {
     try {
-        const { data: games } = await sbClient
-            .from('games')
-            .select(`
-                *,
-                profiles ( username, full_name )
-            `)
-            .eq('status', 'approved')
-            .contains('devices', [device])
-            .limit(6);
+        const games = await getGamesByDevice(device, 6);
 
         if (games && games.length > 0) {
             const label = device === 'mobile' ? 'Móviles' : (device === 'tv' ? 'TV' : 'PC');

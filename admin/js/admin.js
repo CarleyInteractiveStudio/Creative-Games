@@ -1,19 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
     await checkAdmin();
     setupNavigation();
-    loadDashboardStats();
 });
 
 let currentReviewId = null;
-
 const ADMIN_EMAIL = 'johncarley14@gmail.com';
 
 async function checkAdmin() {
-    if (typeof getSession === 'undefined') {
-        setTimeout(checkAdmin, 500);
-        return;
-    }
-
     const session = await getSession();
     const layout = document.getElementById('main-layout');
     const authView = document.getElementById('view-auth');
@@ -42,25 +35,29 @@ async function checkAdmin() {
     layout.classList.remove('hidden');
     authView.classList.add('hidden');
     document.getElementById('admin-email').textContent = session.user.email;
+    loadDashboardStats();
 }
 
+/**
+ * Called by handleSSOCallback in admin/js/supabase.js
+ */
+window.checkAdminSession = checkAdmin;
+
 function setupLoginForm() {
-    const form = document.getElementById('admin-login-form');
-    if (!form) return;
-
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-pass').value;
-
-        try {
-            const { error } = await signIn(email, pass);
-            if (error) throw error;
-            location.reload();
-        } catch (err) {
-            alert('Error de acceso: ' + err.message);
-        }
+    const btn = document.createElement('button');
+    btn.className = 'btn-primary';
+    btn.textContent = 'Iniciar Sesión con SSO';
+    btn.onclick = () => {
+        const domain = "creativegame.online";
+        const redirectTo = window.location.href;
+        window.location.href = `https://carleystudio.com/sso.html?domain=${domain}&redirect_to=${encodeURIComponent(redirectTo)}`;
     };
+
+    const container = document.getElementById('admin-login-form');
+    if (container) {
+        container.innerHTML = '';
+        container.appendChild(btn);
+    }
 }
 
 function setupNavigation() {
@@ -79,143 +76,155 @@ function setupNavigation() {
                 else v.classList.add('hidden');
             });
 
-            // Load view-specific data
             if (target === 'pending') loadPendingGames();
             if (target === 'categories') loadCategoriesAdmin();
             if (target === 'dashboard') loadDashboardStats();
         });
     });
 
-    // Logout
     document.getElementById('logout-btn').addEventListener('click', async () => {
         await signOut();
-        location.reload();
     });
 
-    // Modal Close
-    document.querySelector('.btn-close').onclick = () => {
-        document.getElementById('review-modal').classList.add('hidden');
-    };
+    const closeBtn = document.querySelector('.btn-close');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            document.getElementById('review-modal').classList.add('hidden');
+        };
+    }
 
-    // Review Actions
     document.getElementById('btn-approve').onclick = () => updateGameStatus('approved');
     document.getElementById('btn-reject').onclick = () => updateGameStatus('rejected');
 
-    // Add Category
     document.getElementById('btn-add-category').onclick = async () => {
         const name = prompt('Nombre de la nueva categoría:');
         if (name) {
-            const { error } = await sbClient.from('categories').insert([{ name }]);
-            if (error) alert(error.message);
-            else loadCategoriesAdmin();
+            try {
+                await sbClient.from('categories').insert([{ name }]);
+                loadCategoriesAdmin();
+            } catch (e) {
+                alert('Error al añadir categoría');
+            }
         }
     };
 }
 
 async function loadDashboardStats() {
-    const { count: totalGames } = await sbClient.from('games').select('*', { count: 'exact', head: true });
-    const { count: pendingGames } = await sbClient.from('games').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    try {
+        const games = await sbClient.from('games').select('status, play_count, error_count');
 
-    // Fetch aggregated plays
-    const { data: games } = await sbClient.from('games').select('play_count, error_count');
-    const totalPlays = games.reduce((acc, g) => acc + (g.play_count || 0), 0);
-    const totalErrors = games.reduce((acc, g) => acc + (g.error_count || 0), 0);
+        const totalGames = games.length;
+        const pendingGames = games.filter(g => g.status === 'pending').length;
+        const totalPlays = games.reduce((acc, g) => acc + (g.play_count || 0), 0);
+        const totalErrors = games.reduce((acc, g) => acc + (g.error_count || 0), 0);
 
-    document.getElementById('stat-total-games').textContent = totalGames || 0;
-    document.getElementById('stat-pending-games').textContent = pendingGames || 0;
-    document.getElementById('stat-total-plays').textContent = totalPlays || 0;
-    document.getElementById('stat-total-errors').textContent = totalErrors || 0;
+        document.getElementById('stat-total-games').textContent = totalGames;
+        document.getElementById('stat-pending-games').textContent = pendingGames;
+        document.getElementById('stat-total-plays').textContent = totalPlays;
+        document.getElementById('stat-total-errors').textContent = totalErrors;
+    } catch (e) {
+        console.error('Error stats:', e);
+    }
 }
 
 async function loadPendingGames() {
     const list = document.getElementById('pending-list');
     list.innerHTML = '<tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>';
 
-    const { data: games, error } = await sbClient
-        .from('games')
-        .select(`
-            *,
-            profiles ( username, full_name )
-        `)
-        .eq('status', 'pending');
+    try {
+        const games = await sbClient.from('games').select('*, profiles(username, full_name)').eq('status', 'pending');
 
-    if (error) return;
+        if (!games || games.length === 0) {
+            list.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay juegos pendientes.</td></tr>';
+            return;
+        }
 
-    if (games.length === 0) {
-        list.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay juegos pendientes.</td></tr>';
-        return;
+        list.innerHTML = games.map(g => `
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap: 1rem;">
+                        <img src="${fixGitHubImageUrl(g.image_url)}" style="width: 40px; border-radius: 4px;">
+                        <span>${escapeHTML(g.title)}</span>
+                    </div>
+                </td>
+                <td>${escapeHTML(g.profiles?.full_name || g.profiles?.username || 'Usuario')}</td>
+                <td>
+                    <button class="btn-small" onclick="openReviewModal('${g.id}')">Revisar</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        list.innerHTML = '<tr><td colspan="3" style="text-align:center; color: red;">Error al cargar.</td></tr>';
     }
-
-    list.innerHTML = games.map(g => `
-        <tr>
-            <td>
-                <div style="display:flex; align-items:center; gap: 1rem;">
-                    <img src="${fixGitHubImageUrl(g.image_url)}" style="width: 40px; border-radius: 4px;">
-                    <span>${g.title}</span>
-                </div>
-            </td>
-            <td>${g.profiles?.full_name || g.profiles?.username || 'Usuario'}</td>
-            <td>
-                <button class="btn-small" onclick="openReviewModal('${g.id}')">Revisar</button>
-            </td>
-        </tr>
-    `).join('');
 }
 
 window.openReviewModal = async (id) => {
     currentReviewId = id;
-    const { data: game } = await sbClient.from('games').select('*, profiles(username, full_name)').eq('id', id).single();
+    try {
+        const game = await sbClient.from('games').select('*, profiles(username, full_name)').eq('id', id).single();
 
-    document.getElementById('review-title').textContent = `Revisando: ${game.title}`;
-    document.getElementById('review-author').textContent = game.profiles?.full_name || game.profiles?.username || 'Usuario';
-    document.getElementById('review-url').href = game.repo_url;
-    document.getElementById('review-desc').textContent = game.description;
-    document.getElementById('review-iframe').src = game.repo_url;
-    document.getElementById('review-notes').value = game.admin_notes || '';
+        document.getElementById('review-title').textContent = `Revisando: ${game.title}`;
+        document.getElementById('review-author').textContent = game.profiles?.full_name || game.profiles?.username || 'Usuario';
+        document.getElementById('review-url').href = game.repo_url;
+        document.getElementById('review-desc').textContent = game.description;
+        document.getElementById('review-iframe').src = game.repo_url;
+        document.getElementById('review-notes').value = game.admin_notes || '';
 
-    document.getElementById('review-modal').classList.remove('hidden');
+        document.getElementById('review-modal').classList.remove('hidden');
+    } catch (e) {
+        alert('Error al cargar detalle del juego.');
+    }
 };
 
 async function updateGameStatus(status) {
     const notes = document.getElementById('review-notes').value;
 
-    const { error } = await sbClient
-        .from('games')
-        .update({ status, admin_notes: notes })
-        .eq('id', currentReviewId);
-
-    if (error) {
-        alert(error.message);
-    } else {
+    try {
+        await sbClient.from('games').update({ status, admin_notes: notes }).eq('id', currentReviewId);
         document.getElementById('review-modal').classList.add('hidden');
         loadPendingGames();
         loadDashboardStats();
+    } catch (e) {
+        alert('Error al actualizar estado.');
     }
 }
 
 async function loadCategoriesAdmin() {
     const list = document.getElementById('categories-list-admin');
-    const { data: cats } = await sbClient.from('categories').select('*').order('name');
+    try {
+        const cats = await sbClient.from('categories').select('*').order('name');
 
-    list.innerHTML = cats.map(c => `
-        <tr>
-            <td>${c.id}</td>
-            <td>${c.name}</td>
-            <td>
-                <button class="btn-icon" onclick="deleteCategory(${c.id})">🗑️</button>
-            </td>
-        </tr>
-    `).join('');
+        list.innerHTML = cats.map(c => `
+            <tr>
+                <td>${c.id}</td>
+                <td>${escapeHTML(c.name)}</td>
+                <td>
+                    <button class="btn-icon" onclick="deleteCategory(${c.id})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        list.innerHTML = '<tr><td colspan="3">Error.</td></tr>';
+    }
 }
 
 window.deleteCategory = async (id) => {
     if (!confirm('¿Eliminar esta categoría?')) return;
-    const { error } = await sbClient.from('categories').delete().eq('id', id);
-    if (error) alert(error.message);
-    else loadCategoriesAdmin();
+    try {
+        await sbClient.from('categories').delete().eq('id', id);
+        loadCategoriesAdmin();
+    } catch (e) {
+        alert('Error al eliminar.');
+    }
 };
 
-/** Utility duplicate from main app to ensure display in admin */
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 function fixGitHubImageUrl(url) {
     if (!url) return url;
     if (url.includes('github.com') && url.includes('/blob/')) {

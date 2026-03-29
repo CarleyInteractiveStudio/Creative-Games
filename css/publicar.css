@@ -1,0 +1,219 @@
+.publish-page {
+    max-width: 900px;
+    margin: 120px auto 50px;
+    padding: 0 2rem;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+
+/* Stepper */
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.stepper::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--glass-border);
+    z-index: 1;
+}
+
+.step {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1a1a1c;
+    border: 2px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--text-gray);
+    position: relative;
+    z-index: 2;
+    transition: var(--transition);
+}
+
+.step.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: black;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.step.completed {
+    background: #2d2d30;
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.step-label {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    color: var(--text-gray);
+}
+
+.step.active .step-label {
+    color: var(--gold);
+    font-weight: 600;
+}
+
+/* Content */
+.step-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: var(--gold);
+}
+
+.checkbox-group, .checkbox-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.checkbox-group label, .checkbox-grid label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.policy-container {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--glass-border);
+}
+
+.policy-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+}
+
+.policy-item input {
+    margin-top: 4px;
+}
+
+.policy-divider {
+    height: 1px;
+    background: var(--glass-border);
+    margin: 1.5rem 0;
+    position: relative;
+    text-align: center;
+}
+
+.policy-divider::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1c;
+    padding: 0 1rem;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    text-transform: uppercase;
+}
+
+.policy-list {
+    margin-left: 2.5rem;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.policy-list li {
+    margin-bottom: 0.4rem;
+}
+
+/* Preview */
+.preview-frame-container {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: black;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    margin: 1.5rem 0;
+}
+
+#game-preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Navigation */
+.wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.btn-nav {
+    padding: 0.8rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: white;
+}
+
+.btn-primary-gold {
+    background: var(--gold);
+    color: black;
+    border: none;
+}
+
+.btn-primary-gold:hover {
+    background: var(--gold-bright);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.btn-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .step-label {
+        display: none;
+    }
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargando Juego... - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/juego.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <a href="index.html" class="logo-container">
+                <img src="logo.png" alt="Creative Game Logo" class="logo-img">
+                <span class="logo-text">Creative <span class="gold-text">Game</span></span>
+            </a>
+            <div class="account-container">
+                <a href="index.html" class="profile-btn" title="Volver al inicio">
+                    <img src="images/icons/home.svg" alt="Inicio" class="user-icon" style="filter: invert(1);">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="player-page">
+        <div class="player-main">
+            <!-- Video/Game Frame -->
+            <div class="game-container">
+                <iframe id="game-iframe" src="" allowfullscreen></iframe>
+            </div>
+
+            <!-- Title & Controls -->
+            <div class="player-controls">
+                <div class="game-info-basic">
+                    <h1 id="game-title">Título del Juego</h1>
+                    <div class="game-author-row">
+                        <span id="game-category">Categoría</span> •
+                        <span id="game-author" class="gold-text">Publicado por ...</span>
+                    </div>
+                </div>
+                <div class="player-actions">
+                    <button class="action-btn" id="btn-like">
+                        <span class="icon">❤</span> Me gusta
+                    </button>
+                    <button class="action-btn" id="btn-report">
+                        <span class="icon">⚠</span> Reportar Error
+                    </button>
+                    <button class="action-btn" id="btn-fullscreen">
+                        <span class="icon">⛶</span> Pantalla Completa
+                    </button>
+                </div>
+            </div>
+
+            <!-- Details & Controls -->
+            <div class="game-details-grid">
+                <div class="dashboard-card">
+                    <h3 style="margin-bottom: 0.8rem;">Descripción</h3>
+                    <p id="game-description" style="color: var(--text-gray); line-height: 1.6;"></p>
+
+                    <div class="engine-tag" style="margin-top: 1.5rem;">
+                        <span class="label">Motor:</span> <span id="game-engine-display" class="gold-text">---</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card" id="controls-panel">
+                    <h3 style="margin-bottom: 0.8rem;">Controles</h3>
+                    <div id="controls-content" class="controls-info">
+                        <!-- Dynamic controls text -->
+                        Selecciona un dispositivo para ver los controles.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <section class="comments-section">
+                <div class="comments-header">
+                    <h2>Comentarios (<span id="comments-count">0</span>)</h2>
+                </div>
+
+                <div class="comment-input-area">
+                    <form id="comment-form">
+                        <textarea id="comment-text" class="comment-textarea" placeholder="Escribe tu opinión sobre el juego..." maxlength="300"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            <span class="comment-char-count" id="char-count">0/300</span>
+                            <button type="submit" class="btn-primary" style="width: auto; margin-top: 0; padding: 0.6rem 2rem;">Publicar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="comments-list" class="comments-list">
+                    <!-- Comments will be loaded here -->
+                </div>
+            </section>
+        </div>
+
+        <aside class="player-sidebar">
+            <h3 class="sidebar-title">Más Juegos para ti</h3>
+            <div id="sidebar-games-list" class="sidebar-games">
+                <!-- Sidebar games will be loaded here -->
+            </div>
+        </aside>
+    </main>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/juego.js"></script>
+</body>
+</html>

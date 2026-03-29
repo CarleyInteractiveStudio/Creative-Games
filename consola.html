@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modo Consola - Creative Game</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/consola.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="console-mode">
+    <!-- Waiting for Gamepad Overlay -->
+    <div id="waiting-gamepad" class="modal-overlay">
+        <div class="modal-content glass-card text-center">
+            <div class="pulsing-icon">
+                <img src="images/icons/console.svg" alt="Mando" class="large-icon">
+            </div>
+            <h2 class="gold-text">Conecta un mando</h2>
+            <p>Para navegar por el Modo Consola, necesitas conectar un mando (Xbox o PlayStation).</p>
+        </div>
+    </div>
+
+    <!-- Controller Selection Modal -->
+    <div id="controller-selector" class="modal-overlay hidden">
+        <div class="modal-content glass-card">
+            <h2 class="gold-text">Mando Detectado</h2>
+            <p>Selecciona el tipo de iconos que prefieres:</p>
+            <div class="controller-options">
+                <button class="ctrl-opt" data-type="xbox">
+                    <img src="images/icons/xbox.svg" alt="Xbox">
+                    <span>Xbox / Genérico</span>
+                </button>
+                <button class="ctrl-opt" data-type="playstation">
+                    <img src="images/icons/ps.svg" alt="PlayStation">
+                    <span>PlayStation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Console UI -->
+    <div id="console-ui" class="console-container">
+        <!-- Left Pane: Vertical Game Scroll -->
+        <aside class="game-list-pane">
+            <div id="console-games-list" class="vertical-scroll">
+                <!-- Games will be injected here -->
+                <div class="loading-spinner">Cargando...</div>
+            </div>
+        </aside>
+
+        <!-- Right Pane: Details & Nav -->
+        <main class="details-pane">
+            <header class="console-header">
+                <div class="header-left">
+                    <div class="logo-crop">
+                        <img src="logo.png" alt="Logo" class="console-logo-img">
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="console-search-bar" id="search-trigger">
+                        <img src="images/icons/search.svg" alt="Search" class="search-icon">
+                        <span id="search-text-display">Buscar juegos...</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="cuenta.html" class="profile-btn">
+                        <img src="images/icons/user.svg" alt="Cuenta" class="user-icon">
+                    </a>
+                </div>
+            </header>
+
+            <section class="game-display">
+                <div class="info-content">
+                    <h1 id="active-game-title" class="active-title">---</h1>
+                    <div class="game-meta-row">
+                        <span id="active-game-rating" class="rating">0.0</span>
+                        <span id="active-game-author" style="color: var(--text-gray); font-size: 0.9rem;">por ...</span>
+                        <div id="favorite-status" class="fav-indicator">
+                            <img src="images/icons/heart.svg" alt="Fav" id="fav-icon">
+                        </div>
+                    </div>
+                    <div class="description-container" id="desc-scroll">
+                        <p id="active-game-desc">
+                            Selecciona un juego para ver su descripción. Usa el mando para navegar.
+                        </p>
+                        <div id="active-game-controls" class="console-controls-info"></div>
+                    </div>
+                </div>
+
+                <!-- Navigation Hints (Dynamic icons) -->
+                <div class="nav-hints" id="nav-hints">
+                    <!-- E.g. [A] Seleccionar  [B] Volver -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Virtual Keyboard Overlay -->
+    <div id="virtual-keyboard" class="keyboard-overlay hidden">
+        <div class="keyboard-content glass-card">
+            <div class="kb-display">
+                <div class="kb-input-wrapper">
+                    <input type="text" id="kb-input" placeholder="Escribe aquí..." readonly>
+                </div>
+            </div>
+            <div id="kb-keys" class="keys-grid">
+                <!-- Keys will be injected -->
+            </div>
+            <div class="kb-footer">
+                <div class="kb-action-hint" data-action="backspace">
+                    <img src="images/icons/btn_x.svg" class="hint-icon" id="kb-hint-delete">
+                    <span>Borrar</span>
+                </div>
+                <div class="kb-action-hint" data-action="search">
+                    <img src="images/icons/btn_a.svg" class="hint-icon" id="kb-hint-search">
+                    <span>Buscar</span>
+                </div>
+                <div class="kb-action-hint" data-action="close">
+                    <img src="images/icons/btn_b.svg" class="hint-icon" id="kb-hint-close">
+                    <span>Volver</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Game Viewport -->
+    <div id="game-viewport" class="viewport-overlay hidden">
+        <iframe id="game-frame" src="about:blank"></iframe>
+
+        <!-- Pause Menu -->
+        <div id="pause-menu" class="pause-overlay hidden">
+            <div class="pause-content glass-card">
+                <h2 class="gold-text">PAUSA</h2>
+                <div class="pause-options">
+                    <button class="pause-btn active" id="resume-btn">REANUDAR JUEGO</button>
+                    <button class="pause-btn" id="exit-btn">VOLVER A CONSOLA</button>
+                </div>
+                <div class="pause-hints">
+                    <div class="hint-item">
+                        <img src="images/icons/btn_a.svg" class="hint-icon" id="pause-hint-a">
+                        <span>Seleccionar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/consola.js"></script>
+</body>
+</html>

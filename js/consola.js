@@ -53,12 +53,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initConsole() {
     const session = await getSession();
     if (session) {
-        favorites = session.user.user_metadata.favorites || [];
+        const { data: favs } = await getFavorites();
+        favorites = favs || [];
     }
 
     await loadConsoleGames();
 
-    // Check if gamepad is already connected
     const gps = navigator.getGamepads();
     if (gps[0]) {
         handleGamepadConnected();
@@ -68,7 +68,6 @@ async function initConsole() {
 function handleGamepadConnected() {
     waitingGamepad.classList.add('hidden');
 
-    // Check for saved gamepad preference
     if (localStorage.getItem('gp_type')) {
         gamepadType = localStorage.getItem('gp_type');
         controllerSelector.classList.add('hidden');
@@ -86,22 +85,22 @@ function handleGamepadConnected() {
 
 async function loadConsoleGames() {
     try {
-        const dbGames = await getApprovedGames();
-        // Map to expected format and filter only console-compatible
-        allGames = dbGames
-            .map(g => ({
-                id: g.id,
-                title: g.title,
-                author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
-                rating: g.rating || 0,
-                description: g.description,
-                image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
-                devices: g.devices || [],
-                repo_url: g.repo_url,
-                controls_console: g.controls_console
-            }))
-            .filter(g => g.devices.includes('console'));
-
+        const { data: dbGames } = await getApprovedGames();
+        if (dbGames) {
+            allGames = dbGames
+                .map(g => ({
+                    id: g.id,
+                    title: g.title,
+                    author: g.profiles?.full_name || g.profiles?.username || 'Usuario',
+                    rating: g.rating || 0,
+                    description: g.description,
+                    image_url: fixGitHubImageUrl(g.image_url) || 'https://via.placeholder.com/800x450?text=No+Image',
+                    devices: g.devices || [],
+                    repo_url: g.repo_url,
+                    controls_console: g.controls_console
+                }))
+                .filter(g => g.devices.includes('console'));
+        }
     } catch (e) {
         console.error('Error loading console games:', e);
         allGames = [];
@@ -117,7 +116,7 @@ function renderGames() {
     }
     gamesList.innerHTML = displayedGames.map((game, index) => `
         <div class="console-game-card ${ (currentMode === 'list' && index === currentSelectedIndex) ? 'selected' : ''}" data-index="${index}">
-            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${game.title}">
+            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${escapeHTML(game.title)}">
         </div>
     `).join('');
     updateActiveGame();
@@ -134,7 +133,6 @@ function updateActiveGame() {
         const controls = game.controls_console || "Controles de consola no especificados.";
         activeControls.innerHTML = `<div style="margin-top:1rem; border-top:1px solid #333; padding-top:1rem;"><strong>Controles:</strong> ${controls}</div>`;
 
-        // Update favorite status
         if (favorites.includes(game.id)) {
             favIcon.src = 'images/icons/heart_filled.svg';
             favIcon.classList.add('is-fav');
@@ -143,7 +141,6 @@ function updateActiveGame() {
             favIcon.classList.remove('is-fav');
         }
 
-        // Scroll list to selected
         const selected = document.querySelector('.console-game-card.selected');
         if (selected) {
             selected.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -151,7 +148,6 @@ function updateActiveGame() {
     }
 }
 
-// Keyboard System
 function initKeyboard() {
     let html = '';
     KB_LAYOUT.forEach((row, y) => {
@@ -169,18 +165,15 @@ function updateKeyboardCursor() {
     if (currentKey) currentKey.classList.add('selected');
 }
 
-// Gamepad Logic
 function setupGamepadListeners() {
     window.addEventListener("gamepadconnected", (e) => {
-        console.log("Gamepad connected");
         handleGamepadConnected();
     });
 
     window.addEventListener("gamepaddisconnected", (e) => {
-        console.log("Gamepad disconnected");
         waitingGamepad.classList.remove('hidden');
         controllerSelector.classList.add('hidden');
-        currentMode = 'selector'; // Fallback
+        currentMode = 'selector';
     });
 }
 
@@ -188,11 +181,6 @@ const BUTTON_A = 0;
 const BUTTON_B = 1;
 const BUTTON_X = 2;
 const BUTTON_Y = 3;
-const BUTTON_LB = 4;
-const BUTTON_RB = 5;
-const BUTTON_LT = 6;
-const BUTTON_RT = 7;
-const BUTTON_SELECT = 8;
 const BUTTON_START = 9;
 const BUTTON_UP = 12;
 const BUTTON_DOWN = 13;
@@ -207,7 +195,6 @@ function gamepadLoop() {
     if (!gps[0]) return;
     const gp = gps[0];
 
-    // Detect discrete presses (Rising edge)
     const pressed = (btnIndex) => {
         const isPressed = gp.buttons[btnIndex] && gp.buttons[btnIndex].pressed;
         const wasPressed = lastButtons[btnIndex];
@@ -220,7 +207,6 @@ function gamepadLoop() {
 }
 
 function handleInput(pressed, axes) {
-    // Stick Deadzone logic for discrete stick movement
     const stickMoved = (axis, dir) => {
         const val = axes[axis];
         const key = `axis_${axis}_${dir}`;
@@ -263,7 +249,7 @@ function handleInput(pressed, axes) {
         if (LEFT) { headerIndex = Math.max(0, headerIndex - 1); updateHeaderFocus(); }
         if (RIGHT) { headerIndex = Math.min(2, headerIndex + 1); updateHeaderFocus(); }
         if (A) {
-            if (headerIndex === 0) window.location.href = 'index.html'; // Or show categories? Let's go home for now.
+            if (headerIndex === 0) window.location.href = 'index.html';
             else if (headerIndex === 1) openKeyboard();
             else window.location.href = 'cuenta.html';
         }
@@ -293,7 +279,7 @@ function handleInput(pressed, axes) {
             kbInput += char;
             kbDisplayInput.value = kbInput;
         }
-        if (X) { // Delete
+        if (X) {
             kbInput = kbInput.slice(0, -1);
             kbDisplayInput.value = kbInput;
         }
@@ -331,7 +317,6 @@ function updateHeaderFocus() {
         else if (headerIndex === 1) searchTrigger.classList.add('selected');
         else profileBtn.classList.add('selected');
 
-        // Unselect games
         document.querySelectorAll('.console-game-card').forEach(c => c.classList.remove('selected'));
     }
 }
@@ -371,16 +356,13 @@ function updateHints() {
     document.getElementById('pause-hint-a').src = `images/icons/${icons.a}`;
 }
 
-// Actions
 async function toggleFav() {
     const game = displayedGames[currentSelectedIndex];
     if (!game) return;
 
     await toggleFavorite(game.id);
-    const session = await getSession();
-    if (session) {
-        favorites = session.user.user_metadata.favorites || [];
-    }
+    const { data: favs } = await getFavorites();
+    favorites = favs || [];
     updateActiveGame();
 }
 

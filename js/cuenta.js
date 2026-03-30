@@ -1,19 +1,10 @@
 // Account State Management
-let currentUser = null; // Set this when Supabase is integrated
+let currentUser = null;
 
-// DOM Elements - Forms & Views
+// DOM Elements
 const authView = document.getElementById('auth-view');
 const dashboardView = document.getElementById('dashboard-view');
-
-const loginContainer = document.getElementById('login-form-container');
-const registerContainer = document.getElementById('register-form-container');
-const recoveryContainer = document.getElementById('recovery-form-container');
-
-// Navigation Links
-const showRegisterBtn = document.getElementById('show-register');
-const showLoginBtn = document.getElementById('show-login');
-const showRecoveryBtn = document.getElementById('show-recovery');
-const backToLoginBtn = document.getElementById('back-to-login');
+const ssoLoginBtn = document.getElementById('sso-login-btn');
 
 // Account Info Elements
 const userDisplayName = document.getElementById('user-display-name');
@@ -36,19 +27,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initGamepadSupport();
 });
 
-// Gamepad Support for Account Page
-let accountMode = 'auth'; // 'auth', 'dashboard'
+// Gamepad Support
 let focusIndex = 0;
 let lastButtons = {};
 let focusables = [];
 
 function initGamepadSupport() {
-    window.addEventListener("gamepadconnected", () => {
-        console.log("Gamepad connected to account page");
-        gamepadLoop();
-    });
-
-    // Proactive check
+    window.addEventListener("gamepadconnected", () => gamepadLoop());
     const gps = navigator.getGamepads();
     if (gps[0]) gamepadLoop();
 }
@@ -77,8 +62,6 @@ function gamepadLoop() {
 
     const UP = pressed(12) || stickMoved(1, -1);
     const DOWN = pressed(13) || stickMoved(1, 1);
-    const LEFT = pressed(14) || stickMoved(0, -1);
-    const RIGHT = pressed(15) || stickMoved(0, 1);
     const A = pressed(0);
     const B = pressed(1);
 
@@ -98,7 +81,6 @@ function gamepadLoop() {
 
 function updateFocusables() {
     const activeSection = authView.style.display !== 'none' ? authView : dashboardView;
-    // Find all interactive elements that are visible
     focusables = Array.from(activeSection.querySelectorAll('input, button, a, [onclick]'))
         .filter(el => {
             const style = window.getComputedStyle(el);
@@ -108,22 +90,15 @@ function updateFocusables() {
 
 function applyFocus() {
     focusables.forEach((el, i) => {
-        if (i === focusIndex) {
-            el.classList.add('gamepad-focused');
-        } else {
-            el.classList.remove('gamepad-focused');
-        }
+        if (i === focusIndex) el.classList.add('gamepad-focused');
+        else el.classList.remove('gamepad-focused');
     });
 }
 
 async function checkAuthState() {
     const session = await getSession();
     if (session) {
-        currentUser = {
-            id: session.user.id,
-            email: session.user.email,
-            name: session.user.user_metadata.full_name || session.user.email.split('@')[0]
-        };
+        currentUser = session.user;
         showDashboard();
 
         const notifContainer = document.getElementById('notif-container');
@@ -144,7 +119,9 @@ async function loadNotificationsUI() {
 
     if (!notifBtn || !notifList) return;
 
-    const notifs = await getNotifications();
+    const { data: notifs } = await getNotifications();
+    if (!notifs) return;
+
     const unread = notifs.filter(n => !n.is_read);
 
     if (unread.length > 0) {
@@ -157,8 +134,8 @@ async function loadNotificationsUI() {
     if (notifs.length > 0) {
         notifList.innerHTML = notifs.map(n => `
             <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.game_id}')">
-                <div class="notif-title">${n.title}</div>
-                <div class="notif-content">${n.content}</div>
+                <div class="notif-title">${escapeHTML(n.title)}</div>
+                <div class="notif-content">${escapeHTML(n.content)}</div>
                 <div class="notif-date">${new Date(n.created_at).toLocaleString()}</div>
             </div>
         `).join('');
@@ -187,55 +164,49 @@ async function showDashboard() {
     authView.style.display = 'none';
     dashboardView.style.display = 'block';
 
-    const session = await getSession();
-    const metadata = session.user.user_metadata;
+    const user = currentUser;
+    const metadata = user.user_metadata || {};
 
     // Update User Profile UI
-    userDisplayName.textContent = `Bienvenido, ${metadata.full_name || 'Usuario'}`;
-    userEmailDisplay.textContent = currentUser.email;
+    userDisplayName.textContent = `Bienvenido, ${user.full_name || metadata.full_name || 'Usuario'}`;
+    userEmailDisplay.textContent = user.email;
 
-    // Gender & Avatar Display
     const genderDisplay = document.getElementById('user-gender-display');
-    if (genderDisplay) genderDisplay.textContent = `Sexo: ${metadata.gender || 'No especificado'}`;
+    if (genderDisplay) genderDisplay.textContent = `Sexo: ${user.gender || metadata.gender || 'No especificado'}`;
 
     const avatarImg = document.getElementById('user-avatar-img');
     const initials = document.getElementById('user-initials');
+    const avatarUrl = user.avatar_url || metadata.avatar_url;
 
-    if (metadata.avatar_url) {
-        avatarImg.src = fixGitHubImageUrl(metadata.avatar_url);
+    if (avatarUrl) {
+        avatarImg.src = fixGitHubImageUrl(avatarUrl);
         avatarImg.classList.remove('hidden');
         initials.classList.add('hidden');
         avatarImg.onerror = () => {
             avatarImg.classList.add('hidden');
             initials.classList.remove('hidden');
-            initials.textContent = (metadata.full_name || 'U').charAt(0).toUpperCase();
+            initials.textContent = (user.full_name || 'U').charAt(0).toUpperCase();
         };
     } else {
         avatarImg.classList.add('hidden');
         initials.classList.remove('hidden');
-        initials.textContent = (metadata.full_name || 'U').charAt(0).toUpperCase();
+        initials.textContent = (user.full_name || 'U').charAt(0).toUpperCase();
     }
 
     // Load Profile Settings
-    if (metadata.birth_date) {
-        birthDateInput.value = metadata.birth_date;
-        updateAge(metadata.birth_date);
+    if (user.birth_date || metadata.birth_date) {
+        birthDateInput.value = user.birth_date || metadata.birth_date;
+        updateAge(birthDateInput.value);
     }
 
-    // Load Interests from Profile (public.profiles)
-    const { data: profile } = await sbClient
-        .from('profiles')
-        .select('interests')
-        .eq('id', session.user.id)
-        .single();
-
-    if (profile && profile.interests) {
-        interestsInput.value = profile.interests;
-        interestsCharCount.textContent = `${profile.interests.length}/300`;
+    // Load Interests
+    if (user.interests) {
+        interestsInput.value = user.interests;
+        interestsCharCount.textContent = `${user.interests.length}/300`;
     }
 
     loadUserGames();
-    loadFavorites();
+    loadFavoritesUI();
     loadUserAchievements();
 }
 
@@ -244,16 +215,10 @@ async function loadUserAchievements() {
     if (!container) return;
 
     try {
-        const { data: achievements, error } = await sbClient
+        const { data: achievements } = await sbClient
             .from('achievements')
-            .select(`
-                *,
-                games ( title ),
-                achievement_definitions ( title, description, icon_url )
-            `)
+            .select(`*, games ( title ), achievement_definitions ( title, description, icon_url )`)
             .eq('user_id', currentUser.id);
-
-        if (error) throw error;
 
         if (!achievements || achievements.length === 0) {
             container.innerHTML = '<p class="empty-msg">Aún no has desbloqueado ningún logro.</p>';
@@ -281,7 +246,6 @@ async function loadUserAchievements() {
         }).join('');
 
     } catch (err) {
-        console.error('Error loading achievements:', err);
         container.innerHTML = '<p class="empty-msg">Error al cargar logros.</p>';
     }
 }
@@ -292,39 +256,33 @@ function updateAge(birthDate) {
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
-    }
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
     calculatedAgeInput.value = age + ' años';
 }
 
-async function loadFavorites() {
-    // This would typically come from a 'favorites' table in Supabase
-    // For now, we'll check localStorage or a profile metadata field
-    const session = await getSession();
-    const favorites = session.user.user_metadata.favorites || [];
+async function loadFavoritesUI() {
+    const { data: favorites } = await getFavorites();
 
-    if (favorites.length === 0) {
+    if (!favorites || favorites.length === 0) {
         favoritesListContainer.innerHTML = '<p class="empty-msg">No tienes juegos favoritos aún.</p>';
         return;
     }
 
-    // Fetch game details for these IDs
-    const { data: games, error } = await window.sbClient
+    const { data: games } = await sbClient
         .from('games')
         .select('*')
         .in('id', favorites);
 
-    if (error || !games || games.length === 0) {
+    if (!games || games.length === 0) {
         favoritesListContainer.innerHTML = '<p class="empty-msg">No se pudieron cargar tus favoritos.</p>';
         return;
     }
 
     favoritesListContainer.innerHTML = games.map(game => `
         <div class="game-card-mini" onclick="location.href='juego.html?id=${game.id}'">
-            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${game.title}">
+            <img src="${fixGitHubImageUrl(game.image_url)}" alt="${escapeHTML(game.title)}">
             <div class="mini-info">
-                <span>${game.title}</span>
+                <span>${escapeHTML(game.title)}</span>
             </div>
         </div>
     `).join('');
@@ -334,7 +292,7 @@ async function loadUserGames() {
     const gamesList = document.getElementById('user-games-list');
     if (!gamesList) return;
 
-    const games = await getUserGames(currentUser.id);
+    const { data: games } = await getUserGames(currentUser.id);
 
     if (!games || games.length === 0) {
         gamesList.innerHTML = `
@@ -357,8 +315,8 @@ async function loadUserGames() {
                     <div class="game-row-info">
                         <img src="${fixGitHubImageUrl(game.image_url)}" class="game-mini-thumb" onerror="this.src='logo.png'">
                         <div style="display: flex; flex-direction: column;">
-                            <span>${game.title}</span>
-                            <small style="color: var(--text-gray); font-size: 0.7rem;">por ${game.profiles?.full_name || game.profiles?.username || 'Tú'}</small>
+                            <span>${escapeHTML(game.title)}</span>
+                            <small style="color: var(--text-gray); font-size: 0.7rem;">por ${escapeHTML(game.profiles?.full_name || game.profiles?.username || 'Tú')}</small>
                         </div>
                     </div>
                 </td>
@@ -381,24 +339,16 @@ async function loadUserGames() {
 
 async function deleteGame(id) {
     if (!confirm('¿Estás seguro de que quieres eliminar este juego?')) return;
-
-    const { error } = await window.sbClient
-        .from('games')
-        .delete()
-        .eq('id', id);
-
-    if (error) {
-        showToast('Notificación', 'Error al eliminar: ' + error.message);
-    } else {
+    try {
+        const { error } = await sbClient
+            .from('games')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
         loadUserGames();
+    } catch (e) {
+        showToast('Error', 'No se pudo eliminar el juego.');
     }
-}
-
-function escapeHTML(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
 }
 
 function showAuth() {
@@ -407,10 +357,7 @@ function showAuth() {
 }
 
 function setupProfileListeners() {
-    birthDateInput?.addEventListener('change', (e) => {
-        updateAge(e.target.value);
-    });
-
+    birthDateInput?.addEventListener('change', (e) => updateAge(e.target.value));
     interestsInput?.addEventListener('input', () => {
         interestsCharCount.textContent = `${interestsInput.value.length}/300`;
     });
@@ -420,109 +367,23 @@ function setupProfileListeners() {
         const bDate = birthDateInput.value;
         const interests = interestsInput.value.trim();
 
-        // Update auth metadata
-        const { error: authErr } = await window.sbClient.auth.updateUser({
-            data: { birth_date: bDate }
-        });
-
-        // Update public profile (interests)
-        const { error: profErr } = await window.sbClient
-            .from('profiles')
-            .update({ interests: interests })
-            .eq('id', currentUser.id);
-
-        if (authErr || profErr) {
-            showToast('Notificación', 'Error: ' + (authErr?.message || profErr?.message));
-        } else {
-            showToast('Notificación', 'Perfil actualizado');
+        try {
+            const { error } = await updateProfileMetadata({
+                birth_date: bDate,
+                interests: interests
+            });
+            if (error) throw error;
+            showToast('Éxito', 'Perfil actualizado correctamente');
+        } catch (e) {
+            showToast('Error', 'No se pudo actualizar el perfil');
         }
     });
 }
 
 function setupAuthListeners() {
-    // Tab switching
-    const btnLoginTab = document.getElementById('btn-login-tab');
-    const btnRegisterTab = document.getElementById('btn-register-tab');
-    const btnManageTab = document.getElementById('btn-manage-tab');
-
-    function setActiveTab(btn) {
-        [btnLoginTab, btnRegisterTab, btnManageTab].forEach(b => b?.classList.remove('active'));
-        btn?.classList.add('active');
-    }
-
-    btnLoginTab?.addEventListener('click', (e) => {
-        e.preventDefault();
-        setActiveTab(btnLoginTab);
-        loginContainer.classList.remove('hidden');
-        registerContainer.classList.add('hidden');
-        recoveryContainer.classList.add('hidden');
-    });
-
-    btnRegisterTab?.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.open('https://carleystudio.com/cuenta.html', '_blank');
-    });
-
-    btnManageTab?.addEventListener('click', (e) => {
-        e.preventDefault();
-        setActiveTab(btnManageTab);
-        window.open('https://carleystudio.com/cuenta.html', '_blank');
-    });
-
-    // Switch between forms
-    showRegisterBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.open('https://carleystudio.com/cuenta.html', '_blank');
-    });
-
-    showLoginBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        setActiveTab(btnLoginTab);
-        if (loginContainer) loginContainer.classList.remove('hidden');
-        if (recoveryContainer) recoveryContainer.classList.add('hidden');
-    });
-
-    showRecoveryBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (loginContainer) loginContainer.classList.add('hidden');
-        if (recoveryContainer) recoveryContainer.classList.remove('hidden');
-    });
-
-    backToLoginBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        setActiveTab(btnLoginTab);
-        if (recoveryContainer) recoveryContainer.classList.add('hidden');
-        if (loginContainer) loginContainer.classList.remove('hidden');
-    });
-
-    // Real Supabase Auth Handlers
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-password').value;
-
-        const { data, error } = await signIn(email, pass);
-        if (error) {
-            showToast('Notificación', 'Error: ' + error.message);
-        } else {
-            checkAuthState();
-        }
-    });
+    ssoLoginBtn?.addEventListener('click', () => signIn());
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
         await signOut();
-        currentUser = null;
-        showAuth();
-    });
-
-
-    document.getElementById('recovery-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('recovery-email').value;
-        const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.href
-        });
-        if (error) showToast('Notificación', error.message);
-        else showToast('Notificación', 'Se ha enviado un correo de recuperación.');
     });
 }

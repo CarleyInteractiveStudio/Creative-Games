@@ -19,7 +19,7 @@ async function loadAuthorProfile(id) {
             .eq('id', id)
             .single();
 
-        if (error) throw error;
+        if (error || !profile) throw error;
 
         const displayName = profile.full_name || profile.username || 'Usuario';
         document.getElementById('author-name').textContent = displayName;
@@ -95,7 +95,7 @@ async function loadAuthorGames(id) {
 
         if (error) throw error;
 
-        if (games.length === 0) {
+        if (!games || games.length === 0) {
             grid.innerHTML = '<p class="empty-msg">Este autor aún no tiene juegos publicados.</p>';
             return;
         }
@@ -106,13 +106,6 @@ async function loadAuthorGames(id) {
         console.error('Error loading games:', err);
         grid.innerHTML = '<p class="empty-msg">Error al cargar los juegos.</p>';
     }
-}
-
-function escapeHTML(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
 }
 
 function createSmallGameCard(game) {

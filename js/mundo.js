@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Initial Load
     await initChat();
 
-    // 2. Poll for new messages every 10 seconds (Simulating Real-time for this demo)
+    // 2. Poll for new messages every 10 seconds
     setInterval(async () => {
         await loadMessages();
     }, 10000);
@@ -30,9 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     async function initChat() {
-        const session = await sbClient.auth.getSession();
-        if (session.data.session) {
-            currentUser = session.data.session.user;
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) {
+            currentUser = session.user;
         }
         await loadMessages();
         checkCooldown();
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderMessages(messages) {
-        if (messages.length === 0) {
+        if (!messages || messages.length === 0) {
             chatContainer.innerHTML = '<p class="empty-msg" style="text-align:center;">No hay mensajes hoy. ¡Sé el primero en escribir!</p>';
             return;
         }
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }]);
 
             if (error) {
-                if (error.message.includes('world_chat')) { // RLS check
+                if (error.message.includes('world_chat')) {
                     showToast('Notificación', 'Debes esperar 15 minutos entre mensajes.');
                 } else {
                     showToast('Notificación', 'Error: ' + error.message);
@@ -174,11 +174,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function scrollToBottom() {
         chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
     }
 });

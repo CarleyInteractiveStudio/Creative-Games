@@ -21,11 +21,11 @@ async function initWizard() {
 }
 
 async function renderCategoryOptions() {
-    const cats = await getCategories();
+    const { data: cats } = await getCategories();
     const container = document.getElementById('category-selection');
     if (!container) return;
 
-    if (cats.length > 0) {
+    if (cats && cats.length > 0) {
         container.innerHTML = cats.map(cat => `
             <label class="check-container">
                 <input type="checkbox" name="category" value="${cat}">
@@ -47,7 +47,6 @@ function setupListeners() {
             if (anyChecked) container.classList.remove('hidden');
             else container.classList.add('hidden');
 
-            // Toggle individual textareas
             document.getElementById(`group-controls-${cb.value}`).classList.toggle('hidden', !cb.checked);
         });
     });
@@ -68,7 +67,6 @@ function setupListeners() {
         updatePreview();
     });
 
-    // Handle form submission
     document.getElementById('publish-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         await publishGame();
@@ -139,7 +137,6 @@ function validateStep(step) {
 }
 
 function updateUI() {
-    // Show/Hide steps
     steps.forEach((s, index) => {
         if (index + 1 === currentStep) {
             s.classList.remove('hidden');
@@ -148,7 +145,6 @@ function updateUI() {
         }
     });
 
-    // Update Indicators
     stepIndicators.forEach((ind, index) => {
         const stepNum = index + 1;
         ind.classList.remove('active', 'completed');
@@ -159,7 +155,6 @@ function updateUI() {
         }
     });
 
-    // Update Nav Buttons
     if (currentStep === 1) {
         prevBtn.classList.add('hidden');
     } else {
@@ -176,30 +171,11 @@ function updateUI() {
     }
 }
 
-/**
- * Converts a standard GitHub blob URL to a raw content URL
- * @param {string} url
- * @returns {string}
- */
-function fixGitHubImageUrl(url) {
-    if (!url) return url;
-    if (url.includes('github.com') && url.includes('/blob/')) {
-        return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-    }
-    return url;
-}
-
 function updatePreview() {
     const repoUrl = document.getElementById('game-repo').value;
-    const imageUrl = document.getElementById('game-image').value;
-
     if (repoUrl) {
         previewIframe.src = repoUrl;
     }
-
-    // Try to update cover image in a real preview if we had one,
-    // for now we just log the fix
-    console.log("Image URL processed:", fixGitHubImageUrl(imageUrl));
 }
 
 async function publishGame() {
@@ -252,7 +228,6 @@ async function publishGame() {
         if (error) {
             showToast('Notificación', 'Error al publicar: ' + error.message);
         } else {
-            // Save Achievements
             const achItems = document.querySelectorAll('.achievement-editor-item');
             if (achItems.length > 0) {
                 const achievements = Array.from(achItems).map(item => ({
@@ -263,11 +238,9 @@ async function publishGame() {
                     icon_url: fixGitHubImageUrl(item.querySelector('.ach-icon').value)
                 }));
 
-                const { error: achErr } = await window.sbClient
+                await window.sbClient
                     .from('achievement_definitions')
                     .insert(achievements);
-
-                if (achErr) console.error('Error guardando logros:', achErr);
             }
 
             showToast('Notificación', '¡Juego publicado con éxito! Pendiente de revisión.');

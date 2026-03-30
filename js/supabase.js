@@ -8,10 +8,10 @@ const pendingRequests = new Map();
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
 
-    bridgeIframe = document.getElementById('sso-bridge');
+    bridgeIframe = document.getElementById('auth-bridge');
     if (!bridgeIframe) {
         bridgeIframe = document.createElement('iframe');
-        bridgeIframe.id = 'sso-bridge';
+        bridgeIframe.id = 'auth-bridge';
         bridgeIframe.src = `${BRIDGE_ORIGIN}/bridge.html`;
         bridgeIframe.style.display = 'none';
         document.body.appendChild(bridgeIframe);
@@ -190,9 +190,7 @@ async function submitGame(gameData) {
 
 // Auth Wrappers
 async function signIn() {
-    const domain = "creativegame.online";
-    const redirectTo = window.location.href;
-    window.location.href = `${BRIDGE_ORIGIN}/sso.html?domain=${domain}&redirect_to=${encodeURIComponent(redirectTo)}`;
+    window.location.href = `${BRIDGE_ORIGIN}/sso.html?redirect_to=https://creativegame.online`;
 }
 
 async function signUp() {

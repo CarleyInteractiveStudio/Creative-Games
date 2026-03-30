@@ -48,9 +48,7 @@ function setupLoginForm() {
     btn.className = 'btn-primary';
     btn.textContent = 'Iniciar Sesión';
     btn.onclick = () => {
-        const domain = "creativegame.online";
-        const redirectTo = window.location.href;
-        window.location.href = `https://carleystudio.com/sso.html?domain=${domain}&redirect_to=${encodeURIComponent(redirectTo)}`;
+        window.location.href = `https://carleystudio.com/sso.html?redirect_to=https://creativegame.online`;
     };
 
     const container = document.getElementById('admin-login-form');

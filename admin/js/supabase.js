@@ -8,10 +8,10 @@ const pendingRequests = new Map();
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
 
-    bridgeIframe = document.getElementById('sso-bridge');
+    bridgeIframe = document.getElementById('auth-bridge');
     if (!bridgeIframe) {
         bridgeIframe = document.createElement('iframe');
-        bridgeIframe.id = 'sso-bridge';
+        bridgeIframe.id = 'auth-bridge';
         bridgeIframe.src = `${BRIDGE_ORIGIN}/bridge.html`;
         bridgeIframe.style.display = 'none';
         document.body.appendChild(bridgeIframe);
@@ -106,8 +106,8 @@ window.sbClient = {
             return { data: { user }, error: null };
         },
         signOut: signOut,
-        signInWithPassword: () => { window.location.href = `${BRIDGE_ORIGIN}/sso.html?domain=creativegame.online&redirect_to=${encodeURIComponent(window.location.href)}`; },
-        signUp: () => { window.location.href = `${BRIDGE_ORIGIN}/sso.html?domain=creativegame.online&redirect_to=${encodeURIComponent(window.location.href)}`; }
+        signInWithPassword: () => { window.location.href = `${BRIDGE_ORIGIN}/sso.html?redirect_to=https://creativegame.online`; },
+        signUp: () => { window.location.href = `${BRIDGE_ORIGIN}/sso.html?redirect_to=https://creativegame.online`; }
     },
     from: (table) => {
         let currentQuery = { table };

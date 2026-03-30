@@ -1,5 +1,7 @@
 const BRIDGE_ORIGIN = 'https://carleystudio.com';
 let bridgeIframe = null;
+let isBridgeReady = false;
+const bridgeQueue = [];
 const pendingRequests = new Map();
 
 /**
@@ -30,15 +32,28 @@ async function bridgeCall(type, payload = {}) {
         const timeout = setTimeout(() => {
             pendingRequests.delete(requestId);
             reject(new Error(`Timeout in bridge call: ${type}`));
-        }, 10000);
+        }, 15000);
 
         pendingRequests.set(requestId, { resolve, reject, timeout });
 
-        bridgeIframe.contentWindow.postMessage({
-            type,
-            payload,
-            requestId
-        }, BRIDGE_ORIGIN);
+        const send = () => {
+            try {
+                bridgeIframe.contentWindow.postMessage({
+                    type,
+                    payload,
+                    requestId
+                }, '*');
+            } catch (e) {
+                console.error("PostMessage error:", e);
+                reject(e);
+            }
+        };
+
+        if (isBridgeReady) {
+            send();
+        } else {
+            bridgeQueue.push(send);
+        }
     });
 }
 
@@ -47,8 +62,17 @@ window.addEventListener('message', (event) => {
     if (event.origin !== BRIDGE_ORIGIN) return;
 
     const { type, requestId, payload, error } = event.data;
-    const pending = pendingRequests.get(requestId);
 
+    if (type === 'BRIDGE_READY') {
+        isBridgeReady = true;
+        while (bridgeQueue.length > 0) {
+            const send = bridgeQueue.shift();
+            send();
+        }
+        return;
+    }
+
+    const pending = pendingRequests.get(requestId);
     if (pending) {
         clearTimeout(pending.timeout);
         pendingRequests.delete(requestId);

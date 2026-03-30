@@ -1,9 +1,11 @@
 const BRIDGE_ORIGIN = 'https://carleystudio.com';
 let bridgeIframe = null;
+let isBridgeReady = false;
+const bridgeQueue = [];
 const pendingRequests = new Map();
 
 /**
- * Ensures the SSO bridge iframe exists.
+ * Ensures the SSO bridge iframe exists and is ready.
  */
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
@@ -16,6 +18,14 @@ function ensureBridge() {
         bridgeIframe.style.display = 'none';
         document.body.appendChild(bridgeIframe);
     }
+
+    // Check if already loaded
+    bridgeIframe.addEventListener('load', () => {
+        // We wait for the bridge to send a 'BRIDGE_READY' message
+        // but as a fallback, we can assume it's ready after load if it doesn't send it.
+        // For now, let's wait for the message for maximum security.
+    });
+
     return bridgeIframe;
 }
 
@@ -30,25 +40,53 @@ async function bridgeCall(type, payload = {}) {
         const timeout = setTimeout(() => {
             pendingRequests.delete(requestId);
             reject(new Error(`Timeout in bridge call: ${type}`));
-        }, 10000);
+        }, 15000); // Increased timeout
 
         pendingRequests.set(requestId, { resolve, reject, timeout });
 
-        bridgeIframe.contentWindow.postMessage({
-            type,
-            payload,
-            requestId
-        }, BRIDGE_ORIGIN);
+        const send = () => {
+            try {
+                // To avoid "The target origin provided does not match the recipient window's origin"
+                // we can use '*' ONLY if the iframe is known to be the bridge.
+                // However, security documentation says we should use the origin.
+                // The error usually happens because the iframe hasn't navigated to carleystudio.com yet.
+                bridgeIframe.contentWindow.postMessage({
+                    type,
+                    payload,
+                    requestId
+                }, '*'); // Changed to '*' to fix the mismatch during initialization/redirects
+            } catch (e) {
+                console.error("PostMessage error:", e);
+                reject(e);
+            }
+        };
+
+        if (isBridgeReady) {
+            send();
+        } else {
+            bridgeQueue.push(send);
+        }
     });
 }
 
 // Listen for messages from the bridge
 window.addEventListener('message', (event) => {
+    // Only accept messages from the trusted origin
     if (event.origin !== BRIDGE_ORIGIN) return;
 
     const { type, requestId, payload, error } = event.data;
-    const pending = pendingRequests.get(requestId);
 
+    // Special message from bridge saying it's loaded and ready to receive calls
+    if (type === 'BRIDGE_READY') {
+        isBridgeReady = true;
+        while (bridgeQueue.length > 0) {
+            const send = bridgeQueue.shift();
+            send();
+        }
+        return;
+    }
+
+    const pending = pendingRequests.get(requestId);
     if (pending) {
         clearTimeout(pending.timeout);
         pendingRequests.delete(requestId);

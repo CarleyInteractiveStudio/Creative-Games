@@ -1,6 +1,7 @@
 const BRIDGE_ORIGIN = 'https://carleystudio.com';
 let bridgeIframe = null;
 let isBridgeReady = false;
+let ssoToken = localStorage.getItem('sso_token');
 const bridgeQueue = [];
 const pendingRequests = new Map();
 
@@ -19,14 +20,22 @@ function ensureBridge() {
         document.body.appendChild(bridgeIframe);
     }
 
-    // Check if already loaded
-    bridgeIframe.addEventListener('load', () => {
-        // We wait for the bridge to send a 'BRIDGE_READY' message
-        // but as a fallback, we can assume it's ready after load if it doesn't send it.
-        // For now, let's wait for the message for maximum security.
-    });
+    setTimeout(() => {
+        if (!isBridgeReady) {
+            console.warn("Bridge ready signal timeout - forcing ready state");
+            isBridgeReady = true;
+            processQueue();
+        }
+    }, 5000);
 
     return bridgeIframe;
+}
+
+function processQueue() {
+    while (bridgeQueue.length > 0) {
+        const send = bridgeQueue.shift();
+        send();
+    }
 }
 
 /**
@@ -36,25 +45,26 @@ async function bridgeCall(type, payload = {}) {
     ensureBridge();
     const requestId = Math.random().toString(36).substring(2, 11);
 
+    // Attach token if available
+    if (ssoToken) {
+        payload.sso_token = ssoToken;
+    }
+
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             pendingRequests.delete(requestId);
             reject(new Error(`Timeout in bridge call: ${type}`));
-        }, 15000); // Increased timeout
+        }, 15000);
 
         pendingRequests.set(requestId, { resolve, reject, timeout });
 
         const send = () => {
             try {
-                // To avoid "The target origin provided does not match the recipient window's origin"
-                // we can use '*' ONLY if the iframe is known to be the bridge.
-                // However, security documentation says we should use the origin.
-                // The error usually happens because the iframe hasn't navigated to carleystudio.com yet.
                 bridgeIframe.contentWindow.postMessage({
                     type,
                     payload,
                     requestId
-                }, '*'); // Changed to '*' to fix the mismatch during initialization/redirects
+                }, '*');
             } catch (e) {
                 console.error("PostMessage error:", e);
                 reject(e);
@@ -71,18 +81,14 @@ async function bridgeCall(type, payload = {}) {
 
 // Listen for messages from the bridge
 window.addEventListener('message', (event) => {
-    // Only accept messages from the trusted origin
     if (event.origin !== BRIDGE_ORIGIN) return;
 
     const { type, requestId, payload, error } = event.data;
 
-    // Special message from bridge saying it's loaded and ready to receive calls
     if (type === 'BRIDGE_READY') {
+        console.log("Bridge reported READY");
         isBridgeReady = true;
-        while (bridgeQueue.length > 0) {
-            const send = bridgeQueue.shift();
-            send();
-        }
+        processQueue();
         return;
     }
 
@@ -107,14 +113,18 @@ function handleSSOCallback() {
 
     const params = new URLSearchParams(hash);
     const token = params.get('sso_token');
-    const userId = params.get('user_id');
 
     if (token) {
-        console.log("SSO Session received");
+        console.log("SSO Session token captured");
+        ssoToken = token;
+        localStorage.setItem('sso_token', token);
         history.replaceState(null, null, window.location.pathname + window.location.search);
-        // Refresh session state
-        getSession().then(session => {
-            if (session && window.checkUserAuth) window.checkUserAuth();
+
+        // Notify bridge about the new token immediately
+        bridgeCall('SET_SESSION', { token: token }).then(() => {
+            getSession().then(session => {
+                if (session && window.checkUserAuth) window.checkUserAuth();
+            });
         });
     }
 }
@@ -211,6 +221,13 @@ async function submitGame(gameData) {
         repo_url: gameData.repo_url,
         categories: gameData.categories,
         devices: gameData.devices,
+        suggested_gender: gameData.suggested_gender,
+        engine: gameData.engine,
+        age_ratings: gameData.age_ratings,
+        controls_pc: gameData.controls_pc,
+        controls_console: gameData.controls_console,
+        controls_mobile: gameData.controls_mobile,
+        controls_tv: gameData.controls_tv,
         status: 'pending'
     };
 
@@ -236,6 +253,8 @@ async function signUp() {
 }
 
 async function signOut() {
+    ssoToken = null;
+    localStorage.removeItem('sso_token');
     window.location.href = `${BRIDGE_ORIGIN}/cuenta.html`;
 }
 

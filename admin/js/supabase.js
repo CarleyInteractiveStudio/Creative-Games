@@ -1,11 +1,12 @@
 const BRIDGE_ORIGIN = 'https://carleystudio.com';
 let bridgeIframe = null;
 let isBridgeReady = false;
+let ssoToken = localStorage.getItem('sso_token');
 const bridgeQueue = [];
 const pendingRequests = new Map();
 
 /**
- * Ensures the SSO bridge iframe exists.
+ * Ensures the SSO bridge iframe exists and is ready.
  */
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
@@ -18,7 +19,23 @@ function ensureBridge() {
         bridgeIframe.style.display = 'none';
         document.body.appendChild(bridgeIframe);
     }
+
+    setTimeout(() => {
+        if (!isBridgeReady) {
+            console.warn("Bridge ready signal timeout - forcing ready state");
+            isBridgeReady = true;
+            processQueue();
+        }
+    }, 5000);
+
     return bridgeIframe;
+}
+
+function processQueue() {
+    while (bridgeQueue.length > 0) {
+        const send = bridgeQueue.shift();
+        send();
+    }
 }
 
 /**
@@ -27,6 +44,10 @@ function ensureBridge() {
 async function bridgeCall(type, payload = {}) {
     ensureBridge();
     const requestId = Math.random().toString(36).substring(2, 11);
+
+    if (ssoToken) {
+        payload.sso_token = ssoToken;
+    }
 
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -64,11 +85,9 @@ window.addEventListener('message', (event) => {
     const { type, requestId, payload, error } = event.data;
 
     if (type === 'BRIDGE_READY') {
+        console.log("Bridge reported READY");
         isBridgeReady = true;
-        while (bridgeQueue.length > 0) {
-            const send = bridgeQueue.shift();
-            send();
-        }
+        processQueue();
         return;
     }
 
@@ -90,8 +109,14 @@ function handleSSOCallback() {
     const params = new URLSearchParams(hash);
     const token = params.get('sso_token');
     if (token) {
+        console.log("SSO Session token captured");
+        ssoToken = token;
+        localStorage.setItem('sso_token', token);
         history.replaceState(null, null, window.location.pathname + window.location.search);
-        if (window.checkAdminSession) window.checkAdminSession();
+
+        bridgeCall('SET_SESSION', { token: token }).then(() => {
+            if (window.checkAdminSession) window.checkAdminSession();
+        });
     }
 }
 window.addEventListener('load', handleSSOCallback);
@@ -115,6 +140,8 @@ async function getSession() {
 }
 
 async function signOut() {
+    ssoToken = null;
+    localStorage.removeItem('sso_token');
     window.location.href = `${BRIDGE_ORIGIN}/cuenta.html`;
 }
 

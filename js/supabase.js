@@ -4,21 +4,36 @@ let isBridgeReady = false;
 const bridgeQueue = [];
 const pendingRequests = new Map();
 
-// --- Immediate Token Capture ---
+// --- Immediate Token & UserID Capture ---
 let ssoToken = localStorage.getItem('sso_token');
+let userId = localStorage.getItem('user_id');
+
 try {
     const hash = window.location.hash.substring(1);
     if (hash) {
         const params = new URLSearchParams(hash);
         const token = params.get('sso_token');
+        const uid = params.get('user_id');
+
+        let cleaned = false;
         if (token) {
             console.log("[SSO] Token captured from URL");
             ssoToken = token;
             localStorage.setItem('sso_token', token);
+            cleaned = true;
+        }
+        if (uid) {
+            console.log("[SSO] UserID captured from URL");
+            userId = uid;
+            localStorage.setItem('user_id', uid);
+            cleaned = true;
+        }
+
+        if (cleaned) {
             history.replaceState(null, null, window.location.pathname + window.location.search);
         }
     }
-} catch (e) { console.error("[SSO] Error capturing token:", e); }
+} catch (e) { console.error("[SSO] Error capturing data:", e); }
 
 /**
  * Ensures the SSO bridge iframe exists and is ready.
@@ -26,23 +41,28 @@ try {
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
 
+    // Search for existing bridge to avoid duplicates
     bridgeIframe = document.getElementById('auth-bridge');
+
     if (!bridgeIframe) {
+        console.log("[Bridge] Creating new bridge iframe");
         bridgeIframe = document.createElement('iframe');
         bridgeIframe.id = 'auth-bridge';
         bridgeIframe.src = `${BRIDGE_ORIGIN}/bridge.html`;
         bridgeIframe.style.display = 'none';
         document.body.appendChild(bridgeIframe);
+    } else {
+        console.log("[Bridge] Using existing bridge iframe");
     }
 
-    // Safety timeout to consider bridge "ready"
+    // Safety timeout to consider bridge "ready" if signal never arrives
     setTimeout(() => {
         if (!isBridgeReady) {
-            console.warn("[Bridge] Timeout waiting for READY signal - forcing ready state");
+            console.warn("[Bridge] Timeout waiting for READY signal - forcing ready state for queue");
             isBridgeReady = true;
             processQueue();
         }
-    }, 5000);
+    }, 8000);
 
     return bridgeIframe;
 }
@@ -69,14 +89,16 @@ async function bridgeCall(type, payload = {}) {
         type,
         payload,
         requestId,
-        sso_token: ssoToken // Ensure token is present at top level
+        sso_token: ssoToken, // Ensure token is present at top level
+        user_id: userId
     };
 
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             pendingRequests.delete(requestId);
+            console.error(`[Bridge] Timeout in bridge call: ${type} (Req: ${requestId})`);
             reject(new Error(`Timeout in bridge call: ${type}`));
-        }, 15000);
+        }, 10000);
 
         pendingRequests.set(requestId, { resolve, reject, timeout });
 
@@ -192,7 +214,9 @@ async function signIn() {
 
 async function signOut() {
     ssoToken = null;
+    userId = null;
     localStorage.removeItem('sso_token');
+    localStorage.removeItem('user_id');
     window.location.href = `${BRIDGE_ORIGIN}/cuenta.html`;
 }
 

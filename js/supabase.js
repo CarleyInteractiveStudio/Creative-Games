@@ -8,6 +8,10 @@ const pendingRequests = new Map();
 let ssoToken = localStorage.getItem('sso_token');
 let userId = localStorage.getItem('user_id');
 
+// Cleanup potential stringified nulls
+if (ssoToken === "null" || ssoToken === "undefined") ssoToken = null;
+if (userId === "null" || userId === "undefined") userId = null;
+
 try {
     const hash = window.location.hash.substring(1);
     if (hash) {
@@ -16,14 +20,14 @@ try {
         const uid = params.get('user_id');
 
         let cleaned = false;
-        if (token) {
-            console.log("[SSO] Token captured from URL");
+        if (token && token !== "null" && token !== "undefined") {
+            console.log("[SSO] Token captured from URL hash");
             ssoToken = token;
             localStorage.setItem('sso_token', token);
             cleaned = true;
         }
-        if (uid) {
-            console.log("[SSO] UserID captured from URL");
+        if (uid && uid !== "null" && uid !== "undefined") {
+            console.log("[SSO] UserID captured from URL hash");
             userId = uid;
             localStorage.setItem('user_id', uid);
             cleaned = true;
@@ -33,13 +37,15 @@ try {
             history.replaceState(null, null, window.location.pathname + window.location.search);
         }
     }
-} catch (e) { console.error("[SSO] Error capturing data:", e); }
+} catch (e) { console.error("[SSO] Error capturing data from URL:", e); }
 
 /**
  * Ensures the SSO bridge iframe exists and is ready.
  */
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
+
+    console.log("[Bridge] Initializing bridge...");
 
     // Search for existing bridge to avoid duplicates
     bridgeIframe = document.getElementById('auth-bridge');
@@ -52,23 +58,23 @@ function ensureBridge() {
         bridgeIframe.style.display = 'none';
         document.body.appendChild(bridgeIframe);
     } else {
-        console.log("[Bridge] Using existing bridge iframe");
+        console.log("[Bridge] Using existing bridge iframe found in DOM");
     }
 
     // Safety timeout to consider bridge "ready" if signal never arrives
     setTimeout(() => {
         if (!isBridgeReady) {
-            console.warn("[Bridge] Timeout waiting for READY signal - forcing ready state for queue");
+            console.warn("[Bridge] Safety timeout (5s) reached waiting for READY signal. Attempting to process queue anyway.");
             isBridgeReady = true;
             processQueue();
         }
-    }, 8000);
+    }, 5000);
 
     return bridgeIframe;
 }
 
 function processQueue() {
-    if (bridgeQueue.length > 0) {
+    if (isBridgeReady && bridgeQueue.length > 0) {
         console.log(`[Bridge] Processing ${bridgeQueue.length} queued messages`);
         while (bridgeQueue.length > 0) {
             const send = bridgeQueue.shift();
@@ -84,20 +90,33 @@ async function bridgeCall(type, payload = {}) {
     ensureBridge();
     const requestId = Math.random().toString(36).substring(2, 11);
 
+    // Ensure we have the latest token/UID from localStorage if available
+    const currentToken = localStorage.getItem('sso_token');
+    const currentUID = localStorage.getItem('user_id');
+
     // Construction of the message exactly as per documentation
     const message = {
         type,
         payload,
         requestId,
-        sso_token: ssoToken, // Ensure token is present at top level
-        user_id: userId
+        sso_token: currentToken || ssoToken
     };
+    // Include user_id only if available to avoid polluting with nulls
+    if (currentUID || userId) message.user_id = currentUID || userId;
 
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             pendingRequests.delete(requestId);
-            console.error(`[Bridge] Timeout in bridge call: ${type} (Req: ${requestId})`);
-            reject(new Error(`Timeout in bridge call: ${type}`));
+            console.error(`[Bridge] Call Timeout: ${type} (Req: ${requestId}) after 10s`);
+
+            if (pendingRequests.size >= 2) {
+                console.warn("[Bridge] Multiple timeouts detected - forcing bridge reset");
+                isBridgeReady = false;
+                if (bridgeIframe) bridgeIframe.remove();
+                bridgeIframe = null;
+            }
+
+            reject(new Error(`Timeout: ${type}`));
         }, 10000);
 
         pendingRequests.set(requestId, { resolve, reject, timeout });
@@ -105,6 +124,10 @@ async function bridgeCall(type, payload = {}) {
         const send = () => {
             try {
                 if (bridgeIframe && bridgeIframe.contentWindow) {
+                    console.log(`[Bridge] OUT -> ${type} (ID: ${requestId})`, {
+                        tokenSet: !!message.sso_token,
+                        uidSet: !!message.user_id
+                    });
                     bridgeIframe.contentWindow.postMessage(message, '*');
                 } else {
                     throw new Error("Bridge iframe not accessible");
@@ -129,6 +152,7 @@ window.addEventListener('message', (event) => {
     const { type, requestId, payload, error } = event.data;
 
     if (type === 'BRIDGE_READY') {
+        console.log("[Bridge] READY signal received from carleystudio.com");
         console.log("[Bridge] READY signal received");
         isBridgeReady = true;
         processQueue();
@@ -137,10 +161,11 @@ window.addEventListener('message', (event) => {
 
     const pending = pendingRequests.get(requestId);
     if (pending) {
+        console.log(`[Bridge] IN <- ${type} (ID: ${requestId})`, { success: !error });
         clearTimeout(pending.timeout);
         pendingRequests.delete(requestId);
         if (error) {
-            console.error(`[Bridge] Error for request ${requestId}:`, error);
+            console.error(`[Bridge] Response Error (ID: ${requestId}):`, error);
             pending.reject(error);
         } else {
             pending.resolve(payload);
@@ -222,9 +247,15 @@ async function signOut() {
 
 async function getSession() {
     try {
+        console.log("[Auth] Checking session...");
         const user = await bridgeCall('CHECK_SESSION');
+        if (user) console.log("[Auth] Session active for:", user.email);
+        else console.log("[Auth] No active session found");
         return user ? { user } : null;
-    } catch (e) { return null; }
+    } catch (e) {
+        console.error("[Auth] Session check failed:", e.message);
+        return null;
+    }
 }
 
 async function getSessionUser() {

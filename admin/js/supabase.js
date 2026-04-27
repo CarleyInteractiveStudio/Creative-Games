@@ -8,6 +8,9 @@ const pendingRequests = new Map();
 let ssoToken = localStorage.getItem('sso_token');
 let userId = localStorage.getItem('user_id');
 
+if (ssoToken === "null" || ssoToken === "undefined") ssoToken = null;
+if (userId === "null" || userId === "undefined") userId = null;
+
 try {
     const hash = window.location.hash.substring(1);
     if (hash) {
@@ -16,13 +19,13 @@ try {
         const uid = params.get('user_id');
 
         let cleaned = false;
-        if (token) {
+        if (token && token !== "null" && token !== "undefined") {
             console.log("[SSO] Token captured from URL (Admin)");
             ssoToken = token;
             localStorage.setItem('sso_token', token);
             cleaned = true;
         }
-        if (uid) {
+        if (uid && uid !== "null" && uid !== "undefined") {
             console.log("[SSO] UserID captured from URL (Admin)");
             userId = uid;
             localStorage.setItem('user_id', uid);
@@ -33,13 +36,15 @@ try {
             history.replaceState(null, null, window.location.pathname + window.location.search);
         }
     }
-} catch (e) { console.error("[SSO] Error capturing data:", e); }
+} catch (e) { console.error("[SSO] Error capturing data (Admin):", e); }
 
 /**
  * Ensures the SSO bridge iframe exists and is ready.
  */
 function ensureBridge() {
     if (bridgeIframe) return bridgeIframe;
+
+    console.log("[Bridge] Initializing bridge (Admin)...");
 
     // Search for existing bridge to avoid duplicates
     bridgeIframe = document.getElementById('auth-bridge');
@@ -58,19 +63,22 @@ function ensureBridge() {
     // Safety timeout to consider bridge "ready" if signal never arrives
     setTimeout(() => {
         if (!isBridgeReady) {
-            console.warn("[Bridge] Timeout waiting for READY signal - forcing ready state for queue (Admin)");
+            console.warn("[Bridge] Safety timeout (5s) reached waiting for READY signal (Admin).");
             isBridgeReady = true;
             processQueue();
         }
-    }, 8000);
+    }, 5000);
 
     return bridgeIframe;
 }
 
 function processQueue() {
-    while (bridgeQueue.length > 0) {
-        const send = bridgeQueue.shift();
-        send();
+    if (isBridgeReady && bridgeQueue.length > 0) {
+        console.log(`[Bridge] Processing ${bridgeQueue.length} queued messages (Admin)`);
+        while (bridgeQueue.length > 0) {
+            const send = bridgeQueue.shift();
+            send();
+        }
     }
 }
 
@@ -80,24 +88,41 @@ function processQueue() {
 async function bridgeCall(type, payload = {}) {
     ensureBridge();
     const requestId = Math.random().toString(36).substring(2, 11);
+
+    // Ensure we have the latest token/UID from localStorage if available
+    const currentToken = localStorage.getItem('sso_token');
+    const currentUID = localStorage.getItem('user_id');
+
     const message = {
         type,
         payload,
         requestId,
-        sso_token: ssoToken,
-        user_id: userId
+        sso_token: currentToken || ssoToken
     };
+    if (currentUID || userId) message.user_id = currentUID || userId;
 
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
             pendingRequests.delete(requestId);
-            console.error(`[Bridge] Timeout in bridge call: ${type} (Req: ${requestId})`);
-            reject(new Error(`Timeout in bridge call: ${type}`));
+            console.error(`[Bridge] Call Timeout: ${type} (ID: ${requestId}) after 10s (Admin)`);
+
+            if (pendingRequests.size >= 2) {
+                console.warn("[Bridge] Multiple timeouts detected - forcing bridge reset (Admin)");
+                isBridgeReady = false;
+                if (bridgeIframe) bridgeIframe.remove();
+                bridgeIframe = null;
+            }
+
+            reject(new Error(`Timeout: ${type}`));
         }, 10000);
         pendingRequests.set(requestId, { resolve, reject, timeout });
         const send = () => {
             try {
                 if (bridgeIframe && bridgeIframe.contentWindow) {
+                    console.log(`[Bridge] OUT -> ${type} (ID: ${requestId}) (Admin)`, {
+                        tokenSet: !!message.sso_token,
+                        uidSet: !!message.user_id
+                    });
                     bridgeIframe.contentWindow.postMessage(message, '*');
                 } else { throw new Error("Iframe error"); }
             } catch (e) {
@@ -114,16 +139,24 @@ async function bridgeCall(type, payload = {}) {
 window.addEventListener('message', (event) => {
     if (!event.origin.startsWith(BRIDGE_ORIGIN)) return;
     const { type, requestId, payload, error } = event.data;
+
     if (type === 'BRIDGE_READY') {
+        console.log("[Bridge] READY signal received (Admin)");
         isBridgeReady = true;
         processQueue();
         return;
     }
     const pending = pendingRequests.get(requestId);
     if (pending) {
+        console.log(`[Bridge] IN <- ${type} (ID: ${requestId}) (Admin)`, { success: !error });
         clearTimeout(pending.timeout);
         pendingRequests.delete(requestId);
-        if (error) pending.reject(error); else pending.resolve(payload);
+        if (error) {
+            console.error(`[Bridge] Response Error (ID: ${requestId}) (Admin):`, error);
+            pending.reject(error);
+        } else {
+            pending.resolve(payload);
+        }
     }
 });
 
@@ -137,9 +170,15 @@ function fixGitHubImageUrl(url) {
 
 async function getSession() {
     try {
+        console.log("[Auth] Checking session (Admin)...");
         const user = await bridgeCall('CHECK_SESSION');
+        if (user) console.log("[Auth] Session active for (Admin):", user.email);
+        else console.log("[Auth] No active session found (Admin)");
         return user ? { user } : null;
-    } catch (e) { return null; }
+    } catch (e) {
+        console.error("[Auth] Session check failed (Admin):", e.message);
+        return null;
+    }
 }
 
 async function signOut() {

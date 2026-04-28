@@ -119,11 +119,8 @@ async function bridgeCall(type, payload = {}) {
         const send = () => {
             try {
                 if (bridgeIframe && bridgeIframe.contentWindow) {
-                    console.log(`[Bridge] OUT -> ${type} (ID: ${requestId}) (Admin)`, {
-                        tokenSet: !!message.sso_token,
-                        uidSet: !!message.user_id
-                    });
-                    bridgeIframe.contentWindow.postMessage(message, '*');
+                    console.log(`[Bridge] OUT -> ${type} (ID: ${requestId}) (Admin)`, message);
+                    bridgeIframe.contentWindow.postMessage(message, BRIDGE_ORIGIN);
                 } else { throw new Error("Iframe error"); }
             } catch (e) {
                 pendingRequests.delete(requestId);
@@ -148,7 +145,7 @@ window.addEventListener('message', (event) => {
     }
     const pending = pendingRequests.get(requestId);
     if (pending) {
-        console.log(`[Bridge] IN <- ${type} (ID: ${requestId}) (Admin)`, { success: !error });
+        console.log(`[Bridge] IN <- ${type} (ID: ${requestId}) (Admin)`, payload);
         clearTimeout(pending.timeout);
         pendingRequests.delete(requestId);
         if (error) {
@@ -170,10 +167,50 @@ function fixGitHubImageUrl(url) {
 
 async function getSession() {
     try {
+        const token = localStorage.getItem('sso_token');
+        const uid = localStorage.getItem('user_id');
+
+        if (token && !isBridgeReady) {
+            let waits = 0;
+            while (!isBridgeReady && waits < 80) {
+                await new Promise(r => setTimeout(r, 100));
+                waits++;
+            }
+        }
+
+        if (token) {
+            try {
+                await bridgeCall('SET_SESSION', { sso_token: token });
+            } catch (e) {}
+        }
+
         console.log("[Auth] Checking session (Admin)...");
-        const user = await bridgeCall('CHECK_SESSION');
-        if (user) console.log("[Auth] Session active for (Admin):", user.email);
-        else console.log("[Auth] No active session found (Admin)");
+        const payload = await bridgeCall('CHECK_SESSION', { sso_token: token });
+
+        let user = null;
+        if (payload) {
+            if (payload.user) user = payload.user;
+            else if (payload.session && payload.session.user) user = payload.session.user;
+            else if (payload.id && payload.email) user = payload;
+        }
+
+        if (!user && token && uid) {
+            try {
+                const profile = await bridgeCall('SUPABASE_CALL', {
+                    table: 'profiles',
+                    method: 'select',
+                    query: '*',
+                    filter: { id: uid },
+                    single: true
+                });
+                if (profile) {
+                    user = { id: uid, ...profile };
+                }
+            } catch (err) {}
+        }
+
+        if (user) console.log("[Auth] Session active for (Admin):", user.email || user.username);
+        else console.log("[Auth] No active session found (Admin). Payload:", payload);
         return user ? { user } : null;
     } catch (e) {
         console.error("[Auth] Session check failed (Admin):", e.message);

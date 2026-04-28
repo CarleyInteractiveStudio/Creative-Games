@@ -124,11 +124,8 @@ async function bridgeCall(type, payload = {}) {
         const send = () => {
             try {
                 if (bridgeIframe && bridgeIframe.contentWindow) {
-                    console.log(`[Bridge] OUT -> ${type} (ID: ${requestId})`, {
-                        tokenSet: !!message.sso_token,
-                        uidSet: !!message.user_id
-                    });
-                    bridgeIframe.contentWindow.postMessage(message, '*');
+                    console.log(`[Bridge] OUT -> ${type} (ID: ${requestId})`, message);
+                    bridgeIframe.contentWindow.postMessage(message, BRIDGE_ORIGIN);
                 } else {
                     throw new Error("Bridge iframe not accessible");
                 }
@@ -161,7 +158,7 @@ window.addEventListener('message', (event) => {
 
     const pending = pendingRequests.get(requestId);
     if (pending) {
-        console.log(`[Bridge] IN <- ${type} (ID: ${requestId})`, { success: !error });
+        console.log(`[Bridge] IN <- ${type} (ID: ${requestId})`, payload);
         clearTimeout(pending.timeout);
         pendingRequests.delete(requestId);
         if (error) {
@@ -197,12 +194,17 @@ function fixGitHubImageUrl(url) {
  */
 async function getApprovedGames(filter = {}) {
     try {
+        console.log("[Data] Fetching approved games...");
         const data = await bridgeCall('SUPABASE_CALL', {
             table: 'games', method: 'select', query: '*',
             filter: { status: 'approved', ...filter }
         });
+        console.log("[Data] Approved games fetched:", data?.length || 0);
         return { data: data || [], error: null };
-    } catch (error) { return { data: [], error }; }
+    } catch (error) {
+        console.error("[Data] Failed to fetch approved games:", error.message);
+        return { data: [], error };
+    }
 }
 
 async function getCategories() {
@@ -247,10 +249,60 @@ async function signOut() {
 
 async function getSession() {
     try {
+        const token = localStorage.getItem('sso_token');
+        const uid = localStorage.getItem('user_id');
+
+        if (token && !isBridgeReady) {
+            console.log("[Auth] Token found, waiting for bridge READY signal...");
+            let waits = 0;
+            while (!isBridgeReady && waits < 80) { // Wait up to 8s
+                await new Promise(r => setTimeout(r, 100));
+                waits++;
+            }
+        }
+
+        // Always try to sync token if we have one but no session is confirmed yet
+        if (token) {
+            console.log("[Auth] Ensuring bridge session with token...");
+            try {
+                await bridgeCall('SET_SESSION', { sso_token: token });
+            } catch (e) { console.warn("[Auth] SET_SESSION failed:", e.message); }
+        }
+
         console.log("[Auth] Checking session...");
-        const user = await bridgeCall('CHECK_SESSION');
-        if (user) console.log("[Auth] Session active for:", user.email);
-        else console.log("[Auth] No active session found");
+        const payload = await bridgeCall('CHECK_SESSION', { sso_token: token });
+
+        let user = null;
+        if (payload) {
+            if (payload.user) user = payload.user;
+            else if (payload.session && payload.session.user) user = payload.session.user;
+            else if (payload.id && payload.email) user = payload;
+        }
+
+        // --- Fallback Mechanism ---
+        // If CHECK_SESSION fails but we have a token and user_id, try to fetch profile directly
+        if (!user && token && uid) {
+            console.log("[Auth] Session check returned null, trying fallback profile fetch...");
+            try {
+                const profile = await bridgeCall('SUPABASE_CALL', {
+                    table: 'profiles',
+                    method: 'select',
+                    query: '*',
+                    filter: { id: uid },
+                    single: true
+                });
+                if (profile) {
+                    console.log("[Auth] Fallback profile fetch successful:", profile.username);
+                    user = { id: uid, ...profile };
+                }
+            } catch (err) { console.warn("[Auth] Fallback profile fetch failed:", err.message); }
+        }
+
+        if (user) {
+            console.log("[Auth] Session active for:", user.email || user.username);
+        } else {
+            console.log("[Auth] No active session found. Response payload:", payload);
+        }
         return user ? { user } : null;
     } catch (e) {
         console.error("[Auth] Session check failed:", e.message);
